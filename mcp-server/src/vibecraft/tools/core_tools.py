@@ -139,8 +139,9 @@ async def handle_worldedit_generic(
     # CRITICAL: Set world context before any WorldEdit command
     # WorldEdit from RCON requires world context to be set first
     try:
-        rcon.send_command("/world world")
-        logger_instance.debug("WorldEdit world context set")
+        # Use execute_command (not send_command which strips leading slash)
+        result = rcon.execute_command("/world world")
+        logger_instance.debug(f"WorldEdit world context set: {result}")
     except Exception as e:
         logger_instance.warning(f"Failed to set world context (may already be set): {e}")
 

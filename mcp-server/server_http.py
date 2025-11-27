@@ -177,8 +177,10 @@ async def run_http_server(host: str = "127.0.0.1", port: int = 8765):
             return {"type": "http.request", "body": body}
 
         # handle_post_message sends its own response via request._send
-        # We should NOT return a Response object as it would cause double response
         await sse.handle_post_message(request.scope, new_receive, request._send)
+
+        # Return 202 Accepted to indicate message was received
+        return Response(status_code=202)
 
     async def handle_root(request):
         """Root endpoint for discovery"""

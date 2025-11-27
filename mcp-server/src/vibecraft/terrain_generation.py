@@ -80,7 +80,7 @@ class TerrainGenerator:
         Example: "y = y + perlin(42, x/18, 0, z/18, 1.2, 4, 0.55) * 6"
         """
         try:
-            result = self.rcon.send_command(f"//deform {expression}", timeout=timeout)
+            result = self.rcon.send_command(f"//deform {expression}")
 
             return {
                 "success": True,
@@ -105,7 +105,7 @@ class TerrainGenerator:
             if hollow:
                 cmd += " -h"
 
-            result = self.rcon.send_command(cmd, timeout=timeout)
+            result = self.rcon.send_command(cmd)
 
             return {
                 "success": True,

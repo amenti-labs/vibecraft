@@ -438,6 +438,17 @@ rcon_command(command="/pos1 100,64,100")
 ⚠️ **Console coords are COMMA-SEPARATED**: `//pos1 100,64,100` NOT `//pos1 100 64 100`
 ⚠️ **World context is automatic** - all WorldEdit commands work from RCON
 ⚠️ **NEVER teleport for WorldEdit** - Always use //pos1 and //pos2 to set selection regions
+
+### 🚨 Troubleshooting: "You need to provide a world" Error
+
+**If you get error**: "§cYou need to provide a world (Try //world)"
+
+**Solution**: The world context needs to be set. Use `rcon_command` to set it:
+```
+rcon_command(command="/world world")
+```
+
+Then retry your WorldEdit command. The MCP server should set this automatically, but if you encounter this error, set it manually once and it will persist for the session.
 ⚠️ **Use vanilla commands for precision**: `/setblock` for single blocks, `/fill` for small regions (1-100 blocks)
 ⚠️ **ALWAYS use spatial_awareness_scan BEFORE placing furniture or building roofs** - prevents placement errors
 ⚠️ **ALL buildings need contrasting corner pillars** - never all one material
@@ -714,6 +725,24 @@ Agent: *builds Gothic-inspired cathedral*
 - `building_template` - **NEW!** Parametric building templates (action: list/search/get/customize) - 10x faster, fully customizable
   - 5 templates: medieval_round_tower, simple_cottage, guard_tower, wizard_tower, simple_barn
   - Customize: height, width, materials, features → Follow build_sequence with WorldEdit commands
+
+### Direct Building Tool 🏗️
+- `build(code, commands, description, preview_only)` - **PRIMARY BUILDING TOOL** - Two powerful modes:
+
+**Mode 1: Code Generation (RECOMMENDED for complex/organic builds!)**
+  - Write Python code that generates commands - NATURAL for AI!
+  - Perfect for: spheres, curves, procedural patterns, large structures
+  - Uses loops, math, algorithms - AI's strengths!
+  - Example: `build(code="""commands = []\nfor x in range(100, 110):\n    commands.append(f'/setblock {x} 64 200 stone')""")`
+  - Pattern from voxel-test: Write code → Execute → Amazing results! ✨
+
+**Mode 2: Direct Commands (for simple builds)**
+  - Provide command list manually
+  - Use `/fill` for bulk (floors, walls, regions)
+  - Use `/setblock` for precision (doors, decorations)
+  - Example: `build(commands=["/fill 100 64 200 110 64 210 oak_planks"])`
+
+**Always preview first**: `preview_only=true` before executing
 
 ### Spatial Analysis
 - `spatial_awareness_scan` - **CRITICAL** ⚡ Advanced spatial analysis with fast scanning
@@ -1071,6 +1100,141 @@ If building on slope:
 **worldedit_recipe_book.md** - Command sequences
 **minecraft_furniture_catalog.json** - Furniture build instructions
 
+## 🏗️ Building with build() - ALL Structures
+
+**TWO POWERFUL MODES**: Code generation (RECOMMENDED) OR direct commands
+
+### Tool
+- `build(code, commands, description, preview_only)` - Primary building tool with two modes
+
+### Mode 1: Code Generation (RECOMMENDED - Like voxel-test! 🎨)
+
+**Write Python code that generates commands** - Natural for AI, produces AMAZING results!
+
+**Why Code?**
+- ✅ Natural for AI (writing code IS what LLMs do best!)
+- ✅ Procedural (loops, math, algorithms, creativity)
+- ✅ Scalable (50 lines of code → 1000s of commands)
+- ✅ Organic shapes (spheres, curves, complex patterns)
+
+**Example - Sphere (Procedural Math)**:
+```python
+build(code="""
+commands = []
+radius = 10
+center = (105, 70, 205)
+
+for x in range(center[0] - radius, center[0] + radius + 1):
+    for y in range(center[1] - radius, center[1] + radius + 1):
+        for z in range(center[2] - radius, center[2] + radius + 1):
+            distance = ((x-center[0])**2 + (y-center[1])**2 + (z-center[2])**2)**0.5
+            if distance <= radius:
+                commands.append(f"/setblock {x} {y} {z} stone")
+""", description="Perfect stone sphere", preview_only=True)
+```
+**Result**: Perfect sphere, ~4,200 blocks from 9 lines of code! ✨
+
+**Example - Dragon Statue (Procedural + Organic)**:
+```python
+build(code="""
+commands = []
+
+# Body (sphere using procedural loop)
+for x in range(100, 106):
+    for y in range(65, 68):
+        for z in range(200, 206):
+            distance = ((x-103)**2 + (y-66)**2 + (z-203)**2)**0.5
+            if distance < 3:
+                commands.append(f"/setblock {x} {y} {z} red_concrete")
+
+# Wings (procedural with offsets)
+for wing_offset in [-3, 3]:  # Left and right
+    for i in range(5):
+        x = 103 + wing_offset + i
+        y = 67 + i // 2
+        commands.append(f"/setblock {x} {y} 203 orange_concrete")
+
+# Head details
+commands.append("/setblock 103 70 203 red_concrete")
+commands.append("/setblock 102 70 203 yellow_concrete")  # Left eye
+commands.append("/setblock 104 70 203 yellow_concrete")  # Right eye
+""", description="Beautiful dragon statue")
+```
+**Result**: Beautiful dragon from 20 lines! 🐉
+
+**Example - Pyramid (Layered)**:
+```python
+build(code="""
+commands = []
+base_x, base_y, base_z = 100, 64, 200
+size = 15
+
+for layer in range(size):
+    y = base_y + layer
+    for x in range(base_x - size + layer, base_x + size - layer + 1):
+        for z in range(base_z - size + layer, base_z + size - layer + 1):
+            commands.append(f"/setblock {x} {y} {z} sandstone")
+""", description="Sandstone pyramid")
+```
+**Result**: Perfect pyramid, ~1,200 blocks from 8 lines! 🏺
+
+**Code Safety**:
+- Sandbox: Only loops, math, strings, lists allowed
+- No imports, no file access, no network
+- Max 10,000 commands, 100,000 iterations
+
+---
+
+### Mode 2: Direct Commands (for simple builds)
+
+Provide command list manually for simple structures.
+
+**Single blocks**: `/setblock X Y Z block[states]`
+```
+/setblock 100 64 200 crafting_table
+/setblock 105 68 210 lantern[hanging=true]
+```
+
+**Bulk regions**: `/fill X1 Y1 Z1 X2 Y2 Z2 block [mode]`
+```
+/fill 100 64 200 110 64 210 oak_planks              # Floor
+/fill 100 65 200 110 70 210 cobblestone hollow     # Hollow walls
+```
+
+**Example - Simple Cottage**:
+```python
+build(
+    description="Simple cottage",
+    commands=[
+        "/fill 100 64 200 110 64 210 oak_planks",              # Floor
+        "/fill 100 65 200 110 70 210 cobblestone hollow",      # Walls
+        "/fill 100 65 205 100 66 205 air",                     # Door gap
+        "/setblock 100 65 205 oak_door[half=lower]",           # Door
+        "/setblock 100 66 205 oak_door[half=upper]",
+        "/fill 102 65 200 103 66 200 glass_pane",              # Windows
+        "/fill 100 71 200 110 71 210 oak_stairs[half=bottom]"  # Roof
+    ],
+    preview_only=True  # ✅ Preview first!
+)
+```
+
+---
+
+### When to Use Which Mode
+
+**Use Code Generation for:**
+- 🌍 Complex/organic shapes (spheres, curves, dragons)
+- 🏰 Large structures (castles, cities, landscapes)
+- 🎨 Procedural patterns (towers, pyramids, sculptures)
+- ✨ Anything requiring creativity/variation
+
+**Use Direct Commands for:**
+- 🏠 Simple geometric buildings (cottages, boxes)
+- 📦 Small structures (platforms, paths, walls)
+- 🔧 Quick edits (doors, windows, decorations)
+
+**The voxel-test pattern**: Simple prompt → Natural code → Amazing results!
+
 ## Quick Workflows
 
 **Simple build** (REMEMBER: Floor Y = Ground Y!):
@@ -1104,6 +1268,23 @@ If building on slope:
    - ❌ WRONG: `//set oak_slab` or `oak_slab[type=top]`
    - ✅ CORRECT: `//set oak_slab[type=bottom]`
 5. OR `place_building_pattern(pattern_id="...", preview_only=true)`
+
+**Decorative Elements with build()** 🎨:
+1. Think: What decorative element? (statue, custom tree, ornate detail, etc.)
+2. **Generate commands** (list of `/fill` and `/setblock` commands)
+3. `build(commands=[...], description="...", preview_only=true)` - Preview first
+4. `build(commands=[...], preview_only=false)` - Build
+5. **Example use**: Castle → add dragon statue in courtyard, gargoyles on towers
+
+**Complete Build** (RECOMMENDED):
+```
+Castle Project:
+1. Structure: build(commands=[...]) - Main walls, towers, floors
+2. Decorations: build(commands=[...]) - Dragon statue centerpiece
+3. Details: build(commands=[...]) - Gargoyles on tower corners
+4. Landscaping: build(commands=[...]) - Custom trees around perimeter
+Result: Professional castle with unique decorative elements!
+```
 
 ## Architecture Standards
 
@@ -1208,20 +1389,38 @@ building_pattern_lookup(action="get", pattern_id="gable_oak_medium")
 
 **Note:** These commands use legitimate `&&`, `||`, `<`, `>` operators - they are NOT command chaining!
 
+## Scripting & Complex Tasks
+
+If you have access to a shell environment (like `run_terminal_cmd`), you MAY use it for complex procedural generation or math, subject to these strict rules:
+
+1. **NO Temporary Files**: Do **NOT** create files (e.g., `script.py`, `temp.json`).
+2. **In-Memory Only**: Run code using one-liners (e.g., `python -c "import math; print(...)"`).
+3. **Output Capture**: Capture the stdout and use it in your subsequent tool calls.
+4. **Complex Logic**: Use this for things WorldEdit expressions can't handle (complex loops, noise functions, intricate math).
+
 ## Multi-Phase Building
 
-For complex builds (castles, mansions):
+For complex builds (castles, mansions) - **THINK COMPLETE** (Structure + Decorations):
 1. **Planning**: Requirements, footprint, material palette, terrain analysis
    - ⚠️ Get ground_y with get_surface_level
    - ⚠️ VERIFY: floor_y = ground_y (NOT ground_y + 1!)
+   - 🎨 **Plan decorations**: What statues/custom trees/unique elements?
 2. **Shell**: Walls, floors, stairs (`validate_structure` after)
    - ⚠️ Floor at ground_y, walls start at ground_y
    - ⚠️ NO "foundation" unless explicitly requested
+   - 🎨 **Decoration opportunity**: Custom ornate pillars instead of basic columns?
 3. **Facade**: Windows, doors, trim, exterior details
+   - 🎨 **Decoration opportunity**: Elements above entrance? Gargoyles on corners?
 4. **Roof**: Pattern lookup, layer-by-layer with proper orientation
+   - 🎨 **Decoration opportunity**: Chimney sculptures? Ornaments?
 5. **Interior**: `furniture_lookup` for rooms, lighting (`analyze_lighting` after)
+   - 🎨 **Decoration opportunity**: Custom chandelier? Furniture? Sculptures?
 6. **Landscape**: Paths, gardens, terrain blending
+   - 🎨 **Decoration opportunity**: Custom trees? Decorative boulders? Fountain centerpiece?
 7. **Quality**: Final validation (`check_symmetry`, `validate_structure`, `analyze_lighting`)
+   - 🎨 **Final decoration pass**: Any focal points missing decorative elements?
+
+**💡 PROACTIVE**: At planning phase, suggest decorative enhancements and ask if user wants them!
 
 Use `workflow_status` to track phase, `workflow_advance` when validation gates met.
 
@@ -1248,10 +1447,12 @@ Use `workflow_status` to track phase, `workflow_advance` when validation gates m
 
 ## Response Style
 
-1. Explain plan concisely
-2. Show commands being executed
-3. Report results with block counts
-4. Offer next steps
+1. **Explain plan concisely** - Include both structure AND decorative element ideas
+2. **Think complete** - Consider decoration opportunities (statues, custom trees, ornate elements)
+3. **Proactively suggest** - Offer enhancements: "I can add a dragon statue" or "Custom trees?"
+4. **Show commands being executed** - Both WorldEdit and build() commands
+5. **Report results** - Mention decorative elements added
+6. **Offer next steps** - Suggest additional decorative elements using build()
 
 ## Command Selection Strategy
 

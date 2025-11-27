@@ -50,6 +50,7 @@ from . import workflow_tools
 from . import helper_utils
 from . import core_tools
 from . import worldedit_wrappers
+from . import build_tools
 
 # Register spatial tools
 TOOL_REGISTRY["spatial_awareness_scan"] = spatial.handle_spatial_awareness_scan
@@ -100,6 +101,9 @@ TOOL_REGISTRY["get_surface_level"] = helper_utils.handle_get_surface_level
 TOOL_REGISTRY["rcon_command"] = core_tools.handle_rcon_command
 TOOL_REGISTRY["get_server_info"] = core_tools.handle_get_server_info
 TOOL_REGISTRY["building_template"] = core_tools.handle_building_template
+
+# Register build tool
+TOOL_REGISTRY["build"] = build_tools.handle_build
 
 # Register generic WorldEdit tools (20 tools via wrapper)
 # Each WorldEdit tool uses the generic handler with its tool_name

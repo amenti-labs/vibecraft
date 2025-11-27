@@ -1,7 +1,7 @@
 """
 MCP Tool Schema Definitions
 
-All 46 tool schemas for the VibeCraft MCP server.
+All tool schemas for the VibeCraft MCP server.
 Extracted from server.py for better maintainability.
 """
 
@@ -10,12 +10,12 @@ from mcp.types import Tool
 
 def get_tool_schemas() -> list[Tool]:
     """
-    Return all 46 tool schemas for VibeCraft MCP server.
+    Return all tool schemas for VibeCraft MCP server.
     
     Returns:
         List of Tool objects with name, description, and inputSchema
     """
-    return [
+    schemas = [
         # TIER 1: Generic RCON Tool
         Tool(
             name="rcon_command",
@@ -2208,4 +2208,317 @@ Get information about selections or evaluate mathematical expressions.
                 "required": ["command"],
             },
         ),
+
+        # ===== BUILD TOOL =====
+        Tool(
+            name="build",
+            description="""Execute Minecraft and WorldEdit commands for building structures.
+
+This is the universal building tool - supports vanilla Minecraft commands AND all 130+ WorldEdit commands.
+
+**Two modes available:**
+1. **Direct commands** - Provide command strings (vanilla or WorldEdit)
+2. **Code generation** - Write Python code that generates commands (RECOMMENDED for complex builds!)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODE 1: DIRECT COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Vanilla Minecraft Commands:**
+- `/fill X1 Y1 Z1 X2 Y2 Z2 block [mode]` - Fill region
+- `/setblock X Y Z block[states]` - Place single block
+- `/summon entity X Y Z` - Spawn entity
+
+**WorldEdit Commands (all 130+ commands supported!):**
+
+**Selection & Region:**
+- `//pos1 X,Y,Z` - Set first position
+- `//pos2 X,Y,Z` - Set second position
+- `//set <pattern>` - Fill selection
+- `//replace <from> <to>` - Replace blocks
+- `//walls <pattern>` - Build walls
+- `//faces <pattern>` - Build all 6 faces
+- `//move <count> [dir]` - Move selection
+- `//stack <count> [dir]` - Stack/duplicate selection
+
+**Shapes:**
+- `//sphere <pattern> <radius>` - Create sphere
+- `//hsphere <pattern> <radius>` - Hollow sphere
+- `//cylinder <pattern> <radius> [height]` - Cylinder
+- `//pyramid <pattern> <size>` - Pyramid
+
+**Clipboard:**
+- `//copy` - Copy selection
+- `//cut` - Cut selection
+- `//paste` - Paste
+- `//rotate <angle>` - Rotate clipboard
+- `//flip [direction]` - Flip clipboard
+
+**Utility:**
+- `//undo` - Undo last action
+- `//redo` - Redo
+- `//drain <radius>` - Remove water/lava
+- `//smooth [iterations]` - Smooth terrain
+- `//naturalize` - Add dirt/stone layers
+
+**Advanced:**
+- `//deform <expression>` - Math deformations
+- `//generate <expression>` - Generate with formula
+- `//forest <type> <density>` - Generate trees
+- `//setbiome <biome>` - Change biome
+
+Example:
+```
+build(commands=[
+    "//pos1 100,64,200",
+    "//pos2 110,70,210",
+    "//set stone_bricks",
+    "//walls oak_planks"
+])
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODE 2: CODE GENERATION (RECOMMENDED for complex builds!)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Write Python code that generates commands using loops, math, and logic.
+
+Example - Procedural Sphere:
+```
+build(code=\"\"\"
+commands = []
+radius = 10
+for x in range(-radius, radius+1):
+    for y in range(-radius, radius+1):
+        for z in range(-radius, radius+1):
+            if x*x + y*y + z*z <= radius*radius:
+                commands.append(f"/setblock {100+x} {70+y} {200+z} stone")
+\"\"\")
+```
+
+Example - Mixing Vanilla + WorldEdit:
+```
+build(code=\"\"\"
+commands = []
+# Use WorldEdit for bulk
+commands.append("//pos1 100,64,200")
+commands.append("//pos2 120,64,220")
+commands.append("//set grass_block")
+
+# Use vanilla for precision details
+for i in range(5):
+    x = 110 + i*2
+    commands.append(f"/setblock {x} 65 210 oak_fence")
+\"\"\")
+```
+
+Example - Curved Structures with Math (NO import needed!):
+```
+build(code=\"\"\"
+commands = []
+# Create curved portico using trig functions
+center_x, center_z = 100, 200
+radius = 8
+
+for angle in range(0, 181, 10):
+    rad = radians(angle)  # radians() available without import!
+    x = int(center_x + radius * cos(rad))
+    z = int(center_z + radius * sin(rad))
+    commands.append(f"/setblock {x} 64 {z} quartz_block")
+\"\"\")
+```
+
+Example - Helper Functions with Efficient Commands:
+```
+build(code=\"\"\"
+commands = []
+
+# Define efficient helper functions using /fill
+def column(x, z, base_y, height, material):
+    # ✅ Use /fill for vertical column (1 command, not 'height' commands!)
+    commands.append(f"/fill {x} {base_y} {z} {x} {base_y+height-1} {z} {material}")
+
+def wall(x1, x2, y, z, material):
+    # ✅ Use /fill for horizontal wall (1 command)
+    commands.append(f"/fill {x1} {y} {z} {x2} {y} {z} {material}")
+
+def floor(x1, z1, x2, z2, y, material):
+    # ✅ Use /fill for floor area (1 command)
+    commands.append(f"/fill {x1} {y} {z1} {x2} {y} {z2} {material}")
+
+# Use helpers to build structure
+base_x, base_y, base_z = 100, 64, 200
+
+# Four corner columns (4 commands total, not 20!)
+column(base_x, base_z, base_y, 5, "stone_bricks")
+column(base_x + 10, base_z, base_y, 5, "stone_bricks")
+column(base_x, base_z + 10, base_y, 5, "stone_bricks")
+column(base_x + 10, base_z + 10, base_y, 5, "stone_bricks")
+
+# Connecting walls (2 commands, not 20!)
+wall(base_x, base_x + 10, base_y + 5, base_z, "oak_planks")
+wall(base_x, base_x + 10, base_y + 5, base_z + 10, "oak_planks")
+
+print(f"Generated {len(commands)} commands (efficient!)")  # Only 6 commands!
+\"\"\")
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ CRITICAL: COMMAND EFFICIENCY - Use Bulk Operations!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**ALWAYS prefer bulk commands over individual block placement!**
+
+**❌ INEFFICIENT (DON'T DO THIS):**
+```python
+# Placing 20 blocks individually - SLOW!
+for y in range(64, 84):
+    commands.append(f"/setblock 100 {y} 200 stone_bricks")
+# Result: 20 commands for a simple column
+```
+
+**✅ EFFICIENT (DO THIS INSTEAD):**
+```python
+# One bulk command - FAST!
+commands.append(f"/fill 100 64 200 100 83 200 stone_bricks")
+# Result: 1 command for entire column (20x fewer commands!)
+```
+
+**Decision Tree for Command Selection:**
+
+1. **Rectangular/cuboid region (ANY size)?**
+   → Use `/fill X1 Y1 Z1 X2 Y2 Z2 block`
+   - Works for: floors, walls, columns, beams, boxes
+   - Even 1-block wide lines (vertical columns, horizontal beams)
+   - Example: `/fill 100 64 200 100 80 200 stone` (vertical column)
+
+2. **Large irregular shape (100+ blocks)?**
+   → Use WorldEdit `//pos1`, `//pos2`, `//set pattern`
+   - Best for: terrain, large structures, complex patterns
+
+3. **Curved/organic shape?**
+   → Generate coordinates mathematically, then:
+   - If pattern repeats: Use `/fill` for repeated segments
+   - If truly unique: Use `/setblock` per block
+
+4. **Individual decorative block with specific state?**
+   → Use `/setblock X Y Z block[states]`
+   - Only for: buttons, levers, signs, item frames, unique blocks
+
+**Examples of Efficient Code:**
+
+**Building a pillar grid (4 pillars):**
+```python
+# ❌ WRONG - 80 commands
+for x in [100, 110]:
+    for z in [200, 210]:
+        for y in range(64, 84):
+            commands.append(f"/setblock {x} {y} {z} stone_bricks")
+
+# ✅ CORRECT - 4 commands
+for x in [100, 110]:
+    for z in [200, 210]:
+        commands.append(f"/fill {x} 64 {z} {x} 83 {z} stone_bricks")
+```
+
+**Building walls:**
+```python
+# ❌ WRONG - 400 commands
+for x in range(100, 120):
+    for y in range(64, 84):
+        commands.append(f"/setblock {x} {y} 200 stone_bricks")
+
+# ✅ CORRECT - 1 command
+commands.append(f"/fill 100 64 200 119 83 200 stone_bricks")
+```
+
+**Building floor:**
+```python
+# ❌ WRONG - 400 commands
+for x in range(100, 120):
+    for z in range(200, 220):
+        commands.append(f"/setblock {x} 64 {z} oak_planks")
+
+# ✅ CORRECT - 1 command
+commands.append(f"/fill 100 64 200 119 64 219 oak_planks")
+```
+
+**Hollow box:**
+```python
+# ✅ EFFICIENT - 6 commands (one per face)
+x1, y1, z1 = 100, 64, 200
+x2, y2, z2 = 119, 83, 219
+
+commands.append(f"/fill {x1} {y1} {z1} {x2} {y1} {z2} stone")  # Floor
+commands.append(f"/fill {x1} {y2} {z1} {x2} {y2} {z2} stone")  # Ceiling
+commands.append(f"/fill {x1} {y1} {z1} {x2} {y2} {z1} stone")  # North wall
+commands.append(f"/fill {x1} {y1} {z2} {x2} {y2} {z2} stone")  # South wall
+commands.append(f"/fill {x1} {y1} {z1} {x1} {y2} {z2} stone")  # West wall
+commands.append(f"/fill {x2} {y1} {z1} {x2} {y2} {z2} stone")  # East wall
+```
+
+**Rule of Thumb:**
+- 1 rectangular region = 1 `/fill` command (not a loop of `/setblock`)
+- Think "regions" not "individual blocks"
+- If you're writing a loop that places blocks in a line/plane/box, use `/fill` instead
+- Reserve `/setblock` for truly unique individual blocks
+
+**Code Safety:**
+- Runs in secure sandbox (Python built-in ast + exec)
+- Allowed operations: loops, conditionals, functions (def), math, strings, lists
+- Math functions available (NO import needed!):
+  - Trigonometry: sin, cos, tan, asin, acos, atan, atan2
+  - Conversions: radians, degrees
+  - Constants: pi, e
+  - Other: sqrt, floor, ceil, pow, abs, min, max
+- Debugging: print() available for progress messages and debug output
+- Blocked: imports, file access, network access, external execution
+- Limits: Max 10,000 commands, 100,000 iterations
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHEN TO USE BUILD VS SPECIALIZED TOOLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Use build() for:**
+- ✅ Any sequence of commands (vanilla or WorldEdit)
+- ✅ Complex procedural builds (code generation)
+- ✅ Mixed vanilla + WorldEdit operations
+- ✅ Quick one-off commands
+
+**Use specialized tools for:**
+- 📚 Pre-designed patterns (furniture_lookup, building_pattern_lookup)
+- 🔍 Spatial analysis (spatial_awareness_scan, analyze_lighting)
+- 🎯 Specific workflows (worldedit_* tools with detailed docs/examples)
+- ✅ Parameter validation and error checking
+
+**Performance:** Extremely fast - thousands of blocks in seconds via bulk commands.
+""",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "commands": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of Minecraft commands (Mode 1: Direct)",
+                    },
+                    "code": {
+                        "type": "string",
+                        "description": "Python code that generates commands (Mode 2: RECOMMENDED)",
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Description of what's being built",
+                        "default": "Building structure",
+                    },
+                    "preview_only": {
+                        "type": "boolean",
+                        "description": "If True, return commands without executing",
+                        "default": False,
+                    },
+                },
+                "required": [],  # Either commands OR code required
+            },
+        ),
     ]
+    
+    return schemas

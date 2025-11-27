@@ -42,8 +42,9 @@ async def handle_worldedit_generation_smart(
     try:
         # CRITICAL: Set world context first
         # WorldEdit from RCON requires world context to be set before selection commands
-        rcon.send_command("/world world")
-        logger_instance.debug("WorldEdit world context set")
+        # Use execute_command (not send_command which strips leading slash)
+        result = rcon.execute_command("/world world")
+        logger_instance.debug(f"WorldEdit world context set: {result}")
 
         # Get player position first
         pos_result = rcon.send_command("data get entity @p Pos")
