@@ -62,7 +62,7 @@ You are responsible for:
 
 ## Context You Have Access To
 
-### Interior Blocks (Minecraft 1.21.3)
+### Interior Blocks (Minecraft 1.21.11)
 **Reference**: Use `search_minecraft_item` tool to find blocks (7,662 items available)
 
 **Furniture & functional blocks**:

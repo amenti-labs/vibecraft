@@ -205,7 +205,7 @@ Return to parent with:
 
 - **You do NOT directly execute commands** - Return specifications to executor
 - **Use comma-separated coordinates** - Critical syntax requirement
-- **Reference Minecraft 1.21.3 blocks** - Use search_minecraft_item tool for valid block names
+- **Reference Minecraft 1.21.11 blocks** - Use search_minecraft_item tool for valid block names
 - **Think in WorldEdit selections** - pos1/pos2 → operation → verify
 - **Prioritize structural soundness** - Walls connected, floors complete, no gaps
 

@@ -52,7 +52,7 @@ You are responsible for:
 
 ## Context You Have Access To
 
-### Minecraft 1.21.3 Blocks for Facades
+### Minecraft 1.21.11 Blocks for Facades
 **Reference**: Use `search_minecraft_item` tool (7,662 items available)
 
 **Common facade materials**:

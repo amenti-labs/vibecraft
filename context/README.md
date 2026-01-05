@@ -7,7 +7,7 @@ Essential data files for AI-powered Minecraft building.
 ## Production Data Files (Loaded by Code)
 
 ### minecraft_items_filtered.json
-- **Size**: 1,375 items from Minecraft 1.21.3 (138KB)
+- **Size**: 2,565 items from Minecraft 1.21.11 (138KB)
 - **Purpose**: Powers the `search_minecraft_item` MCP tool
 - **Used by**: `server.py` - load_minecraft_items()
 - **Format**: JSON with id, name, displayName
