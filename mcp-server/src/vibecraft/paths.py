@@ -52,6 +52,6 @@ def get_schema_file(filename: str) -> Path:
         >>> get_schema_file("modern_villa_1.schem")
         Path('/Users/.../vibecraft/schemas/modern_villa_1.schem')
     """
-    if not filename.endswith('.schem'):
-        filename += '.schem'
+    if not filename.endswith(".schem"):
+        filename += ".schem"
     return SCHEMAS_DIR / filename

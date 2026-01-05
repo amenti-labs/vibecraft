@@ -147,9 +147,7 @@ def validate_coordinates_in_bounds(
         ValidationResult indicating if coordinates are within bounds
     """
     # If no bounds are set, skip validation
-    if all(
-        bound is None for bound in [min_x, max_x, min_y, max_y, min_z, max_z]
-    ):
+    if all(bound is None for bound in [min_x, max_x, min_y, max_y, min_z, max_z]):
         return ValidationResult(is_valid=True, sanitized_command=command)
 
     coords = extract_coordinates(command)

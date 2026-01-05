@@ -33,7 +33,6 @@ from .tools import TOOL_REGISTRY
 logger = logging.getLogger("vibecraft")
 
 
-
 def setup_logging() -> Path:
     """
     Configure logging to both console and file.
@@ -53,12 +52,13 @@ def setup_logging() -> Path:
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(),  # Console output (for when run manually)
-            logging.FileHandler(log_file)  # File output (always available)
-        ]
+            logging.FileHandler(log_file),  # File output (always available)
+        ],
     )
 
     logger.info(f"Logging to file: {log_file}")
     return log_file
+
 
 # Import Minecraft items data from loader module
 
@@ -116,80 +116,106 @@ def format_terrain_analysis(result: Dict[str, Any]) -> str:
     output.append("🗺️ **Terrain Analysis Report**\n")
 
     # Summary first (natural language)
-    if 'summary' in result:
-        output.append(result['summary'])
+    if "summary" in result:
+        output.append(result["summary"])
         output.append("\n---\n")
 
     # Region information
-    region = result.get('region', {})
+    region = result.get("region", {})
     output.append("**Region Details:**")
-    output.append(f"- Coordinates: ({region['min'][0]}, {region['min'][1]}, {region['min'][2]}) to ({region['max'][0]}, {region['max'][1]}, {region['max'][2]})")
-    output.append(f"- Dimensions: {region['dimensions'][0]}×{region['dimensions'][1]}×{region['dimensions'][2]} blocks (W×H×D)")
+    output.append(
+        f"- Coordinates: ({region['min'][0]}, {region['min'][1]}, {region['min'][2]}) to ({region['max'][0]}, {region['max'][1]}, {region['max'][2]})"
+    )
+    output.append(
+        f"- Dimensions: {region['dimensions'][0]}×{region['dimensions'][1]}×{region['dimensions'][2]} blocks (W×H×D)"
+    )
     output.append(f"- Total volume: {region.get('total_blocks', 0):,} blocks")
-    output.append(f"- Samples collected: {region.get('samples_taken', 0):,} (resolution: {region.get('resolution', 1)})")
+    output.append(
+        f"- Samples collected: {region.get('samples_taken', 0):,} (resolution: {region.get('resolution', 1)})"
+    )
     output.append("")
 
     # Elevation statistics
-    elevation = result.get('elevation', {})
-    if elevation and 'error' not in elevation:
+    elevation = result.get("elevation", {})
+    if elevation and "error" not in elevation:
         output.append("**Elevation Analysis:**")
         output.append(f"- Terrain type: {elevation.get('terrain_type', 'Unknown')}")
-        output.append(f"- Height range: Y={elevation.get('min_y')} to Y={elevation.get('max_y')} ({elevation.get('range')} blocks)")
+        output.append(
+            f"- Height range: Y={elevation.get('min_y')} to Y={elevation.get('max_y')} ({elevation.get('range')} blocks)"
+        )
         output.append(f"- Average height: Y={elevation.get('avg_y')}")
         output.append(f"- Variation (std dev): {elevation.get('std_dev')} blocks")
         output.append(f"- Slope index: {elevation.get('slope_index')}")
         output.append("")
 
     # Block composition
-    composition = result.get('composition', {})
+    composition = result.get("composition", {})
     if composition:
         output.append("**Block Composition:**")
         output.append(f"- Unique block types: {composition.get('unique_blocks', 0)}")
 
-        top_blocks = composition.get('top_blocks', [])
+        top_blocks = composition.get("top_blocks", [])
         if top_blocks:
             output.append("- Top 5 blocks:")
             for block_info in top_blocks[:5]:
-                output.append(f"  - {block_info['block']}: {block_info['count']} ({block_info['percentage']}%)")
+                output.append(
+                    f"  - {block_info['block']}: {block_info['count']} ({block_info['percentage']}%)"
+                )
 
-        liquids = composition.get('liquids', {})
-        if liquids.get('count', 0) > 0:
+        liquids = composition.get("liquids", {})
+        if liquids.get("count", 0) > 0:
             output.append(f"- Liquids: {liquids['count']} blocks ({liquids['percentage']}%)")
 
-        vegetation = composition.get('vegetation', {})
-        if vegetation.get('count', 0) > 0:
-            output.append(f"- Vegetation: {vegetation['count']} blocks ({vegetation['percentage']}%)")
+        vegetation = composition.get("vegetation", {})
+        if vegetation.get("count", 0) > 0:
+            output.append(
+                f"- Vegetation: {vegetation['count']} blocks ({vegetation['percentage']}%)"
+            )
 
-        cavities = composition.get('air_cavities', {})
-        if cavities.get('count', 0) > 0:
-            output.append(f"- Air cavities (caves): {cavities['count']} blocks ({cavities['percentage']}%)")
+        cavities = composition.get("air_cavities", {})
+        if cavities.get("count", 0) > 0:
+            output.append(
+                f"- Air cavities (caves): {cavities['count']} blocks ({cavities['percentage']}%)"
+            )
 
         output.append("")
 
     # Biomes
-    biomes = result.get('biomes', {})
-    if biomes.get('detected'):
+    biomes = result.get("biomes", {})
+    if biomes.get("detected"):
         output.append("**Biome Distribution:**")
-        biome_list = biomes.get('biomes', [])
+        biome_list = biomes.get("biomes", [])
         for biome_info in biome_list:
-            output.append(f"- {biome_info['biome']}: {biome_info['count']} samples ({biome_info['percentage']}%)")
+            output.append(
+                f"- {biome_info['biome']}: {biome_info['count']} samples ({biome_info['percentage']}%)"
+            )
         output.append("")
-    elif not biomes.get('detected'):
-        output.append("**Biomes:** Detection not available (use WorldEdit //biomeinfo for biome data)")
+    elif not biomes.get("detected"):
+        output.append(
+            "**Biomes:** Detection not available (use WorldEdit //biomeinfo for biome data)"
+        )
         output.append("")
 
     # Hazards
-    hazards = result.get('hazards', [])
+    hazards = result.get("hazards", [])
     if hazards:
         output.append("⚠️ **Hazards Detected:**")
         for hazard in hazards:
-            severity_icon = "🔴" if hazard.get('severity') == 'high' else "🟡" if hazard.get('severity') == 'medium' else "🟢"
-            output.append(f"{severity_icon} **{hazard['type']}** ({hazard.get('severity', 'unknown')} severity)")
-            if 'count' in hazard:
-                output.append(f"   - Affected blocks: {hazard['count']} ({hazard.get('percentage', 0)}%)")
-            if 'details' in hazard:
+            severity_icon = (
+                "🔴"
+                if hazard.get("severity") == "high"
+                else "🟡" if hazard.get("severity") == "medium" else "🟢"
+            )
+            output.append(
+                f"{severity_icon} **{hazard['type']}** ({hazard.get('severity', 'unknown')} severity)"
+            )
+            if "count" in hazard:
+                output.append(
+                    f"   - Affected blocks: {hazard['count']} ({hazard.get('percentage', 0)}%)"
+                )
+            if "details" in hazard:
                 output.append(f"   - Details: {hazard['details']}")
-            if 'recommendation' in hazard:
+            if "recommendation" in hazard:
                 output.append(f"   - 💡 {hazard['recommendation']}")
         output.append("")
     else:
@@ -197,14 +223,20 @@ def format_terrain_analysis(result: Dict[str, Any]) -> str:
         output.append("")
 
     # Opportunities
-    opportunities = result.get('opportunities', [])
+    opportunities = result.get("opportunities", [])
     if opportunities:
         output.append("🌟 **Building Opportunities:**")
         for opp in opportunities:
-            quality_icon = "⭐⭐⭐" if opp.get('quality') == 'excellent' else "⭐⭐" if opp.get('quality') == 'good' else "⭐"
-            output.append(f"{quality_icon} **{opp['type']}** ({opp.get('quality', 'fair')} quality)")
+            quality_icon = (
+                "⭐⭐⭐"
+                if opp.get("quality") == "excellent"
+                else "⭐⭐" if opp.get("quality") == "good" else "⭐"
+            )
+            output.append(
+                f"{quality_icon} **{opp['type']}** ({opp.get('quality', 'fair')} quality)"
+            )
             output.append(f"   - {opp.get('description', '')}")
-            if 'use_cases' in opp:
+            if "use_cases" in opp:
                 output.append(f"   - 💡 Ideal for: {opp['use_cases']}")
         output.append("")
 
@@ -212,7 +244,7 @@ def format_terrain_analysis(result: Dict[str, Any]) -> str:
     output.append("---")
     output.append("💾 **Full JSON data available in result object for programmatic use**")
 
-    return '\n'.join(output)
+    return "\n".join(output)
 
 
 @app.list_resources()
@@ -280,6 +312,7 @@ async def read_resource(uri: str) -> str:
 async def list_tools() -> list[Tool]:
     """List all available tools for AI to use"""
     from .tool_schemas import get_tool_schemas
+
     return get_tool_schemas()
 
 
@@ -290,13 +323,12 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
     try:
         # Look up tool handler in registry
         handler = TOOL_REGISTRY.get(name)
-        
+
         if handler is None:
             return [TextContent(type="text", text=f"❌ Unknown tool: {name}")]
-        
+
         # Call handler with standard parameters
         return await handler(arguments, rcon, config, logger)
-
 
     except Exception as e:
         logger.error(f"Error in tool {name}: {str(e)}", exc_info=True)
@@ -318,7 +350,9 @@ async def main() -> None:
     logger.info("=" * 60)
     logger.info(f"RCON Host: {config.rcon_host}:{config.rcon_port}")
     logger.info(f"Safety Checks: {'Enabled' if config.enable_safety_checks else 'Disabled'}")
-    logger.info(f"Dangerous Commands: {'Allowed' if config.allow_dangerous_commands else 'Blocked'}")
+    logger.info(
+        f"Dangerous Commands: {'Allowed' if config.allow_dangerous_commands else 'Blocked'}"
+    )
 
     # Initialize RCON manager
     rcon = RCONManager(config)
@@ -337,7 +371,9 @@ async def main() -> None:
                 logger.warning("⚠️ Could not detect WorldEdit version")
     else:
         logger.warning("⚠️ RCON connection test failed. Server may not be running.")
-        logger.warning("   The MCP server will start anyway, but commands will fail until connection is established.")
+        logger.warning(
+            "   The MCP server will start anyway, but commands will fail until connection is established."
+        )
 
     logger.info("=" * 60)
     logger.info("🚀 VibeCraft MCP Server Ready!")

@@ -72,11 +72,15 @@ class PatternPlacer:
                     x, y_rot, z = local_x, y, local_z
                     if rotation:
                         x, y_rot, z = FurniturePlacer.rotate_coordinates(
-                            x, y, z, rotation, {
+                            x,
+                            y,
+                            z,
+                            rotation,
+                            {
                                 "width": width,
                                 "height": bounds.get("height", y + 1),
                                 "depth": depth,
-                            }
+                            },
                         )
 
                     abs_x = origin_x + x

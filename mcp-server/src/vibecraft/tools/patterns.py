@@ -15,10 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 async def handle_building_pattern_lookup(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance: logging.Logger
+    arguments: Dict[str, Any], rcon, config, logger_instance: logging.Logger
 ) -> List[TextContent]:
     """
     Handle building_pattern_lookup tool.
@@ -28,7 +25,7 @@ async def handle_building_pattern_lookup(
     from ..server import load_structured_patterns
 
     # Load structured patterns for structure check
-    structured_patterns = {p.get('id'): p for p in load_structured_patterns() if p.get('id')}
+    structured_patterns = {p.get("id"): p for p in load_structured_patterns() if p.get("id")}
 
     def has_structure(pattern_id: str) -> bool:
         """Check if pattern has structured placement data."""
@@ -36,21 +33,18 @@ async def handle_building_pattern_lookup(
 
     # Create handler with building-specific parameters
     handler = PatternLookupHandler(
-        patterns_file=CONTEXT_DIR / 'building_patterns_complete.json',
+        patterns_file=CONTEXT_DIR / "building_patterns_complete.json",
         emoji_prefix="🏗️",
         category_name="Building",
         logger_instance=logger_instance,
-        has_structure_check=has_structure
+        has_structure_check=has_structure,
     )
 
     return handler.handle(arguments)
 
 
 async def handle_place_building_pattern(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance: logging.Logger
+    arguments: Dict[str, Any], rcon, config, logger_instance: logging.Logger
 ) -> List[TextContent]:
     """
     Handle place_building_pattern tool.
@@ -68,22 +62,44 @@ async def handle_place_building_pattern(
     facing = arguments.get("facing")
     preview_only = arguments.get("preview_only", False)
 
-    missing = [field for field in ("pattern_id", "origin_x", "origin_y", "origin_z") if arguments.get(field) is None]
+    missing = [
+        field
+        for field in ("pattern_id", "origin_x", "origin_y", "origin_z")
+        if arguments.get(field) is None
+    ]
     if missing:
-        return [TextContent(type="text", text=f"❌ Missing required field(s): {', '.join(missing)}")]
+        return [
+            TextContent(type="text", text=f"❌ Missing required field(s): {', '.join(missing)}")
+        ]
 
     if facing:
         facing = facing.lower()
         if facing not in FurniturePlacer.ROTATIONS:
             valid = ", ".join(FurniturePlacer.ROTATIONS.keys())
-            return [TextContent(type="text", text=f"❌ Invalid facing '{facing}'. Valid options: {valid}")]
+            return [
+                TextContent(
+                    type="text", text=f"❌ Invalid facing '{facing}'. Valid options: {valid}"
+                )
+            ]
 
-    structured = next((p for p in load_structured_patterns() if p.get('id') == pattern_id), None)
+    structured = next((p for p in load_structured_patterns() if p.get("id") == pattern_id), None)
     if not structured:
-        return [TextContent(type="text", text=f"❌ Pattern '{pattern_id}' does not have structured placement data yet.")]
+        return [
+            TextContent(
+                type="text",
+                text=f"❌ Pattern '{pattern_id}' does not have structured placement data yet.",
+            )
+        ]
 
-    metadata_pattern = next((p for p in _load_json_list(CONTEXT_DIR / 'building_patterns_complete.json') if p.get('id') == pattern_id), None)
-    pattern_name = structured.get('name') or (metadata_pattern or {}).get('name') or pattern_id
+    metadata_pattern = next(
+        (
+            p
+            for p in _load_json_list(CONTEXT_DIR / "building_patterns_complete.json")
+            if p.get("id") == pattern_id
+        ),
+        None,
+    )
+    pattern_name = structured.get("name") or (metadata_pattern or {}).get("name") or pattern_id
 
     try:
         commands = PatternPlacer.get_placement_commands(
@@ -98,10 +114,10 @@ async def handle_place_building_pattern(
         return [TextContent(type="text", text=f"❌ Failed to generate commands: {exc}")]
 
     summary = PatternPlacer.get_command_summary(commands)
-    final_facing = facing or structured.get('origin', {}).get('facing', 'north')
+    final_facing = facing or structured.get("origin", {}).get("facing", "north")
 
     if preview_only:
-        command_block = '\n'.join(commands)
+        command_block = "\n".join(commands)
         output = [
             "🏗️ **Building Pattern Preview**",
             f"Pattern: {pattern_name} (`{pattern_id}`)",
@@ -115,13 +131,13 @@ async def handle_place_building_pattern(
             "```",
             "Set `preview_only` to false to execute these commands.",
         ]
-        return [TextContent(type="text", text='\n'.join(output))]
+        return [TextContent(type="text", text="\n".join(output))]
 
     executed_commands: List[str] = []
     try:
         for command in commands:
             stripped = command.strip()
-            if not stripped or stripped.startswith('#'):
+            if not stripped or stripped.startswith("#"):
                 continue
             executed_commands.append(stripped)
             rcon.execute_command(stripped)
@@ -137,15 +153,17 @@ async def handle_place_building_pattern(
         ]
         for cmd in executed_commands[-10:]:
             failure_output.append(f"- `{cmd}`")
-        failure_output.extend([
-            "",
-            f"Error: {exc}",
-            "Use `//undo` to revert the changes if necessary.",
-        ])
-        return [TextContent(type="text", text='\n'.join(failure_output))]
+        failure_output.extend(
+            [
+                "",
+                f"Error: {exc}",
+                "Use `//undo` to revert the changes if necessary.",
+            ]
+        )
+        return [TextContent(type="text", text="\n".join(failure_output))]
 
-    palette = structured.get('palette', {})
-    materials = (metadata_pattern or {}).get('materials', {})
+    palette = structured.get("palette", {})
+    materials = (metadata_pattern or {}).get("materials", {})
 
     palette_lines = []
     if palette:
@@ -191,14 +209,11 @@ async def handle_place_building_pattern(
     success_lines.append("")
     success_lines.append("Undo tip: run `//undo` if you need to revert this placement.")
 
-    return [TextContent(type="text", text='\n'.join(success_lines))]
+    return [TextContent(type="text", text="\n".join(success_lines))]
 
 
 async def handle_terrain_pattern_lookup(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance: logging.Logger
+    arguments: Dict[str, Any], rcon, config, logger_instance: logging.Logger
 ) -> List[TextContent]:
     """
     Handle terrain_pattern_lookup tool.
@@ -207,11 +222,11 @@ async def handle_terrain_pattern_lookup(
     """
     # Create handler with terrain-specific parameters
     handler = PatternLookupHandler(
-        patterns_file=CONTEXT_DIR / 'terrain_patterns_complete.json',
+        patterns_file=CONTEXT_DIR / "terrain_patterns_complete.json",
         emoji_prefix="🌲",
         category_name="Terrain",
         logger_instance=logger_instance,
-        has_structure_check=None  # Terrain patterns don't have structured placement
+        has_structure_check=None,  # Terrain patterns don't have structured placement
     )
 
     return handler.handle(arguments)

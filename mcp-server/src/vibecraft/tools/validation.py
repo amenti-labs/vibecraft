@@ -12,10 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 async def handle_validate_pattern(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance: logging.Logger
+    arguments: Dict[str, Any], rcon, config, logger_instance: logging.Logger
 ) -> List[TextContent]:
     """
     Handle validate_pattern tool.
@@ -73,10 +70,7 @@ async def handle_validate_pattern(
 
 
 async def handle_validate_mask(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance: logging.Logger
+    arguments: Dict[str, Any], rcon, config, logger_instance: logging.Logger
 ) -> List[TextContent]:
     """
     Handle validate_mask tool.
@@ -137,10 +131,7 @@ async def handle_validate_mask(
 
 
 async def handle_check_symmetry(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance: logging.Logger
+    arguments: Dict[str, Any], rcon, config, logger_instance: logging.Logger
 ) -> List[TextContent]:
     """
     Handle check_symmetry tool.
@@ -164,7 +155,7 @@ async def handle_check_symmetry(
         checker = SymmetryChecker(rcon)
         result = checker.check_symmetry(x1, y1, z1, x2, y2, z2, axis, tolerance, resolution)
 
-        if 'error' in result:
+        if "error" in result:
             return [TextContent(type="text", text=f"❌ Error: {result['error']}")]
 
         # Format output
@@ -178,14 +169,14 @@ async def handle_check_symmetry(
 
         output += f"**Summary:** {result['summary']}\n\n"
 
-        if result['differences']:
+        if result["differences"]:
             output += f"**Asymmetric Blocks** (showing first {min(len(result['differences']), 50)} of {result['total_differences']}):\n"
-            for i, diff in enumerate(result['differences'][:10], 1):
+            for i, diff in enumerate(result["differences"][:10], 1):
                 output += f"  {i}. ({diff['position1'][0]},{diff['position1'][1]},{diff['position1'][2]}): {diff['block1']} ≠ "
                 output += f"({diff['position2'][0]},{diff['position2'][1]},{diff['position2'][2]}): {diff['block2']}\n"
                 output += f"     → {diff['recommendation']}\n"
 
-            if len(result['differences']) > 10:
+            if len(result["differences"]) > 10:
                 output += f"  ... and {len(result['differences']) - 10} more differences\n"
         else:
             output += "✅ **Perfect Symmetry!** No asymmetries detected.\n"
@@ -205,8 +196,8 @@ async def handle_check_symmetry(
                 },
                 "axis": axis,
                 "resolution": resolution,
-                "symmetry_score": result['symmetry_score'],
-                "differences": result['asymmetric_blocks'],
+                "symmetry_score": result["symmetry_score"],
+                "differences": result["asymmetric_blocks"],
             },
         )
 
@@ -218,10 +209,7 @@ async def handle_check_symmetry(
 
 
 async def handle_analyze_lighting(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance: logging.Logger
+    arguments: Dict[str, Any], rcon, config, logger_instance: logging.Logger
 ) -> List[TextContent]:
     """
     Handle analyze_lighting tool.
@@ -243,7 +231,7 @@ async def handle_analyze_lighting(
         analyzer = LightingAnalyzer(rcon)
         result = analyzer.analyze_lighting(x1, y1, z1, x2, y2, z2, resolution)
 
-        if 'error' in result:
+        if "error" in result:
             return [TextContent(type="text", text=f"❌ Error: {result['error']}")]
 
         # Format output
@@ -253,26 +241,30 @@ async def handle_analyze_lighting(
         output += f"**Dark Spots:** {result['dark_spots_count']:,}\n"
         output += f"**Mob Spawn Risk:** {result['mob_spawn_risk']}\n\n"
 
-        dist = result['light_distribution']
+        dist = result["light_distribution"]
         output += "**Light Distribution:**\n"
-        output += f"  - Well-lit (≥12): {dist['well_lit']:,} blocks ({dist['well_lit_percentage']}%)\n"
+        output += (
+            f"  - Well-lit (≥12): {dist['well_lit']:,} blocks ({dist['well_lit_percentage']}%)\n"
+        )
         output += f"  - Dim (8-11): {dist['dim']:,} blocks ({dist['dim_percentage']}%)\n"
         output += f"  - Dark (<8): {dist['dark']:,} blocks ({dist['dark_percentage']}%)\n\n"
 
         output += f"**Summary:** {result['summary']}\n\n"
 
-        if result['optimal_placements']:
+        if result["optimal_placements"]:
             output += f"**Recommended Light Placements** ({len(result['optimal_placements'])} suggested):\n"
-            for i, placement in enumerate(result['optimal_placements'][:15], 1):
-                pos = placement['position']
+            for i, placement in enumerate(result["optimal_placements"][:15], 1):
+                pos = placement["position"]
                 output += f"  {i}. {placement['suggested_source'].capitalize()} at ({pos[0]},{pos[1]},{pos[2]}) - {placement['reason']}\n"
 
-            if len(result['optimal_placements']) > 15:
+            if len(result["optimal_placements"]) > 15:
                 output += f"  ... and {len(result['optimal_placements']) - 15} more placements\n"
         else:
             output += "✅ **Lighting adequate!** No additional light sources needed.\n"
 
-        logger_instance.info(f"Lighting analysis complete: {result['average_light_level']} avg light, {result['dark_spots_count']} dark spots")
+        logger_instance.info(
+            f"Lighting analysis complete: {result['average_light_level']} avg light, {result['dark_spots_count']} dark spots"
+        )
 
         workflow.record_validation(
             "lighting_analysis",
@@ -286,8 +278,8 @@ async def handle_analyze_lighting(
                     "z2": z2,
                 },
                 "resolution": resolution,
-                "average_light": result['average_light_level'],
-                "dark_spots": result['dark_spots_count'],
+                "average_light": result["average_light_level"],
+                "dark_spots": result["dark_spots_count"],
             },
         )
 
@@ -299,10 +291,7 @@ async def handle_analyze_lighting(
 
 
 async def handle_validate_structure(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance: logging.Logger
+    arguments: Dict[str, Any], rcon, config, logger_instance: logging.Logger
 ) -> List[TextContent]:
     """
     Handle validate_structure tool.
@@ -324,7 +313,7 @@ async def handle_validate_structure(
         validator = StructureValidator(rcon)
         result = validator.validate_structure(x1, y1, z1, x2, y2, z2, resolution)
 
-        if 'error' in result:
+        if "error" in result:
             return [TextContent(type="text", text=f"❌ Error: {result['error']}")]
 
         # Format output
@@ -335,35 +324,37 @@ async def handle_validate_structure(
 
         output += f"**Summary:** {result['summary']}\n\n"
 
-        if result['gravity_violations']:
+        if result["gravity_violations"]:
             output += f"**Gravity Violations** ({len(result['gravity_violations'])} found):\n"
-            for i, violation in enumerate(result['gravity_violations'][:10], 1):
-                pos = violation['position']
+            for i, violation in enumerate(result["gravity_violations"][:10], 1):
+                pos = violation["position"]
                 output += f"  {i}. {violation['block']} at ({pos[0]},{pos[1]},{pos[2]})\n"
                 output += f"     ⚠️ {violation['severity']}: {violation['issue']}\n"
                 output += f"     → {violation['recommendation']}\n"
 
-            if len(result['gravity_violations']) > 10:
+            if len(result["gravity_violations"]) > 10:
                 output += f"  ... and {len(result['gravity_violations']) - 10} more violations\n"
             output += "\n"
 
-        if result['floating_blocks']:
+        if result["floating_blocks"]:
             output += f"**Floating Blocks** ({result['total_floating']} found, showing first 10):\n"
-            for i, floating in enumerate(result['floating_blocks'][:10], 1):
-                pos = floating['position']
+            for i, floating in enumerate(result["floating_blocks"][:10], 1):
+                pos = floating["position"]
                 output += f"  {i}. {floating['block']} at ({pos[0]},{pos[1]},{pos[2]})\n"
                 output += f"     ⚠️ {floating['severity']}: {floating['issue']}\n"
                 output += f"     → {floating['recommendation']}\n"
 
-            if result['total_floating'] > 10:
+            if result["total_floating"] > 10:
                 output += f"  ... and {result['total_floating'] - 10} more floating blocks\n"
             output += "\n"
 
-        if result['structure_valid']:
+        if result["structure_valid"]:
             output += "✅ **Structure passed all validation checks!**\n"
             output += "No physics violations or floating blocks detected.\n"
 
-        logger_instance.info(f"Structure validation complete: {result['issues_found']} issues found")
+        logger_instance.info(
+            f"Structure validation complete: {result['issues_found']} issues found"
+        )
 
         workflow.record_validation(
             "structure_validation",
@@ -377,8 +368,8 @@ async def handle_validate_structure(
                     "z2": z2,
                 },
                 "resolution": resolution,
-                "issues_found": result['issues_found'],
-                "valid": result['structure_valid'],
+                "issues_found": result["issues_found"],
+                "valid": result["structure_valid"],
             },
         )
 

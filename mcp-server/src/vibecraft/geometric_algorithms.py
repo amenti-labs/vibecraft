@@ -8,6 +8,7 @@ architectural spacing (windows, doors). Uses Bresenham's algorithms for pixel-pe
 import math
 from typing import List, Tuple, Dict, Any, Optional
 
+
 class CircleCalculator:
     """
     Generate circles, ellipses, spheres, domes, and arches using mathematical algorithms.
@@ -15,7 +16,9 @@ class CircleCalculator:
     """
 
     @staticmethod
-    def calculate_circle(radius: int, filled: bool = False, center: Tuple[int, int] = (0, 0)) -> Dict[str, Any]:
+    def calculate_circle(
+        radius: int, filled: bool = False, center: Tuple[int, int] = (0, 0)
+    ) -> Dict[str, Any]:
         """
         Calculate a 2D circle using Bresenham's circle algorithm.
 
@@ -45,10 +48,14 @@ class CircleCalculator:
             def add_circle_points(cx, cz, x, z):
                 """Add 8-way symmetric points"""
                 points = [
-                    (cx + x, cz + z), (cx - x, cz + z),
-                    (cx + x, cz - z), (cx - x, cz - z),
-                    (cx + z, cz + x), (cx - z, cz + x),
-                    (cx + z, cz - x), (cx - z, cz - x)
+                    (cx + x, cz + z),
+                    (cx - x, cz + z),
+                    (cx + x, cz - z),
+                    (cx - x, cz - z),
+                    (cx + z, cz + x),
+                    (cx - z, cz + x),
+                    (cx + z, cz - x),
+                    (cx - z, cz - x),
                 ]
                 return points
 
@@ -74,11 +81,13 @@ class CircleCalculator:
             "blocks_count": len(coords_list),
             "coordinates": coords_list,
             "ascii_preview": ascii_preview,
-            "usage_tip": f"Use these coordinates to place blocks in a perfect circle (radius {radius})"
+            "usage_tip": f"Use these coordinates to place blocks in a perfect circle (radius {radius})",
         }
 
     @staticmethod
-    def calculate_sphere(radius: int, hollow: bool = True, center: Tuple[int, int, int] = (0, 0, 0)) -> Dict[str, Any]:
+    def calculate_sphere(
+        radius: int, hollow: bool = True, center: Tuple[int, int, int] = (0, 0, 0)
+    ) -> Dict[str, Any]:
         """
         Calculate a 3D sphere.
 
@@ -117,11 +126,13 @@ class CircleCalculator:
             "blocks_count": len(coords_list),
             "coordinates": coords_list,
             "worldedit_command": f"//sphere {'h' if hollow else ''} <block> {radius}",
-            "usage_tip": "Teleport to center then use WorldEdit or place blocks at coordinates"
+            "usage_tip": "Teleport to center then use WorldEdit or place blocks at coordinates",
         }
 
     @staticmethod
-    def calculate_dome(radius: int, style: str = "hemisphere", center: Tuple[int, int, int] = (0, 0, 0)) -> Dict[str, Any]:
+    def calculate_dome(
+        radius: int, style: str = "hemisphere", center: Tuple[int, int, int] = (0, 0, 0)
+    ) -> Dict[str, Any]:
         """
         Calculate a dome (half-sphere or partial sphere).
 
@@ -164,11 +175,13 @@ class CircleCalculator:
             "radius": radius,
             "blocks_count": len(coords_list),
             "coordinates": coords_list,
-            "usage_tip": f"Perfect for {style} dome structures (cathedrals, temples, rotundas)"
+            "usage_tip": f"Perfect for {style} dome structures (cathedrals, temples, rotundas)",
         }
 
     @staticmethod
-    def calculate_ellipse(width: int, height: int, filled: bool = False, center: Tuple[int, int] = (0, 0)) -> Dict[str, Any]:
+    def calculate_ellipse(
+        width: int, height: int, filled: bool = False, center: Tuple[int, int] = (0, 0)
+    ) -> Dict[str, Any]:
         """
         Calculate a 2D ellipse.
 
@@ -210,11 +223,13 @@ class CircleCalculator:
             "filled": filled,
             "blocks_count": len(coords_list),
             "coordinates": coords_list,
-            "usage_tip": f"Ellipse {width}×{height} - useful for oval rooms, ponds, decorative features"
+            "usage_tip": f"Ellipse {width}×{height} - useful for oval rooms, ponds, decorative features",
         }
 
     @staticmethod
-    def calculate_arch(width: int, height: int, depth: int = 1, center: Tuple[int, int, int] = (0, 0, 0)) -> Dict[str, Any]:
+    def calculate_arch(
+        width: int, height: int, depth: int = 1, center: Tuple[int, int, int] = (0, 0, 0)
+    ) -> Dict[str, Any]:
         """
         Calculate an arch shape (semi-circular or pointed).
 
@@ -258,18 +273,20 @@ class CircleCalculator:
             "depth": depth,
             "blocks_count": len(coords_list),
             "coordinates": coords_list,
-            "usage_tip": f"Arch {width}×{height} - perfect for doorways, bridges, windows"
+            "usage_tip": f"Arch {width}×{height} - perfect for doorways, bridges, windows",
         }
 
     @staticmethod
-    def _generate_ascii_preview(coordinates: List[Tuple[int, int]], radius: int, center: Tuple[int, int]) -> str:
+    def _generate_ascii_preview(
+        coordinates: List[Tuple[int, int]], radius: int, center: Tuple[int, int]
+    ) -> str:
         """Generate ASCII art preview of 2D shape"""
         if not coordinates:
             return ""
 
         # Create grid
         size = radius * 2 + 3
-        grid = [[' ' for _ in range(size)] for _ in range(size)]
+        grid = [[" " for _ in range(size)] for _ in range(size)]
 
         cx, cz = center
         offset_x = radius + 1 - cx
@@ -279,15 +296,15 @@ class CircleCalculator:
             grid_x = x + offset_x
             grid_z = z + offset_z
             if 0 <= grid_x < size and 0 <= grid_z < size:
-                grid[grid_z][grid_x] = '█'
+                grid[grid_z][grid_x] = "█"
 
         # Add center marker
         center_x = cx + offset_x
         center_z = cz + offset_z
         if 0 <= center_x < size and 0 <= center_z < size:
-            grid[center_z][center_x] = '+'
+            grid[center_z][center_x] = "+"
 
-        return '\n'.join([''.join(row) for row in grid])
+        return "\n".join(["".join(row) for row in grid])
 
 
 class WindowPlacementCalculator:
@@ -301,7 +318,7 @@ class WindowPlacementCalculator:
         wall_length: int,
         window_width: int,
         spacing_style: str = "even",
-        window_count: Optional[int] = None
+        window_count: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Calculate optimal window placement along a wall.
@@ -345,13 +362,15 @@ class WindowPlacementCalculator:
 
         windows = []
         for i, pos in enumerate(positions):
-            windows.append({
-                "index": i + 1,
-                "start_position": pos,
-                "end_position": pos + window_width - 1,
-                "center": pos + window_width // 2,
-                "note": f"Window {i + 1} of {len(positions)}"
-            })
+            windows.append(
+                {
+                    "index": i + 1,
+                    "start_position": pos,
+                    "end_position": pos + window_width - 1,
+                    "center": pos + window_width // 2,
+                    "note": f"Window {i + 1} of {len(positions)}",
+                }
+            )
 
         return {
             "wall_length": wall_length,
@@ -360,7 +379,7 @@ class WindowPlacementCalculator:
             "spacing_style": spacing_style,
             "windows": windows,
             "spacing_info": spacing_info,
-            "recommendation": WindowPlacementCalculator._get_style_recommendation(spacing_style)
+            "recommendation": WindowPlacementCalculator._get_style_recommendation(spacing_style),
         }
 
     @staticmethod
@@ -378,11 +397,13 @@ class WindowPlacementCalculator:
         return positions, {
             "gap_between_windows": int(gap_size),
             "edge_margins": int(gap_size),
-            "style_description": "Evenly distributed with equal spacing"
+            "style_description": "Evenly distributed with equal spacing",
         }
 
     @staticmethod
-    def _golden_ratio_spacing(wall_length: int, window_width: int, count: int) -> Tuple[List[int], Dict]:
+    def _golden_ratio_spacing(
+        wall_length: int, window_width: int, count: int
+    ) -> Tuple[List[int], Dict]:
         """Calculate spacing based on golden ratio (1.618)"""
         golden_ratio = 1.618
         positions = []
@@ -395,16 +416,18 @@ class WindowPlacementCalculator:
             # Distribute using golden ratio proportions
             segment_size = wall_length / (count + 1)
             for i in range(count):
-                pos = int(segment_size * (i + 1) * (1 + 1/golden_ratio)) - window_width // 2
+                pos = int(segment_size * (i + 1) * (1 + 1 / golden_ratio)) - window_width // 2
                 positions.append(pos)
 
         return positions, {
             "style_description": "Positioned using golden ratio (φ = 1.618) for aesthetic balance",
-            "artistic_note": "Creates visually pleasing, organic-looking arrangement"
+            "artistic_note": "Creates visually pleasing, organic-looking arrangement",
         }
 
     @staticmethod
-    def _symmetric_spacing(wall_length: int, window_width: int, count: int) -> Tuple[List[int], Dict]:
+    def _symmetric_spacing(
+        wall_length: int, window_width: int, count: int
+    ) -> Tuple[List[int], Dict]:
         """Calculate symmetric spacing around center"""
         positions = []
         center = wall_length // 2
@@ -428,11 +451,13 @@ class WindowPlacementCalculator:
         return positions, {
             "center_point": center,
             "style_description": "Symmetrically arranged around center axis",
-            "architectural_note": "Classic formal facade layout"
+            "architectural_note": "Classic formal facade layout",
         }
 
     @staticmethod
-    def _clustered_spacing(wall_length: int, window_width: int, count: int) -> Tuple[List[int], Dict]:
+    def _clustered_spacing(
+        wall_length: int, window_width: int, count: int
+    ) -> Tuple[List[int], Dict]:
         """Calculate clustered grouping (windows in pairs or triplets)"""
         positions = []
         cluster_size = 2 if count <= 4 else 3
@@ -461,7 +486,7 @@ class WindowPlacementCalculator:
             "cluster_size": cluster_size,
             "num_clusters": num_clusters,
             "style_description": f"Grouped in clusters of {cluster_size} for rhythmic pattern",
-            "architectural_note": "Modern/contemporary aesthetic"
+            "architectural_note": "Modern/contemporary aesthetic",
         }
 
     @staticmethod
@@ -471,16 +496,13 @@ class WindowPlacementCalculator:
             "even": "Best for: Modern buildings, simple facades, balanced appearance",
             "golden_ratio": "Best for: Artistic builds, museums, galleries, visually striking designs",
             "symmetric": "Best for: Castles, palaces, formal government buildings, classical architecture",
-            "clustered": "Best for: Contemporary designs, urban buildings, industrial aesthetics"
+            "clustered": "Best for: Contemporary designs, urban buildings, industrial aesthetics",
         }
         return recommendations.get(style, "Spacing calculated successfully")
 
     @staticmethod
     def calculate_door_position(
-        wall_length: int,
-        door_width: int = 2,
-        position: str = "center",
-        offset: int = 0
+        wall_length: int, door_width: int = 2, position: str = "center", offset: int = 0
     ) -> Dict[str, Any]:
         """
         Calculate optimal door placement.
@@ -512,5 +534,5 @@ class WindowPlacementCalculator:
             "door_center": door_start + door_width // 2,
             "clearance_left": door_start,
             "clearance_right": wall_length - (door_start + door_width),
-            "recommendation": f"Door positioned {position}, with {door_start} blocks clearance on left"
+            "recommendation": f"Door positioned {position}, with {door_start} blocks clearance on left",
         }

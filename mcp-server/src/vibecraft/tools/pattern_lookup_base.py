@@ -28,7 +28,7 @@ class PatternLookupHandler:
         emoji_prefix: str,
         category_name: str,
         logger_instance: logging.Logger,
-        has_structure_check: Optional[Callable[[str], bool]] = None
+        has_structure_check: Optional[Callable[[str], bool]] = None,
     ):
         """
         Initialize pattern lookup handler.
@@ -56,13 +56,14 @@ class PatternLookupHandler:
         """
         if not self.patterns_file.exists():
             self.logger.warning(f"Pattern file not found: {self.patterns_file}")
-            return [TextContent(
-                type="text",
-                text=f"❌ Error: {self.category_name} patterns file not found"
-            )]
+            return [
+                TextContent(
+                    type="text", text=f"❌ Error: {self.category_name} patterns file not found"
+                )
+            ]
 
         try:
-            with open(self.patterns_file, 'r') as f:
+            with open(self.patterns_file, "r") as f:
                 data = json.load(f)
 
                 # Handle both array format and object format
@@ -77,16 +78,20 @@ class PatternLookupHandler:
 
         except Exception as e:
             self.logger.warning(f"Could not load patterns: {str(e)}")
-            return [TextContent(
-                type="text",
-                text=f"❌ Error loading {self.category_name.lower()} patterns: {str(e)}"
-            )]
+            return [
+                TextContent(
+                    type="text",
+                    text=f"❌ Error loading {self.category_name.lower()} patterns: {str(e)}",
+                )
+            ]
 
         if not self.patterns:
-            return [TextContent(
-                type="text",
-                text=f"❌ Error: No {self.category_name.lower()} pattern metadata available."
-            )]
+            return [
+                TextContent(
+                    type="text",
+                    text=f"❌ Error: No {self.category_name.lower()} pattern metadata available.",
+                )
+            ]
 
         return []  # Success - no error
 
@@ -105,7 +110,7 @@ class PatternLookupHandler:
         for category, cat_patterns in sorted(by_category.items()):
             result_text += f"**{category.upper()}** ({len(cat_patterns)} patterns):\n"
             for pattern in sorted(cat_patterns, key=lambda p: p.get("id", "")):
-                pattern_id = pattern.get('id')
+                pattern_id = pattern.get("id")
                 structured_flag = ""
                 if self.has_structure_check and pattern_id:
                     if self.has_structure_check(pattern_id):
@@ -150,17 +155,21 @@ class PatternLookupHandler:
         result_text += "💡 Use action='search' with category='<name>' to find patterns."
 
         if self.has_structure_check:
-            result_text += "\n✅ Structured patterns can be placed automatically with place_building_pattern."
+            result_text += (
+                "\n✅ Structured patterns can be placed automatically with place_building_pattern."
+            )
 
         return [TextContent(type="text", text=result_text)]
 
     def action_subcategories(self, category: str) -> List[TextContent]:
         """List subcategories for a specific category."""
         if not category:
-            return [TextContent(
-                type="text",
-                text="❌ Error: 'category' parameter required for action='subcategories'"
-            )]
+            return [
+                TextContent(
+                    type="text",
+                    text="❌ Error: 'category' parameter required for action='subcategories'",
+                )
+            ]
 
         category = category.lower()
 
@@ -168,10 +177,12 @@ class PatternLookupHandler:
         cat_patterns = [p for p in self.patterns if p.get("category", "").lower() == category]
 
         if not cat_patterns:
-            return [TextContent(
-                type="text",
-                text=f"❌ No patterns found in category '{category}'. Use action='categories' to see available categories."
-            )]
+            return [
+                TextContent(
+                    type="text",
+                    text=f"❌ No patterns found in category '{category}'. Use action='categories' to see available categories.",
+                )
+            ]
 
         # Group by subcategory
         by_subcat = {}
@@ -211,7 +222,9 @@ class PatternLookupHandler:
         for tag, count in sorted_tags:
             result_text += f"- **{tag}** ({count} patterns)\n"
 
-        result_text += "\n💡 Use action='search' with tags=['<tag>'] to find patterns with specific tags."
+        result_text += (
+            "\n💡 Use action='search' with tags=['<tag>'] to find patterns with specific tags."
+        )
 
         return [TextContent(type="text", text=result_text)]
 
@@ -220,7 +233,7 @@ class PatternLookupHandler:
         query: str = "",
         category_filter: str = "",
         subcategory_filter: str = "",
-        tags_filter: List[str] = None
+        tags_filter: List[str] = None,
     ) -> List[TextContent]:
         """Search for patterns by query, category, subcategory, or tags."""
         if tags_filter is None:
@@ -246,7 +259,9 @@ class PatternLookupHandler:
                 desc_match = query in pattern.get("description", "").lower()
                 tags_match = any(query in tag.lower() for tag in pattern.get("tags", []))
 
-                matches = matches and (name_match or id_match or cat_match or subcat_match or desc_match or tags_match)
+                matches = matches and (
+                    name_match or id_match or cat_match or subcat_match or desc_match or tags_match
+                )
 
             if category_filter:
                 matches = matches and (category_filter in pattern.get("category", "").lower())
@@ -274,7 +289,11 @@ class PatternLookupHandler:
                     "difficulty": pattern.get("difficulty", "medium"),
                     "materials_count": sum(pattern.get("materials", {}).values()),
                     "layer_count": len(pattern.get("layers", [])),
-                    "description": pattern.get("description", "")[:150] + "..." if len(pattern.get("description", "")) > 150 else pattern.get("description", ""),
+                    "description": (
+                        pattern.get("description", "")[:150] + "..."
+                        if len(pattern.get("description", "")) > 150
+                        else pattern.get("description", "")
+                    ),
                 }
 
                 if self.has_structure_check and pattern_id:
@@ -293,38 +312,46 @@ class PatternLookupHandler:
             if tags_filter:
                 search_params.append(f"tags={tags_filter}")
 
-            return [TextContent(
-                type="text",
-                text=f"🔍 No {self.category_name.lower()} patterns found matching: {', '.join(search_params)}\n\nTry:\n- Broader search terms\n- Different category\n- Different subcategory\n- Fewer tag filters"
-            )]
+            return [
+                TextContent(
+                    type="text",
+                    text=f"🔍 No {self.category_name.lower()} patterns found matching: {', '.join(search_params)}\n\nTry:\n- Broader search terms\n- Different category\n- Different subcategory\n- Fewer tag filters",
+                )
+            ]
 
         # Format results
-        result_text = f"{self.emoji_prefix} Found {len(results)} {self.category_name.lower()} pattern(s):\n\n"
+        result_text = (
+            f"{self.emoji_prefix} Found {len(results)} {self.category_name.lower()} pattern(s):\n\n"
+        )
 
         for i, item in enumerate(results, 1):
             structured_flag = ""
-            if self.has_structure_check and item.get('has_structure'):
+            if self.has_structure_check and item.get("has_structure"):
                 structured_flag = " ✅"
 
             result_text += f"{i}. **{item['name']}** (ID: `{item['id']}`){structured_flag}\n"
             result_text += f"   - Category: {item['category']}"
-            if item.get('subcategory'):
+            if item.get("subcategory"):
                 result_text += f" > {item['subcategory']}"
             result_text += "\n"
             result_text += f"   - Size: {item['dimensions']} blocks (W×H×D)\n"
             result_text += f"   - Materials: {item['materials_count']} total blocks\n"
             result_text += f"   - Layers: {item['layer_count']} construction layers\n"
             result_text += f"   - Difficulty: {item['difficulty']}\n"
-            if item.get('tags'):
+            if item.get("tags"):
                 result_text += f"   - Tags: {', '.join(item['tags'])}\n"
-            if item.get('description'):
+            if item.get("description"):
                 result_text += f"   - Description: {item['description']}\n"
             result_text += "\n"
 
         if self.has_structure_check:
             result_text += "✅ indicates automatic placement data is available.\n"
 
-        tool_name = "building_pattern_lookup" if self.category_name == "Building" else "terrain_pattern_lookup"
+        tool_name = (
+            "building_pattern_lookup"
+            if self.category_name == "Building"
+            else "terrain_pattern_lookup"
+        )
         result_text += f"💡 To get full construction instructions, use: {tool_name} with action='get' and pattern_id='<id>'"
 
         if self.has_structure_check:
@@ -335,10 +362,12 @@ class PatternLookupHandler:
     def action_get(self, pattern_id: str) -> List[TextContent]:
         """Get specific pattern by ID."""
         if not pattern_id:
-            return [TextContent(
-                type="text",
-                text="❌ Error: 'pattern_id' parameter is required for action='get'"
-            )]
+            return [
+                TextContent(
+                    type="text",
+                    text="❌ Error: 'pattern_id' parameter is required for action='get'",
+                )
+            ]
 
         # Find pattern
         pattern = None
@@ -348,21 +377,27 @@ class PatternLookupHandler:
                 break
 
         if not pattern:
-            return [TextContent(
-                type="text",
-                text=f"❌ Error: Pattern with ID '{pattern_id}' not found.\n\nUse action='search' to find available patterns."
-            )]
+            return [
+                TextContent(
+                    type="text",
+                    text=f"❌ Error: Pattern with ID '{pattern_id}' not found.\n\nUse action='search' to find available patterns.",
+                )
+            ]
 
         # Format full pattern details
-        result_text = f"{self.emoji_prefix} **{pattern.get('name')}** (ID: `{pattern.get('id')}`)\n\n"
+        result_text = (
+            f"{self.emoji_prefix} **{pattern.get('name')}** (ID: `{pattern.get('id')}`)\n\n"
+        )
 
         # Basic info
         result_text += f"**Category:** {pattern.get('category')}"
-        if pattern.get('subcategory'):
+        if pattern.get("subcategory"):
             result_text += f" > {pattern.get('subcategory')}"
         result_text += "\n\n"
 
-        result_text += f"**Description:** {pattern.get('description', 'No description available.')}\n\n"
+        result_text += (
+            f"**Description:** {pattern.get('description', 'No description available.')}\n\n"
+        )
 
         # Full pattern data as JSON
         result_text += "**Full Pattern Data (JSON):**\n```json\n"
@@ -386,10 +421,7 @@ class PatternLookupHandler:
         action = arguments.get("action")
 
         if not action:
-            return [TextContent(
-                type="text",
-                text="❌ Error: 'action' parameter is required"
-            )]
+            return [TextContent(type="text", text="❌ Error: 'action' parameter is required")]
 
         # Load patterns
         error = self.load_patterns()
@@ -423,7 +455,9 @@ class PatternLookupHandler:
 
         else:
             valid_actions = "browse, categories, subcategories, tags, search, get"
-            return [TextContent(
-                type="text",
-                text=f"❌ Invalid action: '{action}'. Must be one of: {valid_actions}"
-            )]
+            return [
+                TextContent(
+                    type="text",
+                    text=f"❌ Invalid action: '{action}'. Must be one of: {valid_actions}",
+                )
+            ]

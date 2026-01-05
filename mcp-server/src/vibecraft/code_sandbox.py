@@ -25,39 +25,92 @@ from .exceptions import CodeSandboxError, SandboxTimeoutError
 # Dangerous attribute names that should never be accessed
 BLOCKED_ATTRIBUTES: Set[str] = {
     # Class/type introspection (escape vectors)
-    '__class__', '__base__', '__bases__', '__mro__', '__subclasses__',
-    '__init__', '__new__', '__del__', '__init_subclass__',
-    '__class_getitem__', '__prepare__',
-
+    "__class__",
+    "__base__",
+    "__bases__",
+    "__mro__",
+    "__subclasses__",
+    "__init__",
+    "__new__",
+    "__del__",
+    "__init_subclass__",
+    "__class_getitem__",
+    "__prepare__",
     # Code execution vectors
-    '__code__', '__globals__', '__locals__', '__builtins__',
-    '__call__', '__self__', '__func__',
-
+    "__code__",
+    "__globals__",
+    "__locals__",
+    "__builtins__",
+    "__call__",
+    "__self__",
+    "__func__",
     # Descriptor/attribute manipulation
-    '__getattr__', '__getattribute__', '__setattr__', '__delattr__',
-    '__get__', '__set__', '__delete__', '__set_name__',
-
+    "__getattr__",
+    "__getattribute__",
+    "__setattr__",
+    "__delattr__",
+    "__get__",
+    "__set__",
+    "__delete__",
+    "__set_name__",
     # Import system
-    '__import__', '__loader__', '__spec__', '__path__', '__file__',
-    '__cached__', '__package__', '__name__', '__qualname__',
-
+    "__import__",
+    "__loader__",
+    "__spec__",
+    "__path__",
+    "__file__",
+    "__cached__",
+    "__package__",
+    "__name__",
+    "__qualname__",
     # Memory/object manipulation
-    '__reduce__', '__reduce_ex__', '__getstate__', '__setstate__',
-    '__sizeof__', '__weakref__', '__slots__',
-
+    "__reduce__",
+    "__reduce_ex__",
+    "__getstate__",
+    "__setstate__",
+    "__sizeof__",
+    "__weakref__",
+    "__slots__",
     # Other dangerous attributes
-    'func_globals', 'func_code', 'gi_frame', 'gi_code',
-    'co_code', 'f_globals', 'f_locals', 'f_builtins',
+    "func_globals",
+    "func_code",
+    "gi_frame",
+    "gi_code",
+    "co_code",
+    "f_globals",
+    "f_locals",
+    "f_builtins",
 }
 
 # Blocked function names that shouldn't be callable even if in namespace
 BLOCKED_FUNCTION_NAMES: Set[str] = {
-    'eval', 'exec', 'compile', 'open', 'input',
-    '__import__', 'globals', 'locals', 'vars', 'dir',
-    'getattr', 'setattr', 'delattr', 'hasattr',
-    'type', 'object', 'super', 'classmethod', 'staticmethod',
-    'property', 'memoryview', 'bytearray', 'bytes',
-    'breakpoint', 'help', 'exit', 'quit',
+    "eval",
+    "exec",
+    "compile",
+    "open",
+    "input",
+    "__import__",
+    "globals",
+    "locals",
+    "vars",
+    "dir",
+    "getattr",
+    "setattr",
+    "delattr",
+    "hasattr",
+    "type",
+    "object",
+    "super",
+    "classmethod",
+    "staticmethod",
+    "property",
+    "memoryview",
+    "bytearray",
+    "bytes",
+    "breakpoint",
+    "help",
+    "exit",
+    "quit",
 }
 
 
@@ -68,13 +121,11 @@ ALLOWED_NODES: Set[type] = {
     ast.Expr,
     ast.Assign,
     ast.AugAssign,
-
     # Control flow
     ast.For,
     ast.If,
     ast.Break,
     ast.Continue,
-
     # Expressions
     ast.BinOp,
     ast.UnaryOp,
@@ -85,19 +136,16 @@ ALLOWED_NODES: Set[type] = {
     ast.Subscript,
     ast.Slice,
     ast.Attribute,  # For list.append(), etc. - blocked attrs checked separately
-
     # Literals
     ast.Constant,
     ast.List,
     ast.Tuple,
     ast.Dict,
     ast.Set,
-
     # Variables
     ast.Name,
     ast.Load,
     ast.Store,
-
     # Operators
     ast.Add,
     ast.Sub,
@@ -117,11 +165,9 @@ ALLOWED_NODES: Set[type] = {
     ast.Not,
     ast.USub,
     ast.UAdd,
-
     # List operations (NO dict/set comprehensions - potential abuse)
     ast.ListComp,
     ast.comprehension,
-
     # String formatting (for f-strings)
     ast.JoinedStr,
     ast.FormattedValue,
@@ -168,20 +214,28 @@ def validate_code_ast(
     """
     # Check code length
     if len(code) > max_code_length:
-        raise CodeSandboxError(
-            f"Code too long: {len(code)} chars > {max_code_length} max"
-        )
+        raise CodeSandboxError(f"Code too long: {len(code)} chars > {max_code_length} max")
 
     # Check for obvious dangerous strings before parsing
-    dangerous_strings = ['__class__', '__mro__', '__subclasses__', '__globals__',
-                         '__builtins__', '__import__', '__code__', 'eval(', 'exec(',
-                         'compile(', 'open(', 'getattr(', 'setattr(']
+    dangerous_strings = [
+        "__class__",
+        "__mro__",
+        "__subclasses__",
+        "__globals__",
+        "__builtins__",
+        "__import__",
+        "__code__",
+        "eval(",
+        "exec(",
+        "compile(",
+        "open(",
+        "getattr(",
+        "setattr(",
+    ]
     code_lower = code.lower()
     for danger in dangerous_strings:
         if danger.lower() in code_lower:
-            raise CodeSandboxError(
-                f"Forbidden pattern detected in code: '{danger}'"
-            )
+            raise CodeSandboxError(f"Forbidden pattern detected in code: '{danger}'")
 
     try:
         tree = ast.parse(code)
@@ -210,9 +264,7 @@ def validate_code_ast(
         # Check for blocked attribute access (e.g., obj.__class__)
         if isinstance(node, ast.Attribute):
             if node.attr in BLOCKED_ATTRIBUTES:
-                raise CodeSandboxError(
-                    f"Blocked attribute access: .{node.attr} is not allowed"
-                )
+                raise CodeSandboxError(f"Blocked attribute access: .{node.attr} is not allowed")
 
         # Check for access to blocked names via subscript
         if isinstance(node, ast.Subscript):
@@ -226,22 +278,16 @@ def validate_code_ast(
         # Check variable names for suspicious patterns
         if isinstance(node, ast.Name):
             name = node.id
-            if name.startswith('__') and name.endswith('__'):
-                raise CodeSandboxError(
-                    f"Dunder variable access not allowed: {name}"
-                )
+            if name.startswith("__") and name.endswith("__"):
+                raise CodeSandboxError(f"Dunder variable access not allowed: {name}")
             if name in BLOCKED_FUNCTION_NAMES:
-                raise CodeSandboxError(
-                    f"Access to blocked name: {name}"
-                )
+                raise CodeSandboxError(f"Access to blocked name: {name}")
 
     # Check nesting depth
     def check_depth(node: ast.AST, current_depth: int = 0) -> int:
         """Recursively check nesting depth."""
         if current_depth > max_nesting_depth:
-            raise CodeSandboxError(
-                f"Code nesting too deep: {current_depth} > {max_nesting_depth}"
-            )
+            raise CodeSandboxError(f"Code nesting too deep: {current_depth} > {max_nesting_depth}")
 
         max_child_depth = current_depth
         for child in ast.iter_child_nodes(node):
@@ -263,7 +309,7 @@ def validate_code_ast(
         if isinstance(node, ast.For):
             # Try to estimate range size
             if isinstance(node.iter, ast.Call):
-                if isinstance(node.iter.func, ast.Name) and node.iter.func.id == 'range':
+                if isinstance(node.iter.func, ast.Name) and node.iter.func.id == "range":
                     args = node.iter.args
                     if len(args) == 1:
                         if isinstance(args[0], ast.Constant):
@@ -287,11 +333,12 @@ def validate_code_ast(
 @contextmanager
 def _timeout_context(seconds: int):
     """Context manager for timeout enforcement on Unix systems."""
+
     def _timeout_handler(signum, frame):
         raise SandboxTimeoutError(f"Code execution timed out after {seconds} seconds")
 
     # Only use signal-based timeout on Unix (not Windows)
-    if sys.platform != 'win32' and seconds > 0:
+    if sys.platform != "win32" and seconds > 0:
         old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
         signal.alarm(seconds)
         try:
@@ -310,6 +357,7 @@ def _create_safe_namespace() -> Dict[str, Any]:
     Returns a namespace with only safe, side-effect-free functions.
     All dangerous builtins are explicitly excluded.
     """
+
     # Create safe wrappers for some functions to prevent abuse
     def safe_range(*args):
         """Safe range that limits maximum size."""
@@ -344,66 +392,57 @@ def _create_safe_namespace() -> Dict[str, Any]:
 
     return {
         # Output list (will be populated by code)
-        'commands': [],
-
+        "commands": [],
         # Safe iterables
-        'range': safe_range,
-        'enumerate': enumerate,
-        'zip': zip,
-        'sorted': sorted,
-        'reversed': reversed,
-
+        "range": safe_range,
+        "enumerate": enumerate,
+        "zip": zip,
+        "sorted": sorted,
+        "reversed": reversed,
         # Safe aggregations
-        'len': len,
-        'sum': sum,
-        'min': min,
-        'max': max,
-        'any': any,
-        'all': all,
-
+        "len": len,
+        "sum": sum,
+        "min": min,
+        "max": max,
+        "any": any,
+        "all": all,
         # Safe type conversions (primitives only)
-        'int': int,
-        'float': float,
-        'str': str,
-        'bool': bool,
-
+        "int": int,
+        "float": float,
+        "str": str,
+        "bool": bool,
         # Safe constructors (empty only, filled via literals)
-        'list': list,
-        'tuple': tuple,
-        'dict': dict,
-        'set': set,
-
+        "list": list,
+        "tuple": tuple,
+        "dict": dict,
+        "set": set,
         # Safe math
-        'abs': abs,
-        'round': round,
-        'pow': pow,
-
+        "abs": abs,
+        "round": round,
+        "pow": pow,
         # Math module functions (all pure, no side effects)
-        'sqrt': math.sqrt,
-        'sin': math.sin,
-        'cos': math.cos,
-        'tan': math.tan,
-        'asin': math.asin,
-        'acos': math.acos,
-        'atan': math.atan,
-        'atan2': math.atan2,
-        'radians': math.radians,
-        'degrees': math.degrees,
-        'floor': math.floor,
-        'ceil': math.ceil,
-        'log': math.log,
-        'log10': math.log10,
-        'exp': math.exp,
-
+        "sqrt": math.sqrt,
+        "sin": math.sin,
+        "cos": math.cos,
+        "tan": math.tan,
+        "asin": math.asin,
+        "acos": math.acos,
+        "atan": math.atan,
+        "atan2": math.atan2,
+        "radians": math.radians,
+        "degrees": math.degrees,
+        "floor": math.floor,
+        "ceil": math.ceil,
+        "log": math.log,
+        "log10": math.log10,
+        "exp": math.exp,
         # Math constants
-        'pi': math.pi,
-        'e': math.e,
-
+        "pi": math.pi,
+        "e": math.e,
         # Safe output (no-op)
-        'print': safe_print,
-
+        "print": safe_print,
         # CRITICAL: Empty builtins prevents access to dangerous functions
-        '__builtins__': {},
+        "__builtins__": {},
     }
 
 
@@ -472,7 +511,7 @@ def execute_command_generator(
         raise CodeSandboxError(f"Code execution failed: {error_type}: {error_msg}")
 
     # Extract commands
-    commands = safe_namespace.get('commands', [])
+    commands = safe_namespace.get("commands", [])
 
     if not isinstance(commands, list):
         raise CodeSandboxError(
@@ -499,21 +538,25 @@ def execute_command_generator(
 
         # Check command length
         if len(cmd) > 1000:
-            raise CodeSandboxError(
-                f"Command {i} too long: {len(cmd)} chars > 1000 max"
-            )
+            raise CodeSandboxError(f"Command {i} too long: {len(cmd)} chars > 1000 max")
 
         # Validate command format (starts with / or //)
-        if not cmd.startswith('/'):
-            raise CodeSandboxError(
-                f"Command {i} doesn't start with '/': {cmd[:50]}..."
-            )
+        if not cmd.startswith("/"):
+            raise CodeSandboxError(f"Command {i} doesn't start with '/': {cmd[:50]}...")
 
         # Check for potentially dangerous command patterns
         cmd_lower = cmd.lower()
         dangerous_patterns = [
-            'stop', 'ban', 'kick', 'op ', 'deop', 'whitelist',
-            'save-all', 'save-off', 'save-on', 'reload',
+            "stop",
+            "ban",
+            "kick",
+            "op ",
+            "deop",
+            "whitelist",
+            "save-all",
+            "save-off",
+            "save-on",
+            "reload",
         ]
         for pattern in dangerous_patterns:
             if pattern in cmd_lower:

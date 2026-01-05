@@ -10,10 +10,7 @@ from mcp.types import TextContent
 
 
 async def handle_calculate_shape(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle calculate_shape tool."""
     from ..geometric_algorithms import CircleCalculator
@@ -26,7 +23,11 @@ async def handle_calculate_shape(
             filled = arguments.get("filled", False)
 
             if radius is None:
-                return [TextContent(type="text", text="❌ Error: 'radius' parameter required for circle")]
+                return [
+                    TextContent(
+                        type="text", text="❌ Error: 'radius' parameter required for circle"
+                    )
+                ]
 
             result = CircleCalculator.calculate_circle(radius=radius, filled=filled)
 
@@ -35,7 +36,11 @@ async def handle_calculate_shape(
             hollow = arguments.get("hollow", True)
 
             if radius is None:
-                return [TextContent(type="text", text="❌ Error: 'radius' parameter required for sphere")]
+                return [
+                    TextContent(
+                        type="text", text="❌ Error: 'radius' parameter required for sphere"
+                    )
+                ]
 
             result = CircleCalculator.calculate_sphere(radius=radius, hollow=hollow)
 
@@ -44,7 +49,9 @@ async def handle_calculate_shape(
             style = arguments.get("style", "hemisphere")
 
             if radius is None:
-                return [TextContent(type="text", text="❌ Error: 'radius' parameter required for dome")]
+                return [
+                    TextContent(type="text", text="❌ Error: 'radius' parameter required for dome")
+                ]
 
             result = CircleCalculator.calculate_dome(radius=radius, style=style)
 
@@ -54,7 +61,12 @@ async def handle_calculate_shape(
             filled = arguments.get("filled", False)
 
             if width is None or height is None:
-                return [TextContent(type="text", text="❌ Error: 'width' and 'height' parameters required for ellipse")]
+                return [
+                    TextContent(
+                        type="text",
+                        text="❌ Error: 'width' and 'height' parameters required for ellipse",
+                    )
+                ]
 
             result = CircleCalculator.calculate_ellipse(width=width, height=height, filled=filled)
 
@@ -64,7 +76,12 @@ async def handle_calculate_shape(
             depth = arguments.get("depth", 1)
 
             if width is None or height is None:
-                return [TextContent(type="text", text="❌ Error: 'width' and 'height' parameters required for arch")]
+                return [
+                    TextContent(
+                        type="text",
+                        text="❌ Error: 'width' and 'height' parameters required for arch",
+                    )
+                ]
 
             result = CircleCalculator.calculate_arch(width=width, height=height, depth=depth)
 
@@ -75,37 +92,37 @@ async def handle_calculate_shape(
         output = f"🔷 {result['shape'].upper()} Calculation\n\n"
 
         # Add shape-specific info
-        if 'radius' in result:
+        if "radius" in result:
             output += f"**Radius:** {result['radius']} blocks\n"
-        if 'width' in result:
+        if "width" in result:
             output += f"**Width:** {result['width']} blocks\n"
-        if 'height' in result:
+        if "height" in result:
             output += f"**Height:** {result['height']} blocks\n"
-        if 'depth' in result:
+        if "depth" in result:
             output += f"**Depth:** {result['depth']} blocks\n"
-        if 'style' in result:
+        if "style" in result:
             output += f"**Style:** {result['style']}\n"
-        if 'filled' in result:
+        if "filled" in result:
             output += f"**Filled:** {'Yes' if result['filled'] else 'No (hollow outline)'}\n"
-        if 'hollow' in result:
+        if "hollow" in result:
             output += f"**Hollow:** {'Yes' if result['hollow'] else 'No (filled solid)'}\n"
 
         output += f"\n**Blocks Required:** {result['blocks_count']}\n\n"
 
         # Add ASCII preview for 2D shapes
-        if 'ascii_preview' in result and result['ascii_preview']:
-            output += "**Preview:**\n```\n" + result['ascii_preview'] + "\n```\n\n"
+        if "ascii_preview" in result and result["ascii_preview"]:
+            output += "**Preview:**\n```\n" + result["ascii_preview"] + "\n```\n\n"
 
         # Add usage tip
-        if 'usage_tip' in result:
+        if "usage_tip" in result:
             output += f"💡 **Tip:** {result['usage_tip']}\n\n"
 
         # Add WorldEdit command if available
-        if 'worldedit_command' in result:
+        if "worldedit_command" in result:
             output += f"**WorldEdit Command:** `{result['worldedit_command']}`\n\n"
 
         # Add coordinate sample (first 20 coordinates)
-        coords = result['coordinates'][:20]
+        coords = result["coordinates"][:20]
         output += f"**Coordinates** (showing first 20 of {result['blocks_count']}):\n"
         for i, coord in enumerate(coords, 1):
             if len(coord) == 2:
@@ -113,7 +130,7 @@ async def handle_calculate_shape(
             else:
                 output += f"  {i}. ({coord[0]}, {coord[1]}, {coord[2]})\n"
 
-        if len(result['coordinates']) > 20:
+        if len(result["coordinates"]) > 20:
             output += f"  ... and {len(result['coordinates']) - 20} more coordinates\n"
 
         output += "\n**Next Steps:**\n"
@@ -121,7 +138,9 @@ async def handle_calculate_shape(
         output += "2. Or use WorldEdit's shape commands (//sphere, //cyl) as reference\n"
         output += "3. Build layer by layer for 3D shapes\n"
 
-        logger_instance.info(f"Shape calculation complete: {result['shape']} with {result['blocks_count']} blocks")
+        logger_instance.info(
+            f"Shape calculation complete: {result['shape']} with {result['blocks_count']} blocks"
+        )
 
         return [TextContent(type="text", text=output)]
 
@@ -131,10 +150,7 @@ async def handle_calculate_shape(
 
 
 async def handle_calculate_window_spacing(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle calculate_window_spacing tool."""
     from ..geometric_algorithms import WindowPlacementCalculator
@@ -149,7 +165,7 @@ async def handle_calculate_window_spacing(
             wall_length=wall_length,
             window_width=window_width,
             spacing_style=spacing_style,
-            window_count=window_count
+            window_count=window_count,
         )
 
         # Format output
@@ -160,7 +176,7 @@ async def handle_calculate_window_spacing(
         output += f"**Spacing Style:** {result['spacing_style']}\n\n"
 
         # Add spacing info
-        spacing_info = result['spacing_info']
+        spacing_info = result["spacing_info"]
         output += "**Spacing Details:**\n"
         for key, value in spacing_info.items():
             output += f"  - {key.replace('_', ' ').title()}: {value}\n"
@@ -168,7 +184,7 @@ async def handle_calculate_window_spacing(
 
         # Add window positions
         output += "**Window Placements:**\n"
-        for window in result['windows']:
+        for window in result["windows"]:
             output += f"  {window['index']}. Position {window['start_position']}-{window['end_position']} (center: {window['center']})\n"
         output += "\n"
 
@@ -180,7 +196,9 @@ async def handle_calculate_window_spacing(
         output += "2. Apply this pattern to all walls of your building for consistency\n"
         output += "3. Adjust Y-coordinate for window height (typically 2-3 blocks above floor)\n"
 
-        logger_instance.info(f"Window spacing calculated: {result['window_count']} windows, {spacing_style} style")
+        logger_instance.info(
+            f"Window spacing calculated: {result['window_count']} windows, {spacing_style} style"
+        )
 
         return [TextContent(type="text", text=output)]
 

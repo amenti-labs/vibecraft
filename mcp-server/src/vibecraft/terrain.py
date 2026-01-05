@@ -37,10 +37,14 @@ class TerrainAnalyzer:
 
     def analyze_region(
         self,
-        x1: int, y1: int, z1: int,
-        x2: int, y2: int, z2: int,
+        x1: int,
+        y1: int,
+        z1: int,
+        x2: int,
+        y2: int,
+        z2: int,
         resolution: int = TerrainConstants.DEFAULT_RESOLUTION,
-        max_samples: int = TerrainConstants.MAX_SAMPLES
+        max_samples: int = TerrainConstants.MAX_SAMPLES,
     ) -> Dict[str, Any]:
         """
         Analyze terrain region using FAST WorldEdit bulk commands.
@@ -67,7 +71,9 @@ class TerrainAnalyzer:
         depth = max_z - min_z + 1
         total_blocks = width * height * depth
 
-        logger.info(f"Fast analyzing region: ({min_x},{min_y},{min_z}) to ({max_x},{max_y},{max_z})")
+        logger.info(
+            f"Fast analyzing region: ({min_x},{min_y},{min_z}) to ({max_x},{max_y},{max_z})"
+        )
         logger.info(f"Dimensions: {width}×{height}×{depth} = {total_blocks:,} blocks")
 
         # STEP 1: Get overall block composition with ONE //distr command
@@ -82,12 +88,12 @@ class TerrainAnalyzer:
 
         if not elevation_samples:
             return {
-                'error': 'Failed to sample elevation',
-                'region': {
-                    'min': [min_x, min_y, min_z],
-                    'max': [max_x, max_y, max_z],
-                    'dimensions': [width, height, depth]
-                }
+                "error": "Failed to sample elevation",
+                "region": {
+                    "min": [min_x, min_y, min_z],
+                    "max": [max_x, max_y, max_z],
+                    "dimensions": [width, height, depth],
+                },
             }
 
         # STEP 3: Analyze elevation statistics
@@ -96,37 +102,36 @@ class TerrainAnalyzer:
 
         # STEP 4: Detect hazards and opportunities
         logger.info("Step 4/4: Detecting hazards and opportunities...")
-        hazards = self._detect_hazards_fast(min_x, min_y, min_z, max_x, max_y, max_z, composition, elevation_stats)
+        hazards = self._detect_hazards_fast(
+            min_x, min_y, min_z, max_x, max_y, max_z, composition, elevation_stats
+        )
         opportunities = self._detect_opportunities(composition, elevation_stats, width, depth)
 
         # Generate summary
         summary = self._generate_summary(
-            elevation_stats, composition, hazards, opportunities,
-            width, height, depth
+            elevation_stats, composition, hazards, opportunities, width, height, depth
         )
 
         logger.info(f"Analysis complete! Sampled {len(elevation_samples)} elevation points")
 
         return {
-            'region': {
-                'min': [min_x, min_y, min_z],
-                'max': [max_x, max_y, max_z],
-                'dimensions': [width, height, depth],
-                'total_blocks': total_blocks,
-                'elevation_samples': len(elevation_samples),
-                'resolution': resolution
+            "region": {
+                "min": [min_x, min_y, min_z],
+                "max": [max_x, max_y, max_z],
+                "dimensions": [width, height, depth],
+                "total_blocks": total_blocks,
+                "elevation_samples": len(elevation_samples),
+                "resolution": resolution,
             },
-            'elevation': elevation_stats,
-            'composition': composition,
-            'hazards': hazards,
-            'opportunities': opportunities,
-            'summary': summary
+            "elevation": elevation_stats,
+            "composition": composition,
+            "hazards": hazards,
+            "opportunities": opportunities,
+            "summary": summary,
         }
 
     def _get_bulk_composition(
-        self,
-        min_x: int, min_y: int, min_z: int,
-        max_x: int, max_y: int, max_z: int
+        self, min_x: int, min_y: int, min_z: int, max_x: int, max_y: int, max_z: int
     ) -> Dict[str, Any]:
         """
         Get block composition using ONE WorldEdit //distr command (FAST!).
@@ -149,7 +154,7 @@ class TerrainAnalyzer:
             block_data = {}
             total_blocks = 0
 
-            for line in str(result).split('\n'):
+            for line in str(result).split("\n"):
                 match = DISTR_LINE_PATTERN.search(line)
                 if match:
                     percentage = float(match.group(1))
@@ -157,55 +162,64 @@ class TerrainAnalyzer:
                     count = int(match.group(3))
 
                     # Remove minecraft: prefix
-                    if ':' in block_name:
-                        block_name = block_name.split(':', 1)[1]
+                    if ":" in block_name:
+                        block_name = block_name.split(":", 1)[1]
 
-                    block_data[block_name] = {
-                        'count': count,
-                        'percentage': percentage
-                    }
+                    block_data[block_name] = {"count": count, "percentage": percentage}
                     total_blocks += count
 
             if not block_data:
                 return self._empty_composition()
 
             # Categorize blocks
-            liquids = sum(data['count'] for block, data in block_data.items() if block in self.LIQUID_BLOCKS)
-            vegetation = sum(data['count'] for block, data in block_data.items() if block in self.VEGETATION_BLOCKS)
-            natural_surface = sum(data['count'] for block, data in block_data.items() if block in self.NATURAL_SURFACE_BLOCKS)
-            air_count = block_data.get('air', {}).get('count', 0)
+            liquids = sum(
+                data["count"] for block, data in block_data.items() if block in self.LIQUID_BLOCKS
+            )
+            vegetation = sum(
+                data["count"]
+                for block, data in block_data.items()
+                if block in self.VEGETATION_BLOCKS
+            )
+            natural_surface = sum(
+                data["count"]
+                for block, data in block_data.items()
+                if block in self.NATURAL_SURFACE_BLOCKS
+            )
+            air_count = block_data.get("air", {}).get("count", 0)
 
             # Top 10 blocks
-            sorted_blocks = sorted(block_data.items(), key=lambda x: x[1]['count'], reverse=True)
+            sorted_blocks = sorted(block_data.items(), key=lambda x: x[1]["count"], reverse=True)
             top_blocks = [
-                {
-                    'block': block,
-                    'count': data['count'],
-                    'percentage': round(data['percentage'], 2)
-                }
+                {"block": block, "count": data["count"], "percentage": round(data["percentage"], 2)}
                 for block, data in sorted_blocks[:10]
             ]
 
             return {
-                'total_blocks': total_blocks,
-                'unique_blocks': len(block_data),
-                'top_blocks': top_blocks,
-                'liquids': {
-                    'count': liquids,
-                    'percentage': round(liquids / total_blocks * 100, 2) if total_blocks > 0 else 0
+                "total_blocks": total_blocks,
+                "unique_blocks": len(block_data),
+                "top_blocks": top_blocks,
+                "liquids": {
+                    "count": liquids,
+                    "percentage": round(liquids / total_blocks * 100, 2) if total_blocks > 0 else 0,
                 },
-                'vegetation': {
-                    'count': vegetation,
-                    'percentage': round(vegetation / total_blocks * 100, 2) if total_blocks > 0 else 0
+                "vegetation": {
+                    "count": vegetation,
+                    "percentage": (
+                        round(vegetation / total_blocks * 100, 2) if total_blocks > 0 else 0
+                    ),
                 },
-                'natural_surface': {
-                    'count': natural_surface,
-                    'percentage': round(natural_surface / total_blocks * 100, 2) if total_blocks > 0 else 0
+                "natural_surface": {
+                    "count": natural_surface,
+                    "percentage": (
+                        round(natural_surface / total_blocks * 100, 2) if total_blocks > 0 else 0
+                    ),
                 },
-                'air_cavities': {
-                    'count': air_count,
-                    'percentage': round(air_count / total_blocks * 100, 2) if total_blocks > 0 else 0
-                }
+                "air_cavities": {
+                    "count": air_count,
+                    "percentage": (
+                        round(air_count / total_blocks * 100, 2) if total_blocks > 0 else 0
+                    ),
+                },
             }
 
         except Exception as e:
@@ -215,22 +229,25 @@ class TerrainAnalyzer:
     def _empty_composition(self) -> Dict[str, Any]:
         """Return empty composition structure."""
         return {
-            'total_blocks': 0,
-            'unique_blocks': 0,
-            'top_blocks': [],
-            'liquids': {'count': 0, 'percentage': 0},
-            'vegetation': {'count': 0, 'percentage': 0},
-            'natural_surface': {'count': 0, 'percentage': 0},
-            'air_cavities': {'count': 0, 'percentage': 0}
+            "total_blocks": 0,
+            "unique_blocks": 0,
+            "top_blocks": [],
+            "liquids": {"count": 0, "percentage": 0},
+            "vegetation": {"count": 0, "percentage": 0},
+            "natural_surface": {"count": 0, "percentage": 0},
+            "air_cavities": {"count": 0, "percentage": 0},
         }
 
     def _sample_elevation_fast(
         self,
-        min_x: int, min_z: int,
-        max_x: int, max_z: int,
-        min_y: int, max_y: int,
+        min_x: int,
+        min_z: int,
+        max_x: int,
+        max_z: int,
+        min_y: int,
+        max_y: int,
         resolution: int,
-        max_samples: int
+        max_samples: int,
     ) -> List[Tuple[int, int, int]]:
         """
         Sample elevation using vertical slices (MUCH faster than per-block queries).
@@ -281,15 +298,15 @@ class TerrainAnalyzer:
 
             # Parse to find highest non-air block
             block_heights = {}
-            for line in str(result).split('\n'):
+            for line in str(result).split("\n"):
                 match = DISTR_LINE_PATTERN.search(line)
                 if match:
                     block_name = match.group(2)
-                    if ':' in block_name:
-                        block_name = block_name.split(':', 1)[1]
+                    if ":" in block_name:
+                        block_name = block_name.split(":", 1)[1]
 
                     # Skip air blocks
-                    if block_name != 'air':
+                    if block_name != "air":
                         # This tells us the block exists, but not exact Y
                         # We'll estimate based on distribution
                         block_heights[block_name] = True
@@ -374,10 +391,14 @@ class TerrainAnalyzer:
 
     def _detect_hazards_fast(
         self,
-        min_x: int, min_y: int, min_z: int,
-        max_x: int, max_y: int, max_z: int,
+        min_x: int,
+        min_y: int,
+        min_z: int,
+        max_x: int,
+        max_y: int,
+        max_z: int,
         composition: Dict[str, Any],
-        elevation_stats: Dict[str, Any]
+        elevation_stats: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
         """
         Detect hazards using WorldEdit //count commands (FAST!).
@@ -390,7 +411,7 @@ class TerrainAnalyzer:
         self.rcon.send_command(f"//pos1 {min_x},{min_y},{min_z}")
         self.rcon.send_command(f"//pos2 {max_x},{max_y},{max_z}")
 
-        total_blocks = composition.get('total_blocks', 1)
+        total_blocks = composition.get("total_blocks", 1)
 
         # Check for each hazard type using //count (very fast!)
         for block, description in self.HAZARD_BLOCKS.items():
@@ -404,56 +425,65 @@ class TerrainAnalyzer:
                         count = int(match.group(1))
                         if count > 0:
                             percentage = round(count / total_blocks * 100, 2)
-                            hazards.append({
-                                'type': description,
-                                'severity': 'high' if percentage > 5 else 'medium' if percentage > 1 else 'low',
-                                'count': count,
-                                'percentage': percentage,
-                                'recommendation': f'Exercise caution - {description} present'
-                            })
+                            hazards.append(
+                                {
+                                    "type": description,
+                                    "severity": (
+                                        "high"
+                                        if percentage > 5
+                                        else "medium" if percentage > 1 else "low"
+                                    ),
+                                    "count": count,
+                                    "percentage": percentage,
+                                    "recommendation": f"Exercise caution - {description} present",
+                                }
+                            )
             except Exception as e:
                 logger.debug(f"Failed to count {block}: {e}")
 
         # Check for water bodies from composition
-        water_pct = composition.get('liquids', {}).get('percentage', 0)
+        water_pct = composition.get("liquids", {}).get("percentage", 0)
         if water_pct > 10:
-            hazards.append({
-                'type': 'Water bodies',
-                'severity': 'medium' if water_pct > 30 else 'low',
-                'percentage': water_pct,
-                'recommendation': 'Consider drainage or bridges for building'
-            })
+            hazards.append(
+                {
+                    "type": "Water bodies",
+                    "severity": "medium" if water_pct > 30 else "low",
+                    "percentage": water_pct,
+                    "recommendation": "Consider drainage or bridges for building",
+                }
+            )
 
         # Check for steep terrain
-        if elevation_stats.get('std_dev', 0) > 15:
-            hazards.append({
-                'type': 'Steep terrain',
-                'severity': 'medium',
-                'details': f"Elevation variance: {elevation_stats.get('std_dev')} blocks",
-                'recommendation': 'Terrain leveling or terracing may be required'
-            })
+        if elevation_stats.get("std_dev", 0) > 15:
+            hazards.append(
+                {
+                    "type": "Steep terrain",
+                    "severity": "medium",
+                    "details": f"Elevation variance: {elevation_stats.get('std_dev')} blocks",
+                    "recommendation": "Terrain leveling or terracing may be required",
+                }
+            )
 
         # Check for caves/cavities
-        air_pct = composition.get('air_cavities', {}).get('percentage', 0)
+        air_pct = composition.get("air_cavities", {}).get("percentage", 0)
         if air_pct > 5:
-            hazards.append({
-                'type': 'Underground cavities',
-                'severity': 'medium',
-                'percentage': air_pct,
-                'recommendation': 'Fill caves or reinforce foundations'
-            })
+            hazards.append(
+                {
+                    "type": "Underground cavities",
+                    "severity": "medium",
+                    "percentage": air_pct,
+                    "recommendation": "Fill caves or reinforce foundations",
+                }
+            )
 
         return hazards
 
     def _analyze_elevation(
-        self,
-        samples: List[Tuple[int, int, int]],
-        min_x: int, max_x: int,
-        min_z: int, max_z: int
+        self, samples: List[Tuple[int, int, int]], min_x: int, max_x: int, min_z: int, max_z: int
     ) -> Dict[str, Any]:
         """Analyze elevation statistics from samples."""
         if not samples:
-            return {'error': 'No elevation samples'}
+            return {"error": "No elevation samples"}
 
         heights = [y for x, y, z in samples]
 
@@ -482,80 +512,88 @@ class TerrainAnalyzer:
             terrain_type = "Extreme terrain"
 
         return {
-            'min_y': min_height,
-            'max_y': max_height,
-            'avg_y': round(avg_height, 2),
-            'range': height_range,
-            'std_dev': round(std_dev, 2),
-            'slope_index': round(slope_index, 3),
-            'terrain_type': terrain_type,
-            'sample_count': len(heights)
+            "min_y": min_height,
+            "max_y": max_height,
+            "avg_y": round(avg_height, 2),
+            "range": height_range,
+            "std_dev": round(std_dev, 2),
+            "slope_index": round(slope_index, 3),
+            "terrain_type": terrain_type,
+            "sample_count": len(heights),
         }
 
     def _detect_opportunities(
-        self,
-        composition: Dict[str, Any],
-        elevation_stats: Dict[str, Any],
-        width: int,
-        depth: int
+        self, composition: Dict[str, Any], elevation_stats: Dict[str, Any], width: int, depth: int
     ) -> List[Dict[str, str]]:
         """Detect building opportunities from composition and elevation."""
         opportunities = []
 
         # Flat terrain
-        std_dev = elevation_stats.get('std_dev', 0)
+        std_dev = elevation_stats.get("std_dev", 0)
         if std_dev < 3:
-            opportunities.append({
-                'type': 'Flat terrain',
-                'quality': 'excellent',
-                'description': f"Very flat area ({std_dev} blocks variation)",
-                'use_cases': 'Ideal for large structures, farms, planned cities'
-            })
+            opportunities.append(
+                {
+                    "type": "Flat terrain",
+                    "quality": "excellent",
+                    "description": f"Very flat area ({std_dev} blocks variation)",
+                    "use_cases": "Ideal for large structures, farms, planned cities",
+                }
+            )
         elif std_dev < 6:
-            opportunities.append({
-                'type': 'Gentle terrain',
-                'quality': 'good',
-                'description': f"Gently sloping area ({std_dev} blocks variation)",
-                'use_cases': 'Suitable for terraced builds, gardens'
-            })
+            opportunities.append(
+                {
+                    "type": "Gentle terrain",
+                    "quality": "good",
+                    "description": f"Gently sloping area ({std_dev} blocks variation)",
+                    "use_cases": "Suitable for terraced builds, gardens",
+                }
+            )
 
         # Dramatic elevation
-        if elevation_stats.get('range', 0) > 20:
-            opportunities.append({
-                'type': 'Dramatic elevation change',
-                'quality': 'good',
-                'description': f"{elevation_stats.get('range')} blocks elevation difference",
-                'use_cases': 'Cliff-side builds, waterfalls, observation towers'
-            })
+        if elevation_stats.get("range", 0) > 20:
+            opportunities.append(
+                {
+                    "type": "Dramatic elevation change",
+                    "quality": "good",
+                    "description": f"{elevation_stats.get('range')} blocks elevation difference",
+                    "use_cases": "Cliff-side builds, waterfalls, observation towers",
+                }
+            )
 
         # Coastline
-        liquid_pct = composition.get('liquids', {}).get('percentage', 0)
+        liquid_pct = composition.get("liquids", {}).get("percentage", 0)
         if 10 < liquid_pct < 50:
-            opportunities.append({
-                'type': 'Coastline',
-                'quality': 'excellent',
-                'description': 'Mix of water and land',
-                'use_cases': 'Docks, harbors, beachfront properties'
-            })
+            opportunities.append(
+                {
+                    "type": "Coastline",
+                    "quality": "excellent",
+                    "description": "Mix of water and land",
+                    "use_cases": "Docks, harbors, beachfront properties",
+                }
+            )
 
         # Forested area
-        veg_pct = composition.get('vegetation', {}).get('percentage', 0)
+        veg_pct = composition.get("vegetation", {}).get("percentage", 0)
         if veg_pct > 20:
-            opportunities.append({
-                'type': 'Forested area',
-                'quality': 'good',
-                'description': f"{round(veg_pct, 1)}% vegetation coverage",
-                'use_cases': 'Tree houses, nature builds, hidden bases'
-            })
+            opportunities.append(
+                {
+                    "type": "Forested area",
+                    "quality": "good",
+                    "description": f"{round(veg_pct, 1)}% vegetation coverage",
+                    "use_cases": "Tree houses, nature builds, hidden bases",
+                }
+            )
 
         # Large buildable area
         if width > 50 and depth > 50 and std_dev < 5:
-            opportunities.append({
-                'type': 'Large buildable area',
-                'quality': 'excellent',
-                'description': f"{width}×{depth} blocks with minimal elevation change",
-                'use_cases': 'Mega builds, planned districts, arenas'
-            })
+            opportunities.append(
+                {
+                    "type": "Large buildable area",
+                    "quality": "excellent",
+                    "description": f"{width}×{depth} blocks with minimal elevation change",
+                    "use_cases": "Mega builds, planned districts, arenas",
+                }
+            )
 
         return opportunities
 
@@ -567,7 +605,7 @@ class TerrainAnalyzer:
         opportunities: List[Dict[str, str]],
         width: int,
         height: int,
-        depth: int
+        depth: int,
     ) -> str:
         """Generate natural language summary."""
         summary_parts = []
@@ -576,18 +614,20 @@ class TerrainAnalyzer:
         summary_parts.append(f"**Region Overview**: {width}×{height}×{depth} blocks")
 
         # Terrain type
-        terrain_type = elevation.get('terrain_type', 'Unknown')
-        elevation_range = elevation.get('range', 0)
-        summary_parts.append(f"**Terrain**: {terrain_type} with {elevation_range} blocks elevation range (Y={elevation.get('min_y')} to Y={elevation.get('max_y')})")
+        terrain_type = elevation.get("terrain_type", "Unknown")
+        elevation_range = elevation.get("range", 0)
+        summary_parts.append(
+            f"**Terrain**: {terrain_type} with {elevation_range} blocks elevation range (Y={elevation.get('min_y')} to Y={elevation.get('max_y')})"
+        )
 
         # Top blocks
-        top_blocks = composition.get('top_blocks', [])
+        top_blocks = composition.get("top_blocks", [])
         if top_blocks:
-            top_3 = ', '.join([b['block'] for b in top_blocks[:3]])
+            top_3 = ", ".join([b["block"] for b in top_blocks[:3]])
             summary_parts.append(f"**Surface**: Primarily {top_3}")
 
         # Vegetation
-        veg_pct = composition.get('vegetation', {}).get('percentage', 0)
+        veg_pct = composition.get("vegetation", {}).get("percentage", 0)
         if veg_pct > 20:
             summary_parts.append(f"**Vegetation**: Dense ({veg_pct}% coverage)")
         elif veg_pct > 5:
@@ -597,9 +637,9 @@ class TerrainAnalyzer:
 
         # Hazards
         if hazards:
-            high_severity = [h for h in hazards if h.get('severity') == 'high']
+            high_severity = [h for h in hazards if h.get("severity") == "high"]
             if high_severity:
-                hazard_types = ', '.join([h['type'] for h in high_severity])
+                hazard_types = ", ".join([h["type"] for h in high_severity])
                 summary_parts.append(f"⚠️ **Hazards**: {hazard_types} (high severity)")
             else:
                 summary_parts.append(f"⚠️ **Hazards**: {len(hazards)} detected")
@@ -608,19 +648,25 @@ class TerrainAnalyzer:
 
         # Opportunities
         if opportunities:
-            excellent = [o for o in opportunities if o.get('quality') == 'excellent']
+            excellent = [o for o in opportunities if o.get("quality") == "excellent"]
             if excellent:
-                opp_types = ', '.join([o['type'] for o in excellent])
+                opp_types = ", ".join([o["type"] for o in excellent])
                 summary_parts.append(f"🌟 **Opportunities**: {opp_types}")
             else:
                 summary_parts.append(f"💡 **Opportunities**: {len(opportunities)} identified")
 
         # Build recommendation
-        if elevation.get('std_dev', 0) < 3:
-            summary_parts.append("\n**Recommendation**: Excellent for large-scale building projects")
-        elif elevation.get('std_dev', 0) < 8:
-            summary_parts.append("\n**Recommendation**: Good for most builds with minimal terraforming")
+        if elevation.get("std_dev", 0) < 3:
+            summary_parts.append(
+                "\n**Recommendation**: Excellent for large-scale building projects"
+            )
+        elif elevation.get("std_dev", 0) < 8:
+            summary_parts.append(
+                "\n**Recommendation**: Good for most builds with minimal terraforming"
+            )
         else:
-            summary_parts.append("\n**Recommendation**: Challenging terrain - consider extensive terraforming")
+            summary_parts.append(
+                "\n**Recommendation**: Challenging terrain - consider extensive terraforming"
+            )
 
-        return '\n'.join(summary_parts)
+        return "\n".join(summary_parts)

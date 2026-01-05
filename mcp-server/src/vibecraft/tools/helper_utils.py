@@ -13,10 +13,7 @@ from ..rcon_manager import PLAYER_POS_PATTERN, PLAYER_ROT_PATTERN, BLOCK_ID_PATT
 
 
 async def handle_calculate_region_size(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle calculate_region_size tool."""
     x1, y1, z1 = arguments["x1"], arguments["y1"], arguments["z1"]
@@ -68,10 +65,7 @@ async def handle_calculate_region_size(
 
 
 async def handle_search_minecraft_item(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle search_minecraft_item tool."""
     from ..minecraft_items_loader import minecraft_items
@@ -99,7 +93,12 @@ async def handle_search_minecraft_item(
             break
 
     if not matches:
-        return [TextContent(type="text", text=f"❌ No items found matching '{query}'\n\nTry a different search term or check spelling.")]
+        return [
+            TextContent(
+                type="text",
+                text=f"❌ No items found matching '{query}'\n\nTry a different search term or check spelling.",
+            )
+        ]
 
     # Format results
     result = [
@@ -112,7 +111,7 @@ async def handle_search_minecraft_item(
         result.append(f"  - ID: {item['id']}")
 
         # Add usage hints for common blocks
-        name = item['name']
+        name = item["name"]
         if "concrete" in name:
             result.append("  - Use: Modern builds, clean aesthetic")
         elif "stone_bricks" in name or "stone_brick" in name:
@@ -138,10 +137,7 @@ async def handle_search_minecraft_item(
 
 
 async def handle_get_player_position(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle get_player_position tool."""
     player_name = arguments.get("player_name", "").strip()
@@ -149,9 +145,14 @@ async def handle_get_player_position(
     # If no player specified, get first online player
     if not player_name:
         info = rcon.get_server_info()
-        players = info.get('players', '')
+        players = info.get("players", "")
         if not players or players == "0":
-            return [TextContent(type="text", text="❌ No players online. Please specify a player name or have someone join the server.")]
+            return [
+                TextContent(
+                    type="text",
+                    text="❌ No players online. Please specify a player name or have someone join the server.",
+                )
+            ]
 
         # Try to extract first player name from the players string
         if ":" in players:
@@ -164,7 +165,12 @@ async def handle_get_player_position(
                     player_name = player_list.split(",")[0].strip()
 
         if not player_name:
-            return [TextContent(type="text", text="❌ Could not determine player name. Please specify player_name parameter.")]
+            return [
+                TextContent(
+                    type="text",
+                    text="❌ Could not determine player name. Please specify player_name parameter.",
+                )
+            ]
 
     try:
         # Get player position
@@ -172,7 +178,12 @@ async def handle_get_player_position(
         coord_match = PLAYER_POS_PATTERN.search(pos_result)
 
         if not coord_match:
-            return [TextContent(type="text", text=f"❌ Player '{player_name}' not found or error getting position")]
+            return [
+                TextContent(
+                    type="text",
+                    text=f"❌ Player '{player_name}' not found or error getting position",
+                )
+            ]
 
         x = float(coord_match.group(1))
         y = float(coord_match.group(2))
@@ -223,14 +234,18 @@ async def handle_get_player_position(
             target_z = int(z + dz)
 
             # Check if there's a non-air block at this position
-            block_check = rcon.send_command(f"execute positioned {target_x} {target_y} {target_z} run data get block ~ ~ ~ id")
+            block_check = rcon.send_command(
+                f"execute positioned {target_x} {target_y} {target_z} run data get block ~ ~ ~ id"
+            )
 
             if "air" not in block_check.lower() and "has the following" in block_check:
                 # Found a non-air block
                 block_match = BLOCK_ID_PATTERN.search(block_check)
                 if block_match:
                     block_type = block_match.group(1)
-                    target_info = f"{block_type} at {target_x},{target_y},{target_z} ({distance} blocks away)"
+                    target_info = (
+                        f"{block_type} at {target_x},{target_y},{target_z} ({distance} blocks away)"
+                    )
                     break
 
         # Use player Y position as ground reference (simpler and more reliable)
@@ -239,7 +254,9 @@ async def handle_get_player_position(
 
         # Check block directly below player's feet to identify surface type
         surface_block = "unknown"
-        block_check = rcon.send_command(f"execute positioned {int(x)} {player_y - 1} {int(z)} run data get block ~ ~ ~ id")
+        block_check = rcon.send_command(
+            f"execute positioned {int(x)} {player_y - 1} {int(z)} run data get block ~ ~ ~ id"
+        )
         if "has the following" in block_check:
             block_match = BLOCK_ID_PATTERN.search(block_check)
             if block_match:
@@ -258,8 +275,13 @@ Ground level: Y={player_y - 1}"""
 - Elevated (1 block up): {int(x)},{player_y + 1},{int(z)} - builds above player
 - Where player is looking: Use target block if available"""
 
-        logger_instance.info(f"Player position retrieved: {player_name} at ({x:.2f}, {y:.2f}, {z:.2f})")
-        return [TextContent(type="text", text=f"""📍 Comprehensive Player Context: {player_name}
+        logger_instance.info(
+            f"Player position retrieved: {player_name} at ({x:.2f}, {y:.2f}, {z:.2f})"
+        )
+        return [
+            TextContent(
+                type="text",
+                text=f"""📍 Comprehensive Player Context: {player_name}
 
 **Position:**
 X: {x:.2f} → {int(x)}
@@ -280,7 +302,9 @@ Facing: {direction}
 
 **Orientation Note:**
 Player facing {direction} - structure front should face this direction for alignment
-""")]
+""",
+            )
+        ]
 
     except Exception as e:
         logger_instance.error(f"Error in get_player_position: {str(e)}", exc_info=True)
@@ -288,10 +312,7 @@ Player facing {direction} - structure front should face this direction for align
 
 
 async def handle_get_surface_level(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle get_surface_level tool."""
     x = arguments["x"]
@@ -309,7 +330,7 @@ async def handle_get_surface_level(
 
         try:
             info = rcon.get_server_info()
-            players_str = info.get('players', '')
+            players_str = info.get("players", "")
 
             if players_str and ":" in players_str:
                 player_list = players_str.split(":")[1].strip().split(",")
@@ -321,7 +342,9 @@ async def handle_get_surface_level(
                         pos_match = PLAYER_POS_PATTERN.search(player_data)
                         if pos_match:
                             player_y_baseline = int(float(pos_match.group(2)))
-                            logger_instance.info(f"Using player Y position {player_y_baseline} as baseline reference")
+                            logger_instance.info(
+                                f"Using player Y position {player_y_baseline} as baseline reference"
+                            )
         except Exception as e:
             logger_instance.warning(f"Could not get player position, using default Y=64: {e}")
 
@@ -331,7 +354,9 @@ async def handle_get_surface_level(
 
         # Check what block is at that level
         surface_block = "unknown"
-        block_check = rcon.send_command(f"execute positioned {x} {surface_y} {z} run data get block ~ ~ ~ id")
+        block_check = rcon.send_command(
+            f"execute positioned {x} {surface_y} {z} run data get block ~ ~ ~ id"
+        )
         if "has the following" in block_check:
             block_match = BLOCK_ID_PATTERN.search(block_check)
             if block_match:
@@ -339,7 +364,10 @@ async def handle_get_surface_level(
 
         logger_instance.info(f"Surface at ({x}, {z}): Y={surface_y}, block={surface_block}")
 
-        return [TextContent(type="text", text=f"""🏔️ Surface Detection at X={x}, Z={z}
+        return [
+            TextContent(
+                type="text",
+                text=f"""🏔️ Surface Detection at X={x}, Z={z}
 
 **Surface Level:** Y={surface_y}
 **Block Type:** {surface_block}
@@ -353,7 +381,9 @@ async def handle_get_surface_level(
 **Note:** This uses player's current Y position as reference for ground level.
 For best results, be near your build location before checking surface.
 If terrain varies significantly, use `get_player_position` while standing at the exact build site.
-""")]
+""",
+            )
+        ]
 
     except Exception as e:
         logger_instance.error(f"Error in get_surface_level: {str(e)}", exc_info=True)

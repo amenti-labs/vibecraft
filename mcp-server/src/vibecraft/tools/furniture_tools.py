@@ -13,10 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 async def handle_furniture_lookup(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance: logging.Logger
+    arguments: Dict[str, Any], rcon, config, logger_instance: logging.Logger
 ) -> List[TextContent]:
     """
     Handle furniture_lookup tool.
@@ -28,19 +25,29 @@ async def handle_furniture_lookup(
     action = arguments.get("action")
 
     if not action:
-        return [TextContent(type="text", text="❌ Error: 'action' parameter is required (must be 'search' or 'get')")]
+        return [
+            TextContent(
+                type="text",
+                text="❌ Error: 'action' parameter is required (must be 'search' or 'get')",
+            )
+        ]
 
     layouts = load_furniture_layouts()
     catalog = load_furniture_catalog()
 
     if not layouts and not catalog:
-        return [TextContent(type="text", text="❌ Error: No furniture data available (both layouts and catalog missing)")]
+        return [
+            TextContent(
+                type="text",
+                text="❌ Error: No furniture data available (both layouts and catalog missing)",
+            )
+        ]
 
     # Create lookup index: map IDs to layouts
-    {layout['id']: layout for layout in layouts}
+    {layout["id"]: layout for layout in layouts}
 
     # Filter catalog to only actual furniture (not category headings)
-    furniture_items = [item for item in catalog if item.get('heading_level', 2) >= 3]
+    furniture_items = [item for item in catalog if item.get("heading_level", 2) >= 3]
 
     if action == "search":
         # Search for furniture by query, category, or tags
@@ -65,7 +72,9 @@ async def handle_furniture_lookup(
                 subcat_match = query in layout.get("subcategory", "").lower()
                 tags_match = any(query in tag.lower() for tag in layout.get("tags", []))
 
-                matches = matches and (name_match or id_match or cat_match or subcat_match or tags_match)
+                matches = matches and (
+                    name_match or id_match or cat_match or subcat_match or tags_match
+                )
 
             if category_filter:
                 matches = matches and (category_filter in layout.get("category", "").lower())
@@ -78,18 +87,24 @@ async def handle_furniture_lookup(
             if matches:
                 seen_ids.add(layout.get("id"))
                 # Add to results (summary only, not full layout)
-                results.append({
-                    "name": layout.get("name"),
-                    "id": layout.get("id"),
-                    "category": layout.get("category"),
-                    "subcategory": layout.get("subcategory"),
-                    "tags": layout.get("tags", []),
-                    "bounds": layout.get("bounds"),
-                    "materials_count": sum(layout.get("materials", {}).values()),
-                    "notes": layout.get("notes", "")[:100] + "..." if len(layout.get("notes", "")) > 100 else layout.get("notes", ""),
-                    "has_layout": True,
-                    "source": "layout"
-                })
+                results.append(
+                    {
+                        "name": layout.get("name"),
+                        "id": layout.get("id"),
+                        "category": layout.get("category"),
+                        "subcategory": layout.get("subcategory"),
+                        "tags": layout.get("tags", []),
+                        "bounds": layout.get("bounds"),
+                        "materials_count": sum(layout.get("materials", {}).values()),
+                        "notes": (
+                            layout.get("notes", "")[:100] + "..."
+                            if len(layout.get("notes", "")) > 100
+                            else layout.get("notes", "")
+                        ),
+                        "has_layout": True,
+                        "source": "layout",
+                    }
+                )
 
         # Then, search through catalog items (text-based instructions)
         for item in furniture_items:
@@ -121,18 +136,20 @@ async def handle_furniture_lookup(
                         description = text[:100] + "..." if len(text) > 100 else text
                         break
 
-                results.append({
-                    "name": item.get("name"),
-                    "id": item.get("id"),
-                    "category": item.get("category"),
-                    "subcategory": item.get("subcategory"),
-                    "tags": [],
-                    "bounds": None,
-                    "materials_count": 0,
-                    "notes": description,
-                    "has_layout": False,
-                    "source": "catalog"
-                })
+                results.append(
+                    {
+                        "name": item.get("name"),
+                        "id": item.get("id"),
+                        "category": item.get("category"),
+                        "subcategory": item.get("subcategory"),
+                        "tags": [],
+                        "bounds": None,
+                        "materials_count": 0,
+                        "notes": description,
+                        "has_layout": False,
+                        "source": "catalog",
+                    }
+                )
 
         if not results:
             search_params = []
@@ -143,11 +160,16 @@ async def handle_furniture_lookup(
             if tags_filter:
                 search_params.append(f"tags={tags_filter}")
 
-            return [TextContent(type="text", text=f"🔍 No furniture found matching: {', '.join(search_params)}\n\nTry:\n- Broader search terms\n- Different category (bedroom, kitchen, living_room, etc.)\n- Fewer tag filters")]
+            return [
+                TextContent(
+                    type="text",
+                    text=f"🔍 No furniture found matching: {', '.join(search_params)}\n\nTry:\n- Broader search terms\n- Different category (bedroom, kitchen, living_room, etc.)\n- Fewer tag filters",
+                )
+            ]
 
         # Format results
-        layout_count = sum(1 for r in results if r['has_layout'])
-        catalog_count = sum(1 for r in results if not r['has_layout'])
+        layout_count = sum(1 for r in results if r["has_layout"])
+        catalog_count = sum(1 for r in results if not r["has_layout"])
 
         result_text = f"🪑 Found {len(results)} furniture item(s):\n"
         result_text += f"   - {layout_count} with automated layouts\n"
@@ -155,32 +177,34 @@ async def handle_furniture_lookup(
 
         for i, item in enumerate(results, 1):
             # Indicate if has layout or catalog only
-            status_icon = "✅" if item['has_layout'] else "📝"
+            status_icon = "✅" if item["has_layout"] else "📝"
 
             result_text += f"{i}. {status_icon} **{item['name']}** (ID: `{item['id']}`)\n"
             result_text += f"   - Category: {item['category']}"
-            if item.get('subcategory'):
+            if item.get("subcategory"):
                 result_text += f" > {item['subcategory']}"
             result_text += "\n"
 
-            if item['has_layout']:
-                bounds = item['bounds']
+            if item["has_layout"]:
+                bounds = item["bounds"]
                 result_text += f"   - Size: {bounds['width']}×{bounds['height']}×{bounds['depth']} blocks (W×H×D)\n"
                 result_text += f"   - Materials: {item['materials_count']} total blocks\n"
-                if item.get('tags'):
+                if item.get("tags"):
                     result_text += f"   - Tags: {', '.join(item['tags'])}\n"
                 result_text += "   - ✅ Automated layout available\n"
             else:
                 result_text += "   - 📝 Manual instructions only (no automated layout yet)\n"
 
-            if item.get('notes'):
+            if item.get("notes"):
                 result_text += f"   - Notes: {item['notes']}\n"
             result_text += "\n"
 
         result_text += "\n💡 Legend:\n"
         result_text += "   ✅ = Has automated layout (can be placed with furniture_placer)\n"
         result_text += "   📝 = Manual instructions only (build by hand using catalog)\n\n"
-        result_text += "To get details, use: `furniture_lookup` with action='get' and furniture_id='<id>'"
+        result_text += (
+            "To get details, use: `furniture_lookup` with action='get' and furniture_id='<id>'"
+        )
 
         return [TextContent(type="text", text=result_text)]
 
@@ -189,7 +213,12 @@ async def handle_furniture_lookup(
         furniture_id = arguments.get("furniture_id")
 
         if not furniture_id:
-            return [TextContent(type="text", text="❌ Error: 'furniture_id' parameter is required for action='get'")]
+            return [
+                TextContent(
+                    type="text",
+                    text="❌ Error: 'furniture_id' parameter is required for action='get'",
+                )
+            ]
 
         # Try to find in layouts first
         layout = None
@@ -207,39 +236,44 @@ async def handle_furniture_lookup(
                     break
 
         if not layout and not catalog_item:
-            return [TextContent(type="text", text=f"❌ Furniture not found: '{furniture_id}'\n\nUse action='search' to find available furniture IDs.")]
+            return [
+                TextContent(
+                    type="text",
+                    text=f"❌ Furniture not found: '{furniture_id}'\n\nUse action='search' to find available furniture IDs.",
+                )
+            ]
 
         # If found in catalog but not layouts, return catalog info
         if catalog_item and not layout:
             result_text = f"📝 **{catalog_item['name']}** (ID: `{catalog_item['id']}`)\n\n"
             result_text += "**Status:** Manual instructions only (no automated layout yet)\n\n"
 
-            result_text += "**Category:** " + catalog_item['category']
-            if catalog_item.get('subcategory'):
+            result_text += "**Category:** " + catalog_item["category"]
+            if catalog_item.get("subcategory"):
                 result_text += f" > {catalog_item['subcategory']}"
             result_text += "\n\n"
 
             result_text += "**Build Instructions:**\n\n"
 
             # Extract all content blocks
-            for block in catalog_item.get('content_blocks', []):
-                if block.get('type') == 'paragraph':
-                    result_text += block.get('text', '') + "\n\n"
-                elif block.get('type') == 'list':
-                    style = block.get('style', 'unordered')
-                    for i, item_text in enumerate(block.get('items', []), 1):
-                        if style == 'ordered':
+            for block in catalog_item.get("content_blocks", []):
+                if block.get("type") == "paragraph":
+                    result_text += block.get("text", "") + "\n\n"
+                elif block.get("type") == "list":
+                    style = block.get("style", "unordered")
+                    for i, item_text in enumerate(block.get("items", []), 1):
+                        if style == "ordered":
                             result_text += f"{i}. {item_text}\n"
                         else:
                             result_text += f"- {item_text}\n"
                     result_text += "\n"
-                elif block.get('type') == 'table':
+                elif block.get("type") == "table":
                     result_text += "\n**Table:**\n"
-                    headers = block.get('headers', [])
+                    headers = block.get("headers", [])
                     if headers:
                         result_text += "| " + " | ".join(headers) + " |\n"
-                        result_text += "| " + " | ".join(['---'] * len(headers)) + " |\n"
-                    for row in block.get('rows', []):
+                        result_text += "| " + " | ".join(["---"] * len(headers)) + " |\n"
+                    for row in block.get("rows", []):
                         result_text += "| " + " | ".join(row) + " |\n"
                     result_text += "\n"
 
@@ -252,21 +286,21 @@ async def handle_furniture_lookup(
         result_text = f"🪑 **{layout['name']}** (ID: `{layout['id']}`)\n\n"
 
         # Basic info
-        result_text += "**Category:** " + layout['category']
-        if layout.get('subcategory'):
+        result_text += "**Category:** " + layout["category"]
+        if layout.get("subcategory"):
             result_text += f" > {layout['subcategory']}"
         result_text += "\n\n"
 
         # Dimensions
-        bounds = layout['bounds']
+        bounds = layout["bounds"]
         result_text += f"**Dimensions:** {bounds['width']}×{bounds['height']}×{bounds['depth']} blocks (Width × Height × Depth)\n\n"
 
         # Origin
-        origin = layout.get('origin', {})
+        origin = layout.get("origin", {})
         result_text += f"**Origin:** {origin.get('type', 'front_left_bottom')} (facing {origin.get('facing', 'north')})\n\n"
 
         # Materials
-        materials = layout.get('materials', {})
+        materials = layout.get("materials", {})
         if materials:
             result_text += "**Materials Required:**\n"
             for block, count in materials.items():
@@ -274,28 +308,30 @@ async def handle_furniture_lookup(
             result_text += f"  Total: {sum(materials.values())} blocks\n\n"
 
         # Placements
-        placements = layout.get('placements', [])
+        placements = layout.get("placements", [])
         result_text += f"**Placements:** ({len(placements)} operations)\n"
         for i, placement in enumerate(placements[:10], 1):  # Show first 10
-            ptype = placement.get('type')
-            if ptype == 'block':
-                pos = placement['pos']
-                block = placement['block']
-                state = placement.get('state', '')
-                result_text += f"  {i}. Block at ({pos['x']},{pos['y']},{pos['z']}): {block}{state}\n"
-            elif ptype == 'fill':
-                from_pos = placement['from']
-                to_pos = placement['to']
-                block = placement['block']
+            ptype = placement.get("type")
+            if ptype == "block":
+                pos = placement["pos"]
+                block = placement["block"]
+                state = placement.get("state", "")
+                result_text += (
+                    f"  {i}. Block at ({pos['x']},{pos['y']},{pos['z']}): {block}{state}\n"
+                )
+            elif ptype == "fill":
+                from_pos = placement["from"]
+                to_pos = placement["to"]
+                block = placement["block"]
                 result_text += f"  {i}. Fill ({from_pos['x']},{from_pos['y']},{from_pos['z']}) to ({to_pos['x']},{to_pos['y']},{to_pos['z']}): {block}\n"
-            elif ptype == 'line':
-                from_pos = placement['from']
-                to_pos = placement['to']
-                block = placement['block']
+            elif ptype == "line":
+                from_pos = placement["from"]
+                to_pos = placement["to"]
+                block = placement["block"]
                 result_text += f"  {i}. Line ({from_pos['x']},{from_pos['y']},{from_pos['z']}) to ({to_pos['x']},{to_pos['y']},{to_pos['z']}): {block}\n"
-            elif ptype == 'layer':
-                y = placement['y']
-                pattern = placement['pattern']
+            elif ptype == "layer":
+                y = placement["y"]
+                pattern = placement["pattern"]
                 result_text += f"  {i}. Layer at Y={y}: {pattern}\n"
 
         if len(placements) > 10:
@@ -303,7 +339,7 @@ async def handle_furniture_lookup(
         result_text += "\n"
 
         # Clearance
-        clearance = layout.get('clearance')
+        clearance = layout.get("clearance")
         if clearance:
             result_text += "**Clearance Required:**\n"
             result_text += f"  - Front: {clearance.get('front', 0)} blocks\n"
@@ -313,19 +349,21 @@ async def handle_furniture_lookup(
             result_text += f"  - Top: {clearance.get('top', 0)} blocks\n\n"
 
         # Notes
-        if layout.get('notes'):
+        if layout.get("notes"):
             result_text += f"**Notes:** {layout['notes']}\n\n"
 
         # Variants
-        variants = layout.get('variants', [])
+        variants = layout.get("variants", [])
         if variants:
             result_text += f"**Variants:** ({len(variants)} available)\n"
             for variant in variants:
-                result_text += f"  - {variant['name']} (ID: `{variant['id']}`): {variant['changes']}\n"
+                result_text += (
+                    f"  - {variant['name']} (ID: `{variant['id']}`): {variant['changes']}\n"
+                )
             result_text += "\n"
 
         # Tags
-        if layout.get('tags'):
+        if layout.get("tags"):
             result_text += f"**Tags:** {', '.join(layout['tags'])}\n\n"
 
         # Full layout data as JSON
@@ -333,19 +371,22 @@ async def handle_furniture_lookup(
         result_text += json.dumps(layout, indent=2)
         result_text += "\n```\n\n"
 
-        result_text += "💡 Use the placement helper tool to build this furniture at specific coordinates."
+        result_text += (
+            "💡 Use the placement helper tool to build this furniture at specific coordinates."
+        )
 
         return [TextContent(type="text", text=result_text)]
 
     else:
-        return [TextContent(type="text", text=f"❌ Invalid action: '{action}'. Must be 'search' or 'get'.")]
+        return [
+            TextContent(
+                type="text", text=f"❌ Invalid action: '{action}'. Must be 'search' or 'get'."
+            )
+        ]
 
 
 async def handle_place_furniture(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance: logging.Logger
+    arguments: Dict[str, Any], rcon, config, logger_instance: logging.Logger
 ) -> List[TextContent]:
     """
     Handle place_furniture tool.
@@ -363,19 +404,36 @@ async def handle_place_furniture(
     place_on_surface = arguments.get("place_on_surface", True)
     preview_only = arguments.get("preview_only", False)
 
-    missing = [field for field in ("furniture_id", "origin_x", "origin_y", "origin_z") if arguments.get(field) is None]
+    missing = [
+        field
+        for field in ("furniture_id", "origin_x", "origin_y", "origin_z")
+        if arguments.get(field) is None
+    ]
     if missing:
-        return [TextContent(type="text", text=f"❌ Missing required field(s): {', '.join(missing)}")]
+        return [
+            TextContent(type="text", text=f"❌ Missing required field(s): {', '.join(missing)}")
+        ]
 
     if facing:
         facing = facing.lower()
         if facing not in FurniturePlacer.ROTATIONS:
             valid = ", ".join(FurniturePlacer.ROTATIONS.keys())
-            return [TextContent(type="text", text=f"❌ Invalid facing '{facing}'. Valid options: {valid}")]
+            return [
+                TextContent(
+                    type="text", text=f"❌ Invalid facing '{facing}'. Valid options: {valid}"
+                )
+            ]
 
-    layout = next((item for item in load_furniture_layouts() if item.get('id') == furniture_id), None)
+    layout = next(
+        (item for item in load_furniture_layouts() if item.get("id") == furniture_id), None
+    )
     if not layout:
-        return [TextContent(type="text", text=f"❌ Furniture layout '{furniture_id}' not found or does not have an automated blueprint.")]
+        return [
+            TextContent(
+                type="text",
+                text=f"❌ Furniture layout '{furniture_id}' not found or does not have an automated blueprint.",
+            )
+        ]
 
     try:
         commands = FurniturePlacer.get_placement_commands(
@@ -391,10 +449,10 @@ async def handle_place_furniture(
         return [TextContent(type="text", text=f"❌ Failed to generate commands: {exc}")]
 
     summary = FurniturePlacer.get_command_summary(commands)
-    final_facing = facing or layout.get('origin', {}).get('facing', 'north')
+    final_facing = facing or layout.get("origin", {}).get("facing", "north")
 
     if preview_only:
-        command_listing = '\n'.join(commands)
+        command_listing = "\n".join(commands)
         preview_text = [
             "🛋️ **Furniture Placement Preview**",
             f"Layout: {layout.get('name')} (`{layout.get('id')}`)",
@@ -408,13 +466,13 @@ async def handle_place_furniture(
             "```",
             "Set `preview_only` to false to execute these commands.",
         ]
-        return [TextContent(type="text", text='\n'.join(preview_text))]
+        return [TextContent(type="text", text="\n".join(preview_text))]
 
     executed_commands: List[str] = []
     try:
         for command in commands:
             stripped = command.strip()
-            if not stripped or stripped.startswith('#'):
+            if not stripped or stripped.startswith("#"):
                 continue
             executed_commands.append(stripped)
             rcon.execute_command(stripped)
@@ -430,15 +488,17 @@ async def handle_place_furniture(
         ]
         for cmd in executed_commands[-10:]:
             failure_output.append(f"- `{cmd}`")
-        failure_output.extend([
-            "",
-            f"Error: {exc}",
-            "Use `//undo` to revert the changes if necessary.",
-        ])
-        return [TextContent(type="text", text='\n'.join(failure_output))]
+        failure_output.extend(
+            [
+                "",
+                f"Error: {exc}",
+                "Use `//undo` to revert the changes if necessary.",
+            ]
+        )
+        return [TextContent(type="text", text="\n".join(failure_output))]
 
-    materials = layout.get('materials', {})
-    clearance = layout.get('clearance', {})
+    materials = layout.get("materials", {})
+    clearance = layout.get("clearance", {})
 
     material_lines = []
     if materials:
@@ -478,4 +538,4 @@ async def handle_place_furniture(
 
     success_lines.append("Undo tip: run `//undo` if you need to revert this placement.")
 
-    return [TextContent(type="text", text='\n'.join(success_lines))]
+    return [TextContent(type="text", text="\n".join(success_lines))]

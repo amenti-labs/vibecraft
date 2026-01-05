@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 # Context directory path
 
+
 def load_minecraft_items() -> List[Dict[str, Any]]:
     """Load Minecraft items database from JSON file."""
     items_file = CONTEXT_DIR / "minecraft_items_filtered.json"
@@ -30,6 +31,7 @@ def load_minecraft_items() -> List[Dict[str, Any]]:
     except Exception as e:
         logger.error(f"Error loading Minecraft items: {e}")
         return []
+
 
 # Load items once at module import time
 minecraft_items = load_minecraft_items()

@@ -33,16 +33,16 @@ def fetch_block_state(rcon: RCONManager, x: int, y: int, z: int) -> Optional[Dic
     properties: Dict[str, str] = {}
 
     if props_str:
-        for fragment in props_str.split(','):
-            if ':' not in fragment:
+        for fragment in props_str.split(","):
+            if ":" not in fragment:
                 continue
-            key, value = fragment.split(':', 1)
+            key, value = fragment.split(":", 1)
             key = key.strip()
             value = value.strip().strip('"')
             properties[key] = value
 
     if properties:
-        ordered = ','.join(f"{k}={properties[k]}" for k in sorted(properties))
+        ordered = ",".join(f"{k}={properties[k]}" for k in sorted(properties))
         key_repr = f"{block_id}[{ordered}]"
     else:
         ordered = ""

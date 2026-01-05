@@ -16,6 +16,7 @@ from typing import Set, Dict
 # RCON Connection Constants
 # =============================================================================
 
+
 class RCONConstants:
     """Constants for RCON connection management."""
 
@@ -38,6 +39,7 @@ class RCONConstants:
 # WorldEdit Constants
 # =============================================================================
 
+
 class WorldEditConstants:
     """Constants for WorldEdit operations."""
 
@@ -55,16 +57,37 @@ class WorldEditConstants:
 
     # WorldEdit commands that require world context
     WORLD_CONTEXT_COMMANDS = {
-        "pos1", "pos2", "set", "replace", "copy", "paste", "undo",
-        "redo", "expand", "contract", "sphere", "cyl", "walls",
-        "faces", "hollow", "smooth", "distr", "count", "generate",
-        "deform", "flora", "forest", "gmask", "sel"
+        "pos1",
+        "pos2",
+        "set",
+        "replace",
+        "copy",
+        "paste",
+        "undo",
+        "redo",
+        "expand",
+        "contract",
+        "sphere",
+        "cyl",
+        "walls",
+        "faces",
+        "hollow",
+        "smooth",
+        "distr",
+        "count",
+        "generate",
+        "deform",
+        "flora",
+        "forest",
+        "gmask",
+        "sel",
     }
 
 
 # =============================================================================
 # Build Validation Constants
 # =============================================================================
+
 
 class BuildConstants:
     """Constants for building and validation."""
@@ -94,6 +117,7 @@ class BuildConstants:
 # Terrain Constants
 # =============================================================================
 
+
 class TerrainConstants:
     """Constants for terrain generation and analysis."""
 
@@ -119,6 +143,7 @@ class TerrainConstants:
 # Code Sandbox Constants
 # =============================================================================
 
+
 class SandboxConstants:
     """Constants for code sandbox execution."""
 
@@ -137,14 +162,23 @@ class SandboxConstants:
 
     # Blocked server commands
     BLOCKED_COMMAND_PATTERNS = {
-        'stop', 'ban', 'kick', 'op ', 'deop', 'whitelist',
-        'save-all', 'save-off', 'save-on', 'reload',
+        "stop",
+        "ban",
+        "kick",
+        "op ",
+        "deop",
+        "whitelist",
+        "save-all",
+        "save-off",
+        "save-on",
+        "reload",
     }
 
 
 # =============================================================================
 # Spatial Analysis Constants
 # =============================================================================
+
 
 class SpatialConstants:
     """Constants for spatial awareness scanning."""
@@ -169,6 +203,7 @@ class SpatialConstants:
 # Furniture & Patterns Constants
 # =============================================================================
 
+
 class PatternConstants:
     """Constants for furniture and building patterns."""
 
@@ -185,54 +220,109 @@ class PatternConstants:
 # Minecraft Block Categories
 # =============================================================================
 
+
 class BlockCategories:
     """Block categories for terrain and building analysis."""
 
-    LIQUID_BLOCKS: Set[str] = {
-        'water', 'lava', 'flowing_water', 'flowing_lava'
-    }
+    LIQUID_BLOCKS: Set[str] = {"water", "lava", "flowing_water", "flowing_lava"}
 
     VEGETATION_BLOCKS: Set[str] = {
-        'oak_log', 'birch_log', 'spruce_log', 'jungle_log', 'acacia_log',
-        'dark_oak_log', 'mangrove_log', 'cherry_log',
-        'oak_leaves', 'birch_leaves', 'spruce_leaves', 'jungle_leaves',
-        'acacia_leaves', 'dark_oak_leaves', 'mangrove_leaves', 'cherry_leaves',
-        'grass', 'tall_grass', 'fern', 'large_fern', 'dead_bush',
-        'vine', 'lily_pad', 'sea_grass', 'tall_seagrass', 'kelp'
+        "oak_log",
+        "birch_log",
+        "spruce_log",
+        "jungle_log",
+        "acacia_log",
+        "dark_oak_log",
+        "mangrove_log",
+        "cherry_log",
+        "oak_leaves",
+        "birch_leaves",
+        "spruce_leaves",
+        "jungle_leaves",
+        "acacia_leaves",
+        "dark_oak_leaves",
+        "mangrove_leaves",
+        "cherry_leaves",
+        "grass",
+        "tall_grass",
+        "fern",
+        "large_fern",
+        "dead_bush",
+        "vine",
+        "lily_pad",
+        "sea_grass",
+        "tall_seagrass",
+        "kelp",
     }
 
     NATURAL_SURFACE_BLOCKS: Set[str] = {
-        'grass_block', 'dirt', 'coarse_dirt', 'podzol', 'mycelium',
-        'sand', 'red_sand', 'gravel', 'stone', 'deepslate',
-        'sandstone', 'red_sandstone', 'terracotta', 'snow', 'ice',
-        'packed_ice', 'blue_ice', 'netherrack', 'soul_sand', 'soul_soil',
-        'end_stone', 'moss_block', 'mud', 'clay'
+        "grass_block",
+        "dirt",
+        "coarse_dirt",
+        "podzol",
+        "mycelium",
+        "sand",
+        "red_sand",
+        "gravel",
+        "stone",
+        "deepslate",
+        "sandstone",
+        "red_sandstone",
+        "terracotta",
+        "snow",
+        "ice",
+        "packed_ice",
+        "blue_ice",
+        "netherrack",
+        "soul_sand",
+        "soul_soil",
+        "end_stone",
+        "moss_block",
+        "mud",
+        "clay",
     }
 
-    AIR_BLOCKS: Set[str] = {'air', 'cave_air', 'void_air'}
+    AIR_BLOCKS: Set[str] = {"air", "cave_air", "void_air"}
 
     LIGHT_SOURCES: Set[str] = {
-        'torch', 'wall_torch', 'soul_torch', 'soul_wall_torch',
-        'lantern', 'soul_lantern', 'sea_lantern', 'glowstone',
-        'shroomlight', 'end_rod', 'campfire', 'soul_campfire',
-        'redstone_lamp', 'jack_o_lantern', 'beacon', 'conduit',
-        'crying_obsidian', 'respawn_anchor', 'magma_block',
-        'lava', 'fire', 'soul_fire'
+        "torch",
+        "wall_torch",
+        "soul_torch",
+        "soul_wall_torch",
+        "lantern",
+        "soul_lantern",
+        "sea_lantern",
+        "glowstone",
+        "shroomlight",
+        "end_rod",
+        "campfire",
+        "soul_campfire",
+        "redstone_lamp",
+        "jack_o_lantern",
+        "beacon",
+        "conduit",
+        "crying_obsidian",
+        "respawn_anchor",
+        "magma_block",
+        "lava",
+        "fire",
+        "soul_fire",
     }
 
     HAZARD_BLOCKS: Dict[str, str] = {
-        'lava': 'Lava flow',
-        'magma_block': 'Magma blocks',
-        'fire': 'Fire',
-        'sweet_berry_bush': 'Berry bushes (damage)',
-        'cactus': 'Cacti',
-        'powder_snow': 'Powder snow'
+        "lava": "Lava flow",
+        "magma_block": "Magma blocks",
+        "fire": "Fire",
+        "sweet_berry_bush": "Berry bushes (damage)",
+        "cactus": "Cacti",
+        "powder_snow": "Powder snow",
     }
 
 
 # =============================================================================
 # Logging and Debug Constants
 # =============================================================================
+
 
 class LogConstants:
     """Constants for logging configuration."""
@@ -248,6 +338,7 @@ class LogConstants:
 # =============================================================================
 # API Response Constants
 # =============================================================================
+
 
 class APIConstants:
     """Constants for API responses and formatting."""

@@ -25,32 +25,35 @@ logger = logging.getLogger(__name__)
 
 # Pre-compiled regex patterns for common parsing operations
 WORLDEDIT_VERSION_PATTERN = re.compile(r"WorldEdit.*?(\d+\.\d+\.\d+)")
-PLAYER_POS_PATTERN = re.compile(r'\[([-\d.]+)d?,\s*([-\d.]+)d?,\s*([-\d.]+)d?\]')
-PLAYER_ROT_PATTERN = re.compile(r'\[([-\d.]+)f?,\s*([-\d.]+)f?\]')
+PLAYER_POS_PATTERN = re.compile(r"\[([-\d.]+)d?,\s*([-\d.]+)d?,\s*([-\d.]+)d?\]")
+PLAYER_ROT_PATTERN = re.compile(r"\[([-\d.]+)f?,\s*([-\d.]+)f?\]")
 BLOCK_ID_PATTERN = re.compile(r'"minecraft:([^"]+)"')
 BLOCK_STATE_PATTERN = re.compile(r"minecraft:([a-z0-9_/]+)(?:\{([^}]*)\})?")
-DISTR_LINE_PATTERN = re.compile(r'([\d.]+)%\s+([a-z_:]+)\s+\((\d+)', re.IGNORECASE)
-COUNT_BLOCKS_PATTERN = re.compile(r'(\d+)\s+block', re.IGNORECASE)
+DISTR_LINE_PATTERN = re.compile(r"([\d.]+)%\s+([a-z_:]+)\s+\((\d+)", re.IGNORECASE)
+COUNT_BLOCKS_PATTERN = re.compile(r"(\d+)\s+block", re.IGNORECASE)
 
 
 class CircuitState(Enum):
     """Circuit breaker states."""
-    CLOSED = "closed"      # Normal operation
-    OPEN = "open"          # Failing fast, not attempting connections
+
+    CLOSED = "closed"  # Normal operation
+    OPEN = "open"  # Failing fast, not attempting connections
     HALF_OPEN = "half_open"  # Testing if service recovered
 
 
 @dataclass
 class CircuitBreakerConfig:
     """Configuration for circuit breaker behavior."""
-    failure_threshold: int = 5          # Failures before opening circuit
-    recovery_timeout: float = 30.0      # Seconds before attempting recovery
-    half_open_max_calls: int = 3        # Test calls in half-open state
+
+    failure_threshold: int = 5  # Failures before opening circuit
+    recovery_timeout: float = 30.0  # Seconds before attempting recovery
+    half_open_max_calls: int = 3  # Test calls in half-open state
 
 
 @dataclass
 class CircuitBreakerState:
     """Tracks circuit breaker state."""
+
     state: CircuitState = CircuitState.CLOSED
     failure_count: int = 0
     last_failure_time: float = 0.0
@@ -143,8 +146,10 @@ class RCONManager:
             current_time = time.time()
 
             # Check if connection is stale (idle too long)
-            if (self._connection is not None and
-                current_time - self._last_used > self._connection_max_idle):
+            if (
+                self._connection is not None
+                and current_time - self._last_used > self._connection_max_idle
+            ):
                 logger.debug("Connection idle too long, reconnecting")
                 self._close_connection_unsafe()
 
@@ -152,10 +157,7 @@ class RCONManager:
             if self._connection is None:
                 try:
                     self._connection = MCRcon(
-                        self.host,
-                        self.password,
-                        port=self.port,
-                        timeout=self.timeout
+                        self.host, self.password, port=self.port, timeout=self.timeout
                     )
                     self._connection.connect()
                     self._world_context_set = False
@@ -227,11 +229,33 @@ class RCONManager:
 
                 # Set world context for WorldEdit commands
                 if cmd.startswith("/") or any(
-                    cmd.startswith(we_cmd) for we_cmd in
-                    ["pos1", "pos2", "set", "replace", "copy", "paste", "undo",
-                     "redo", "expand", "contract", "sphere", "cyl", "walls",
-                     "faces", "hollow", "smooth", "distr", "count", "generate",
-                     "deform", "flora", "forest", "gmask", "sel"]
+                    cmd.startswith(we_cmd)
+                    for we_cmd in [
+                        "pos1",
+                        "pos2",
+                        "set",
+                        "replace",
+                        "copy",
+                        "paste",
+                        "undo",
+                        "redo",
+                        "expand",
+                        "contract",
+                        "sphere",
+                        "cyl",
+                        "walls",
+                        "faces",
+                        "hollow",
+                        "smooth",
+                        "distr",
+                        "count",
+                        "generate",
+                        "deform",
+                        "flora",
+                        "forest",
+                        "gmask",
+                        "sel",
+                    ]
                 ):
                     self._ensure_world_context()
 
@@ -252,9 +276,7 @@ class RCONManager:
 
             except TimeoutError as e:
                 self._record_failure()
-                raise RCONTimeoutError(
-                    f"Command timed out after {self.timeout}s: {cmd}"
-                ) from e
+                raise RCONTimeoutError(f"Command timed out after {self.timeout}s: {cmd}") from e
 
             except Exception as e:
                 self._record_failure()
@@ -264,9 +286,7 @@ class RCONManager:
 
         # All retries exhausted
         self._record_failure()
-        raise RCONConnectionError(
-            f"Failed after {max_retries} attempts: {last_error}"
-        )
+        raise RCONConnectionError(f"Failed after {max_retries} attempts: {last_error}")
 
     async def execute_command_async(self, command: str) -> str:
         """Async wrapper for execute_command.

@@ -33,10 +33,13 @@ def register_tool(name: str):
         async def handle_worldedit_selection(arguments, rcon, config, logger):
             ...
     """
+
     def decorator(func: Callable):
         TOOL_REGISTRY[name] = func
         return func
+
     return decorator
+
 
 # Import tool modules
 from . import spatial
@@ -49,7 +52,7 @@ from . import worldedit_advanced
 from . import workflow_tools
 from . import helper_utils
 from . import core_tools
-from . import worldedit_wrappers
+from . import worldedit_wrappers as worldedit_wrappers
 from . import build_tools
 
 # Register spatial tools
@@ -114,6 +117,7 @@ for tool_name in core_tools.WORLD_EDIT_TOOL_PREFIXES.keys():
             return await core_tools.handle_worldedit_generic(
                 arguments, rcon, config, logger_instance, name
             )
+
         return handler
 
     TOOL_REGISTRY[tool_name] = make_worldedit_handler(tool_name)

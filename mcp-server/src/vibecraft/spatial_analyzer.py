@@ -36,7 +36,7 @@ class SpatialAnalyzerV2:
         center_y: int,
         center_z: int,
         radius: int = 5,
-        detail_level: str = "medium"
+        detail_level: str = "medium",
     ) -> Dict[str, Any]:
         """
         Fast spatial analysis.
@@ -52,42 +52,36 @@ class SpatialAnalyzerV2:
         logger.info(f"Fast spatial scan at ({center_x},{center_y},{center_z})")
 
         result = {
-            'center': [center_x, center_y, center_z],
-            'radius': radius,
-            'detail_level': detail_level,
-            'version': 3
+            "center": [center_x, center_y, center_z],
+            "radius": radius,
+            "detail_level": detail_level,
+            "version": 3,
         }
 
         # 1. Find floor using binary search (5-6 commands)
         floor_y = self._find_floor_fast(center_x, center_y, center_z, radius)
-        result['floor_y'] = floor_y
+        result["floor_y"] = floor_y
 
         # 2. Find ceiling using linear scan (stops at first solid)
         ceiling_y = self._find_ceiling_fast(center_x, center_y, center_z, radius)
-        result['ceiling_y'] = ceiling_y
+        result["ceiling_y"] = ceiling_y
 
         # 3. Get materials if medium/high (1 command)
         if detail_level in ["medium", "high"]:
             materials = self._get_materials_fast(center_x, center_y, center_z, radius)
-            result['material_summary'] = materials
+            result["material_summary"] = materials
 
         # 4. Generate recommendations (no commands)
-        result['recommendations'] = self._generate_recommendations(
-            floor_y, ceiling_y, center_y
-        )
+        result["recommendations"] = self._generate_recommendations(floor_y, ceiling_y, center_y)
 
         # 5. Summary
-        result['summary'] = self._generate_summary(result)
+        result["summary"] = self._generate_summary(result)
 
         logger.info(f"Scan complete: floor={floor_y}, ceiling={ceiling_y}")
         return result
 
     def _find_floor_fast(
-        self,
-        center_x: int,
-        center_y: int,
-        center_z: int,
-        radius: int
+        self, center_x: int, center_y: int, center_z: int, radius: int
     ) -> Optional[int]:
         """
         Find floor Y using binary search.
@@ -118,11 +112,7 @@ class SpatialAnalyzerV2:
         return floor_y
 
     def _find_ceiling_fast(
-        self,
-        center_x: int,
-        center_y: int,
-        center_z: int,
-        radius: int
+        self, center_x: int, center_y: int, center_z: int, radius: int
     ) -> Optional[int]:
         """
         Find ceiling Y using linear scan upward.
@@ -140,13 +130,7 @@ class SpatialAnalyzerV2:
 
         return None  # No ceiling found in range
 
-    def _is_layer_solid(
-        self,
-        center_x: int,
-        y: int,
-        center_z: int,
-        radius: int
-    ) -> bool:
+    def _is_layer_solid(self, center_x: int, y: int, center_z: int, radius: int) -> bool:
         """
         Check if a horizontal layer at Y is mostly solid (>50% non-air).
 
@@ -165,7 +149,7 @@ class SpatialAnalyzerV2:
             # Parse count
             count = 0
             if result:
-                match = re.search(r'(\d+)\s+block', str(result), re.IGNORECASE)
+                match = re.search(r"(\d+)\s+block", str(result), re.IGNORECASE)
                 if match:
                     count = int(match.group(1))
 
@@ -180,91 +164,76 @@ class SpatialAnalyzerV2:
             return False
 
     def _get_materials_fast(
-        self,
-        center_x: int,
-        center_y: int,
-        center_z: int,
-        radius: int
+        self, center_x: int, center_y: int, center_z: int, radius: int
     ) -> Dict[str, Any]:
         """
         Get material summary with ONE //distr command.
         """
         try:
             # Select region
-            self.rcon.send_command(
-                f"//pos1 {center_x-radius},{center_y-radius},{center_z-radius}"
-            )
-            self.rcon.send_command(
-                f"//pos2 {center_x+radius},{center_y+radius},{center_z+radius}"
-            )
+            self.rcon.send_command(f"//pos1 {center_x-radius},{center_y-radius},{center_z-radius}")
+            self.rcon.send_command(f"//pos2 {center_x+radius},{center_y+radius},{center_z+radius}")
 
             result = self.rcon.send_command("//distr")
 
             # Parse distribution
             blocks = {}
             if result:
-                for line in str(result).split('\n'):
-                    match = re.search(r'([\d.]+)%\s+([a-z_:]+)\s+\((\d+)', line, re.IGNORECASE)
+                for line in str(result).split("\n"):
+                    match = re.search(r"([\d.]+)%\s+([a-z_:]+)\s+\((\d+)", line, re.IGNORECASE)
                     if match:
                         block = match.group(2)
                         count = int(match.group(3))
-                        if ':' in block:
-                            block = block.split(':', 1)[1]
-                        if block != 'air':
+                        if ":" in block:
+                            block = block.split(":", 1)[1]
+                        if block != "air":
                             blocks[block] = count
 
             # Get top materials
             sorted_blocks = sorted(blocks.items(), key=lambda x: x[1], reverse=True)
             top_materials = [b for b, c in sorted_blocks[:5]]
-            dominant = top_materials[0] if top_materials else 'air'
+            dominant = top_materials[0] if top_materials else "air"
 
             return {
-                'dominant_material': dominant,
-                'all_materials': top_materials,
-                'material_counts': dict(sorted_blocks[:5])
+                "dominant_material": dominant,
+                "all_materials": top_materials,
+                "material_counts": dict(sorted_blocks[:5]),
             }
 
         except Exception as e:
             logger.debug(f"Material scan failed: {e}")
-            return {
-                'dominant_material': 'unknown',
-                'all_materials': [],
-                'material_counts': {}
-            }
+            return {"dominant_material": "unknown", "all_materials": [], "material_counts": {}}
 
     def _generate_recommendations(
-        self,
-        floor_y: Optional[int],
-        ceiling_y: Optional[int],
-        center_y: int
+        self, floor_y: Optional[int], ceiling_y: Optional[int], center_y: int
     ) -> Dict[str, Any]:
         """Generate placement recommendations."""
         recs = {}
         warnings = []
 
         if floor_y is not None:
-            recs['floor_placement_y'] = floor_y + 1  # ON TOP of floor
-            recs['floor_block_y'] = floor_y
-            recs['FURNITURE_Y'] = floor_y + 1
+            recs["floor_placement_y"] = floor_y + 1  # ON TOP of floor
+            recs["floor_block_y"] = floor_y
+            recs["FURNITURE_Y"] = floor_y + 1
         else:
-            recs['floor_placement_y'] = center_y
+            recs["floor_placement_y"] = center_y
             warnings.append("No floor detected")
 
         if ceiling_y is not None:
-            recs['ceiling_placement_y'] = ceiling_y
-            recs['ceiling_block_y'] = ceiling_y
+            recs["ceiling_placement_y"] = ceiling_y
+            recs["ceiling_block_y"] = ceiling_y
         else:
-            recs['ceiling_placement_y'] = center_y + 4
+            recs["ceiling_placement_y"] = center_y + 4
 
         # Ceiling height
         if floor_y and ceiling_y:
             height = ceiling_y - floor_y - 1
-            recs['ceiling_height'] = height
+            recs["ceiling_height"] = height
             if height < 3:
                 warnings.append(f"Low ceiling ({height} blocks)")
 
-        recs['clear_for_placement'] = True
-        recs['warnings'] = warnings
+        recs["clear_for_placement"] = True
+        recs["warnings"] = warnings
 
         return recs
 
@@ -272,9 +241,9 @@ class SpatialAnalyzerV2:
         """Generate quick summary."""
         lines = []
 
-        floor_y = analysis.get('floor_y')
-        ceiling_y = analysis.get('ceiling_y')
-        recs = analysis.get('recommendations', {})
+        floor_y = analysis.get("floor_y")
+        ceiling_y = analysis.get("ceiling_y")
+        recs = analysis.get("recommendations", {})
 
         lines.append("**Spatial Scan Results:**")
 
@@ -291,13 +260,13 @@ class SpatialAnalyzerV2:
                 lines.append(f"- Room height: {height} blocks")
 
         # Materials
-        mats = analysis.get('material_summary', {})
-        if mats.get('all_materials'):
+        mats = analysis.get("material_summary", {})
+        if mats.get("all_materials"):
             lines.append(f"- Materials: {', '.join(mats['all_materials'][:3])}")
 
         # Warnings
-        if recs.get('warnings'):
-            for w in recs['warnings']:
+        if recs.get("warnings"):
+            for w in recs["warnings"]:
                 lines.append(f"- ⚠️ {w}")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)

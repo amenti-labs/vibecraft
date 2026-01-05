@@ -85,16 +85,18 @@ class BuildWorkflowCoordinator:
             else:
                 status = "pending"
 
-            phase_status.append({
-                "id": phase.identifier,
-                "name": phase.name,
-                "status": status,
-                "required_validations": phase.required_validations,
-                "completed_validations": {
-                    vt: len(self.state.get("validations", {}).get(vt, []))
-                    for vt in phase.required_validations
-                },
-            })
+            phase_status.append(
+                {
+                    "id": phase.identifier,
+                    "name": phase.name,
+                    "status": status,
+                    "required_validations": phase.required_validations,
+                    "completed_validations": {
+                        vt: len(self.state.get("validations", {}).get(vt, []))
+                        for vt in phase.required_validations
+                    },
+                }
+            )
 
         return {
             "current_phase": current,
@@ -128,7 +130,11 @@ class BuildWorkflowCoordinator:
             completed.append(current_phase.identifier)
 
         current_index = next(
-            (index for index, phase in enumerate(self.PHASES) if phase.identifier == current_phase.identifier),
+            (
+                index
+                for index, phase in enumerate(self.PHASES)
+                if phase.identifier == current_phase.identifier
+            ),
             len(self.PHASES) - 1,
         )
 
@@ -138,7 +144,11 @@ class BuildWorkflowCoordinator:
             return {"advanced": True, "current_phase": self.state["current_phase"]}
 
         self._save_state()
-        return {"advanced": False, "reason": "Already at final phase", "phase": current_phase.identifier}
+        return {
+            "advanced": False,
+            "reason": "Already at final phase",
+            "phase": current_phase.identifier,
+        }
 
     def reset(self) -> None:
         self.state = {

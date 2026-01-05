@@ -11,15 +11,19 @@ class VibeCraftConfig(BaseSettings):
     """VibeCraft MCP Server Configuration"""
 
     # RCON Connection Settings
-    rcon_host: str = Field(default=RCONConstants.DEFAULT_HOST, description="Minecraft server RCON host")
-    rcon_port: int = Field(default=RCONConstants.DEFAULT_PORT, description="Minecraft server RCON port")
+    rcon_host: str = Field(
+        default=RCONConstants.DEFAULT_HOST, description="Minecraft server RCON host"
+    )
+    rcon_port: int = Field(
+        default=RCONConstants.DEFAULT_PORT, description="Minecraft server RCON port"
+    )
     rcon_password: str = Field(default="minecraft", description="RCON password")
-    rcon_timeout: int = Field(default=RCONConstants.DEFAULT_TIMEOUT, description="RCON command timeout in seconds")
+    rcon_timeout: int = Field(
+        default=RCONConstants.DEFAULT_TIMEOUT, description="RCON command timeout in seconds"
+    )
 
     # Safety Settings
-    enable_safety_checks: bool = Field(
-        default=True, description="Enable command safety validation"
-    )
+    enable_safety_checks: bool = Field(default=True, description="Enable command safety validation")
     allow_dangerous_commands: bool = Field(
         default=True,
         description="Allow potentially dangerous commands (//delchunks, //regen, etc.)",
@@ -40,9 +44,7 @@ class VibeCraftConfig(BaseSettings):
     enable_version_detection: bool = Field(
         default=True, description="Detect WorldEdit version on startup"
     )
-    enable_command_logging: bool = Field(
-        default=True, description="Log all commands to console"
-    )
+    enable_command_logging: bool = Field(default=True, description="Log all commands to console")
 
     model_config = SettingsConfigDict(
         env_prefix="VIBECRAFT_",

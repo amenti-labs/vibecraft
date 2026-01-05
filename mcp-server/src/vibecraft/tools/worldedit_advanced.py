@@ -10,10 +10,7 @@ from mcp.types import TextContent
 
 
 async def handle_worldedit_deform(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle worldedit_deform tool."""
     expression = arguments.get("expression", "").strip()
@@ -39,16 +36,17 @@ async def handle_worldedit_deform(
 
 
 async def handle_worldedit_vegetation(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle worldedit_vegetation tool."""
     cmd = arguments.get("command")
 
     if not cmd:
-        return [TextContent(type="text", text="❌ Command type must be specified (flora, forest, or tool_tree)")]
+        return [
+            TextContent(
+                type="text", text="❌ Command type must be specified (flora, forest, or tool_tree)"
+            )
+        ]
 
     if cmd == "flora":
         density = arguments.get("density", 10)
@@ -64,9 +62,23 @@ async def handle_worldedit_vegetation(
             return [TextContent(type="text", text="❌ Density must be between 0 and 100")]
 
         # Validate tree type
-        valid_types = ["oak", "birch", "spruce", "jungle", "acacia", "dark_oak", "mangrove", "cherry", "random"]
+        valid_types = [
+            "oak",
+            "birch",
+            "spruce",
+            "jungle",
+            "acacia",
+            "dark_oak",
+            "mangrove",
+            "cherry",
+            "random",
+        ]
         if tree_type not in valid_types:
-            return [TextContent(type="text", text=f"❌ Invalid tree type. Valid types: {', '.join(valid_types)}")]
+            return [
+                TextContent(
+                    type="text", text=f"❌ Invalid tree type. Valid types: {', '.join(valid_types)}"
+                )
+            ]
 
         command = f"//forest {tree_type} {density}"
 
@@ -75,14 +87,31 @@ async def handle_worldedit_vegetation(
         size = arguments.get("size", "medium").lower()
 
         # Validate tree type
-        valid_types = ["oak", "birch", "spruce", "jungle", "acacia", "dark_oak", "mangrove", "cherry"]
+        valid_types = [
+            "oak",
+            "birch",
+            "spruce",
+            "jungle",
+            "acacia",
+            "dark_oak",
+            "mangrove",
+            "cherry",
+        ]
         if tree_type not in valid_types:
-            return [TextContent(type="text", text=f"❌ Invalid tree type. Valid types: {', '.join(valid_types)}")]
+            return [
+                TextContent(
+                    type="text", text=f"❌ Invalid tree type. Valid types: {', '.join(valid_types)}"
+                )
+            ]
 
         # Validate size
         valid_sizes = ["small", "medium", "large"]
         if size not in valid_sizes:
-            return [TextContent(type="text", text=f"❌ Invalid size. Valid sizes: {', '.join(valid_sizes)}")]
+            return [
+                TextContent(
+                    type="text", text=f"❌ Invalid size. Valid sizes: {', '.join(valid_sizes)}"
+                )
+            ]
 
         # Map size to tree type suffix
         size_suffix = ""
@@ -110,16 +139,17 @@ async def handle_worldedit_vegetation(
 
 
 async def handle_worldedit_terrain_advanced(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle worldedit_terrain_advanced tool."""
     cmd = arguments.get("command")
 
     if not cmd:
-        return [TextContent(type="text", text="❌ Command type must be specified (caves, ore, or regen)")]
+        return [
+            TextContent(
+                type="text", text="❌ Command type must be specified (caves, ore, or regen)"
+            )
+        ]
 
     warning = ""
 
@@ -178,10 +208,7 @@ async def handle_worldedit_terrain_advanced(
 
 
 async def handle_worldedit_analysis(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle worldedit_analysis tool."""
     cmd = arguments.get("command")

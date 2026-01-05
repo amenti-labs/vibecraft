@@ -10,10 +10,7 @@ from mcp.types import TextContent
 
 
 async def handle_workflow_status(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle workflow_status tool."""
     from ..server import workflow
@@ -38,7 +35,7 @@ async def handle_workflow_status(
         line = f"{emoji} {phase_info['name']} (`{phase_info['id']}`)"
         if phase_info["required_validations"]:
             completed = phase_info["completed_validations"]
-            requirements = ', '.join(
+            requirements = ", ".join(
                 f"{req} ({completed.get(req, 0)})" for req in phase_info["required_validations"]
             )
             line += f" – validations: {requirements}"
@@ -54,14 +51,11 @@ async def handle_workflow_status(
         output.append("- none yet")
 
     logger_instance.info("Workflow status queried")
-    return [TextContent(type="text", text='\n'.join(output))]
+    return [TextContent(type="text", text="\n".join(output))]
 
 
 async def handle_workflow_advance(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle workflow_advance tool."""
     from ..server import workflow
@@ -75,7 +69,7 @@ async def handle_workflow_advance(
             f"Next phase: {next_phase.name} (`{next_phase.identifier}`)",
         ]
         logger_instance.info(f"Workflow advanced to {next_phase.identifier}")
-        return [TextContent(type="text", text='\n'.join(message))]
+        return [TextContent(type="text", text="\n".join(message))]
 
     missing = advance_result.get("missing")
     if missing:
@@ -91,20 +85,22 @@ async def handle_workflow_advance(
             advance_result.get("reason", "No additional information"),
         ]
         logger_instance.info("Workflow advance skipped")
-    return [TextContent(type="text", text='\n'.join(message))]
+    return [TextContent(type="text", text="\n".join(message))]
 
 
 async def handle_workflow_reset(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle workflow_reset tool."""
     from ..server import workflow
 
     if not arguments.get("confirm", False):
-        return [TextContent(type="text", text="⚠️ Reset not confirmed. Pass `confirm=true` to reset the workflow.")]
+        return [
+            TextContent(
+                type="text",
+                text="⚠️ Reset not confirmed. Pass `confirm=true` to reset the workflow.",
+            )
+        ]
 
     workflow.reset()
     logger_instance.info("Workflow reset to planning phase")

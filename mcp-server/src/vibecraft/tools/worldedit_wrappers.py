@@ -12,10 +12,7 @@ from ..rcon_manager import PLAYER_POS_PATTERN
 
 
 async def handle_worldedit_generation_smart(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """
     Handle WorldEdit generation commands with automatic selection setup.
@@ -55,7 +52,12 @@ async def handle_worldedit_generation_smart(
         pos_match = PLAYER_POS_PATTERN.search(pos_result)
 
         if not pos_match:
-            return [TextContent(type="text", text=f"❌ Could not get player position. Make sure a player is online.\nResponse: {pos_result}")]
+            return [
+                TextContent(
+                    type="text",
+                    text=f"❌ Could not get player position. Make sure a player is online.\nResponse: {pos_result}",
+                )
+            ]
 
         x = int(float(pos_match.group(1)))
         y = int(float(pos_match.group(2)))
@@ -64,10 +66,12 @@ async def handle_worldedit_generation_smart(
         logger_instance.info(f"Player at: ({x}, {y}, {z})")
 
         # Set selection based on command type
-        if cmd_type in ['pyramid', 'hpyramid']:
+        if cmd_type in ["pyramid", "hpyramid"]:
             # Pyramid needs a square base centered at player position
             if len(parts) < 3:
-                return [TextContent(type="text", text="❌ Pyramid requires: pyramid <pattern> <size>")]
+                return [
+                    TextContent(type="text", text="❌ Pyramid requires: pyramid <pattern> <size>")
+                ]
 
             size = int(parts[2])
             # Create a selection for the pyramid base
@@ -81,10 +85,12 @@ async def handle_worldedit_generation_smart(
             rcon.send_command(f"//pos2 {x2},{y2},{z2}")
             logger_instance.info(f"Set pyramid selection: ({x1},{y1},{z1}) to ({x2},{y2},{z2})")
 
-        elif cmd_type in ['sphere', 'hsphere']:
+        elif cmd_type in ["sphere", "hsphere"]:
             # Sphere centered at player
             if len(parts) < 3:
-                return [TextContent(type="text", text="❌ Sphere requires: sphere <pattern> <radius>")]
+                return [
+                    TextContent(type="text", text="❌ Sphere requires: sphere <pattern> <radius>")
+                ]
 
             radius = int(parts[2])
             # Create a cubic selection around player
@@ -95,10 +101,14 @@ async def handle_worldedit_generation_smart(
             rcon.send_command(f"//pos2 {x2},{y2},{z2}")
             logger_instance.info(f"Set sphere selection: ({x1},{y1},{z1}) to ({x2},{y2},{z2})")
 
-        elif cmd_type in ['cyl', 'hcyl', 'cylinder', 'hcylinder']:
+        elif cmd_type in ["cyl", "hcyl", "cylinder", "hcylinder"]:
             # Cylinder at player position
             if len(parts) < 3:
-                return [TextContent(type="text", text="❌ Cylinder requires: cyl <pattern> <radius> [height]")]
+                return [
+                    TextContent(
+                        type="text", text="❌ Cylinder requires: cyl <pattern> <radius> [height]"
+                    )
+                ]
 
             radius = int(parts[2])
             height = int(parts[3]) if len(parts) > 3 else 1
@@ -119,14 +129,17 @@ async def handle_worldedit_generation_smart(
 
         logger_instance.info(f"Generation command result: {result}")
 
-        return [TextContent(
-            type="text",
-            text=f"✅ Command executed: {full_command}\n\nResponse: {result}"
-        )]
+        return [
+            TextContent(
+                type="text", text=f"✅ Command executed: {full_command}\n\nResponse: {result}"
+            )
+        ]
 
     except ValueError as e:
         logger_instance.error(f"Error parsing command parameters: {str(e)}")
-        return [TextContent(type="text", text=f"❌ Error parsing command: {str(e)}\nCommand: {command}")]
+        return [
+            TextContent(type="text", text=f"❌ Error parsing command: {str(e)}\nCommand: {command}")
+        ]
     except Exception as e:
         logger_instance.error(f"Error executing generation command: {str(e)}", exc_info=True)
         return [TextContent(type="text", text=f"❌ Error: {str(e)}")]

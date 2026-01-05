@@ -11,7 +11,7 @@ from mcp.types import Tool
 def get_tool_schemas() -> list[Tool]:
     """
     Return all tool schemas for VibeCraft MCP server.
-    
+
     Returns:
         List of Tool objects with name, description, and inputSchema
     """
@@ -819,7 +819,7 @@ Returns: Up to 20 matching items with details.
                         "type": "integer",
                         "description": "Maximum results to return (default: 20, max: 50)",
                         "default": 20,
-                    }
+                    },
                 },
                 "required": ["query"],
             },
@@ -879,7 +879,7 @@ Returns: Surface Y-coordinate and block type at that location.
                     "z": {
                         "type": "integer",
                         "description": "Z coordinate",
-                    }
+                    },
                 },
                 "required": ["x", "z"],
             },
@@ -978,26 +978,26 @@ The tool reports a placement summary and highlights any command failures so you 
                     "origin_x": {"type": "integer", "description": "World origin X"},
                     "origin_y": {
                         "type": "integer",
-                        "description": "World origin Y (floor level when place_on_surface=true, exact Y when false)"
+                        "description": "World origin Y (floor level when place_on_surface=true, exact Y when false)",
                     },
                     "origin_z": {"type": "integer", "description": "World origin Z"},
                     "facing": {
                         "type": "string",
                         "enum": ["north", "south", "east", "west"],
-                        "description": "Optional facing override"
+                        "description": "Optional facing override",
                     },
                     "place_on_surface": {
                         "type": "boolean",
                         "description": "If true (default), treat origin_y as floor level and place furniture on top. If false, place at exact origin_y.",
-                        "default": True
+                        "default": True,
                     },
                     "preview_only": {
                         "type": "boolean",
                         "description": "Return commands without executing",
-                        "default": False
-                    }
+                        "default": False,
+                    },
                 },
-                "required": ["furniture_id", "origin_x", "origin_y", "origin_z"]
+                "required": ["furniture_id", "origin_x", "origin_y", "origin_z"],
             },
         ),
         Tool(
@@ -1128,31 +1128,31 @@ The tool reports a placement summary and highlights any command failures so you 
                 "properties": {
                     "center_x": {
                         "type": "integer",
-                        "description": "Center X coordinate to analyze around"
+                        "description": "Center X coordinate to analyze around",
                     },
                     "center_y": {
                         "type": "integer",
-                        "description": "Center Y coordinate to analyze around"
+                        "description": "Center Y coordinate to analyze around",
                     },
                     "center_z": {
                         "type": "integer",
-                        "description": "Center Z coordinate to analyze around"
+                        "description": "Center Z coordinate to analyze around",
                     },
                     "radius": {
                         "type": "integer",
                         "description": "Scan radius in blocks (default 5, recommended 3-8 for balance)",
                         "default": 5,
                         "minimum": 1,
-                        "maximum": 15
+                        "maximum": 15,
                     },
                     "detail_level": {
                         "type": "string",
                         "enum": ["low", "medium", "high"],
                         "description": "Analysis detail level: 'low' (fast, 2-3s), 'medium' (balanced, 4-5s, RECOMMENDED), 'high' (comprehensive, 8-10s)",
-                        "default": "medium"
-                    }
+                        "default": "medium",
+                    },
                 },
-                "required": ["center_x", "center_y", "center_z"]
+                "required": ["center_x", "center_y", "center_z"],
             },
         ),
         Tool(
@@ -1189,52 +1189,52 @@ Uses Bresenham's algorithms for pixel-perfect mathematical accuracy. Returns coo
                     "shape": {
                         "type": "string",
                         "description": "Shape type: 'circle', 'sphere', 'dome', 'ellipse', or 'arch'",
-                        "enum": ["circle", "sphere", "dome", "ellipse", "arch"]
+                        "enum": ["circle", "sphere", "dome", "ellipse", "arch"],
                     },
                     "radius": {
                         "type": "integer",
                         "description": "Radius in blocks (for circle, sphere, dome)",
                         "minimum": 1,
-                        "maximum": 100
+                        "maximum": 100,
                     },
                     "width": {
                         "type": "integer",
                         "description": "Width in blocks (for ellipse, arch)",
                         "minimum": 1,
-                        "maximum": 100
+                        "maximum": 100,
                     },
                     "height": {
                         "type": "integer",
                         "description": "Height in blocks (for ellipse, arch)",
                         "minimum": 1,
-                        "maximum": 100
+                        "maximum": 100,
                     },
                     "depth": {
                         "type": "integer",
                         "description": "Depth/thickness in blocks (for arch). Default: 1",
                         "minimum": 1,
                         "maximum": 20,
-                        "default": 1
+                        "default": 1,
                     },
                     "filled": {
                         "type": "boolean",
                         "description": "Fill interior (for circle, ellipse). Default: false",
-                        "default": False
+                        "default": False,
                     },
                     "hollow": {
                         "type": "boolean",
                         "description": "Hollow shell only (for sphere). Default: true",
-                        "default": True
+                        "default": True,
                     },
                     "style": {
                         "type": "string",
                         "description": "Dome style: 'hemisphere', 'three_quarter', 'low'. Default: hemisphere",
                         "enum": ["hemisphere", "three_quarter", "low"],
-                        "default": "hemisphere"
-                    }
+                        "default": "hemisphere",
+                    },
                 },
-                "required": ["shape"]
-            }
+                "required": ["shape"],
+            },
         ),
         Tool(
             name="calculate_window_spacing",
@@ -1268,29 +1268,29 @@ Based on architectural principles and aesthetic guidelines. Returns precise posi
                         "type": "integer",
                         "description": "Total wall length in blocks",
                         "minimum": 3,
-                        "maximum": 200
+                        "maximum": 200,
                     },
                     "window_width": {
                         "type": "integer",
                         "description": "Width of each window in blocks",
                         "minimum": 1,
-                        "maximum": 10
+                        "maximum": 10,
                     },
                     "spacing_style": {
                         "type": "string",
                         "description": "Spacing style: 'even', 'golden_ratio', 'symmetric', or 'clustered'. Default: even",
                         "enum": ["even", "golden_ratio", "symmetric", "clustered"],
-                        "default": "even"
+                        "default": "even",
                     },
                     "window_count": {
                         "type": "integer",
                         "description": "Number of windows (auto-calculated if not specified)",
                         "minimum": 1,
-                        "maximum": 50
-                    }
+                        "maximum": 50,
+                    },
                 },
-                "required": ["wall_length", "window_width"]
-            }
+                "required": ["wall_length", "window_width"],
+            },
         ),
         Tool(
             name="check_symmetry",
@@ -1332,24 +1332,24 @@ Analyzes mirrored block positions to detect asymmetries in builds. Essential for
                         "type": "string",
                         "description": "Axis to check: 'x', 'z', or 'y'. Default: x",
                         "enum": ["x", "z", "y"],
-                        "default": "x"
+                        "default": "x",
                     },
                     "tolerance": {
                         "type": "integer",
                         "description": "Allowed asymmetric blocks (0 = perfect symmetry). Default: 0",
                         "minimum": 0,
-                        "default": 0
+                        "default": 0,
                     },
                     "resolution": {
                         "type": "integer",
                         "description": "Sampling resolution (1 = every block, 2 = every other). Default: 1",
                         "minimum": 1,
                         "maximum": 5,
-                        "default": 1
-                    }
+                        "default": 1,
+                    },
                 },
-                "required": ["x1", "y1", "z1", "x2", "y2", "z2"]
-            }
+                "required": ["x1", "y1", "z1", "x2", "y2", "z2"],
+            },
         ),
         Tool(
             name="analyze_lighting",
@@ -1390,11 +1390,11 @@ Identifies dark spots where mobs can spawn (light level < 8). Prevents surprises
                         "description": "Sampling resolution (1-5). Default: 2",
                         "minimum": 1,
                         "maximum": 5,
-                        "default": 2
-                    }
+                        "default": 2,
+                    },
                 },
-                "required": ["x1", "y1", "z1", "x2", "y2", "z2"]
-            }
+                "required": ["x1", "y1", "z1", "x2", "y2", "z2"],
+            },
         ),
         Tool(
             name="validate_structure",
@@ -1440,11 +1440,11 @@ Checks for floating blocks, unsupported gravity-affected blocks (sand, gravel), 
                         "description": "Sampling resolution (1-3). Default: 1",
                         "minimum": 1,
                         "maximum": 3,
-                        "default": 1
-                    }
+                        "default": 1,
+                    },
                 },
-                "required": ["x1", "y1", "z1", "x2", "y2", "z2"]
-            }
+                "required": ["x1", "y1", "z1", "x2", "y2", "z2"],
+            },
         ),
         Tool(
             name="generate_terrain",
@@ -1486,8 +1486,14 @@ Creates natural-looking landscapes with pre-tested recipes for hills, mountains,
                 "properties": {
                     "type": {
                         "type": "string",
-                        "enum": ["rolling_hills", "rugged_mountains", "valley_network", "mountain_range", "plateau"],
-                        "description": "Terrain type to generate"
+                        "enum": [
+                            "rolling_hills",
+                            "rugged_mountains",
+                            "valley_network",
+                            "mountain_range",
+                            "plateau",
+                        ],
+                        "description": "Terrain type to generate",
                     },
                     "x1": {"type": "integer", "description": "Region corner 1 X"},
                     "y1": {"type": "integer", "description": "Region corner 1 Y (base elevation)"},
@@ -1499,50 +1505,55 @@ Creates natural-looking landscapes with pre-tested recipes for hills, mountains,
                         "type": "integer",
                         "description": "Feature scale/breadth (10-40, varies by type)",
                         "minimum": 10,
-                        "maximum": 40
+                        "maximum": 40,
                     },
                     "amplitude": {
                         "type": "integer",
                         "description": "Height variation for hills/mountains (3-30)",
                         "minimum": 3,
-                        "maximum": 50
+                        "maximum": 50,
                     },
                     "depth": {
                         "type": "integer",
                         "description": "Valley depth (5-20, for valley_network only)",
                         "minimum": 5,
-                        "maximum": 20
+                        "maximum": 20,
                     },
                     "height": {
                         "type": "integer",
                         "description": "Plateau height (10-25, for plateau only)",
                         "minimum": 10,
-                        "maximum": 25
+                        "maximum": 25,
                     },
                     "direction": {
                         "type": "string",
-                        "enum": ["north-south", "east-west", "northeast-southwest", "northwest-southeast"],
-                        "description": "Range direction (for mountain_range only)"
+                        "enum": [
+                            "north-south",
+                            "east-west",
+                            "northeast-southwest",
+                            "northwest-southeast",
+                        ],
+                        "description": "Range direction (for mountain_range only)",
                     },
                     "octaves": {
                         "type": "integer",
                         "description": "Noise detail level (3-6, more = finer details)",
                         "minimum": 3,
-                        "maximum": 6
+                        "maximum": 6,
                     },
                     "smooth_iterations": {
                         "type": "integer",
                         "description": "Post-smoothing passes (1-4, more = smoother)",
                         "minimum": 1,
-                        "maximum": 10
+                        "maximum": 10,
                     },
                     "seed": {
                         "type": "integer",
-                        "description": "Random seed (optional, auto-generated if omitted)"
-                    }
+                        "description": "Random seed (optional, auto-generated if omitted)",
+                    },
                 },
-                "required": ["type", "x1", "y1", "z1", "x2", "y2", "z2"]
-            }
+                "required": ["type", "x1", "y1", "z1", "x2", "y2", "z2"],
+            },
         ),
         Tool(
             name="texture_terrain",
@@ -1581,17 +1592,17 @@ Replaces base blocks and overlays surface patterns to create realistic-looking l
                     "style": {
                         "type": "string",
                         "enum": ["temperate", "alpine", "desert", "volcanic", "jungle", "swamp"],
-                        "description": "Texturing style/biome theme"
+                        "description": "Texturing style/biome theme",
                     },
                     "x1": {"type": "integer", "description": "Region corner 1 X"},
                     "y1": {"type": "integer", "description": "Region corner 1 Y"},
                     "z1": {"type": "integer", "description": "Region corner 1 Z"},
                     "x2": {"type": "integer", "description": "Region corner 2 X"},
                     "y2": {"type": "integer", "description": "Region corner 2 Y"},
-                    "z2": {"type": "integer", "description": "Region corner 2 Z"}
+                    "z2": {"type": "integer", "description": "Region corner 2 Z"},
                 },
-                "required": ["style", "x1", "y1", "z1", "x2", "y2", "z2"]
-            }
+                "required": ["style", "x1", "y1", "z1", "x2", "y2", "z2"],
+            },
         ),
         Tool(
             name="smooth_terrain",
@@ -1634,15 +1645,15 @@ Applies WorldEdit smoothing algorithm to blend block heights naturally.
                         "description": "Number of smoothing passes (1-10)",
                         "minimum": 1,
                         "maximum": 10,
-                        "default": 2
+                        "default": 2,
                     },
                     "mask": {
                         "type": "string",
-                        "description": "Optional mask to limit smoothing (e.g., 'grass_block,dirt')"
-                    }
+                        "description": "Optional mask to limit smoothing (e.g., 'grass_block,dirt')",
+                    },
                 },
-                "required": ["x1", "y1", "z1", "x2", "y2", "z2"]
-            }
+                "required": ["x1", "y1", "z1", "x2", "y2", "z2"],
+            },
         ),
         Tool(
             name="building_pattern_lookup",
@@ -1738,15 +1749,15 @@ to inspect the generated commands before modifying the world.
                     "facing": {
                         "type": "string",
                         "enum": ["north", "south", "east", "west"],
-                        "description": "Optional facing override"
+                        "description": "Optional facing override",
                     },
                     "preview_only": {
                         "type": "boolean",
                         "description": "Return commands instead of executing",
-                        "default": False
-                    }
+                        "default": False,
+                    },
                 },
-                "required": ["pattern_id", "origin_x", "origin_y", "origin_z"]
+                "required": ["pattern_id", "origin_x", "origin_y", "origin_z"],
             },
         ),
         Tool(
@@ -1888,28 +1899,28 @@ Templates support parameters like:
                     "action": {
                         "type": "string",
                         "enum": ["list", "search", "get", "customize"],
-                        "description": "Action to perform"
+                        "description": "Action to perform",
                     },
                     "template_id": {
                         "type": "string",
-                        "description": "Template identifier (required for get and customize actions)"
+                        "description": "Template identifier (required for get and customize actions)",
                     },
                     "category": {
                         "type": "string",
-                        "description": "Filter by category (for search action)"
+                        "description": "Filter by category (for search action)",
                     },
                     "difficulty": {
                         "type": "string",
                         "enum": ["beginner", "intermediate", "advanced"],
-                        "description": "Filter by difficulty (for search action)"
+                        "description": "Filter by difficulty (for search action)",
                     },
                     "style_tags": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Filter by style tags (for search action)"
-                    }
+                        "description": "Filter by style tags (for search action)",
+                    },
                 },
-                "required": ["action"]
+                "required": ["action"],
             },
         ),
         Tool(
@@ -1924,10 +1935,10 @@ The coordinator will refuse to advance if mandatory validations have not been re
                     "force": {
                         "type": "boolean",
                         "description": "Reserved for future use; currently ignored",
-                        "default": False
+                        "default": False,
                     }
                 },
-                "required": []
+                "required": [],
             },
         ),
         Tool(
@@ -1942,10 +1953,10 @@ All recorded validations will be cleared. Use with caution (primarily for starti
                     "confirm": {
                         "type": "boolean",
                         "description": "Must be true to confirm reset",
-                        "default": False
+                        "default": False,
                     }
                 },
-                "required": []
+                "required": [],
             },
         ),
         Tool(
@@ -2208,7 +2219,6 @@ Get information about selections or evaluate mathematical expressions.
                 "required": ["command"],
             },
         ),
-
         # ===== BUILD TOOL =====
         Tool(
             name="build",
@@ -2520,5 +2530,5 @@ WHEN TO USE BUILD VS SPECIALIZED TOOLS
             },
         ),
     ]
-    
+
     return schemas

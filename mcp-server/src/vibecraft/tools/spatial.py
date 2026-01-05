@@ -13,10 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 async def handle_spatial_awareness_scan(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance: logging.Logger
+    arguments: Dict[str, Any], rcon, config, logger_instance: logging.Logger
 ) -> List[TextContent]:
     """
     Handle spatial_awareness_scan tool - Advanced V2 spatial analysis.
@@ -41,7 +38,9 @@ async def handle_spatial_awareness_scan(
 
     # Validate required parameters
     if center_x is None or center_y is None or center_z is None:
-        return [TextContent(type="text", text="❌ Error: center_x, center_y, and center_z are required")]
+        return [
+            TextContent(type="text", text="❌ Error: center_x, center_y, and center_z are required")
+        ]
 
     # Create spatial analyzer V2
     analyzer = SpatialAnalyzerV2(rcon)
@@ -58,11 +57,11 @@ async def handle_spatial_awareness_scan(
             center_y=center_y,
             center_z=center_z,
             radius=radius,
-            detail_level=detail_level
+            detail_level=detail_level,
         )
 
         # Use the built-in summary from the analyzer
-        summary_text = result.get('summary', 'Analysis complete')
+        summary_text = result.get("summary", "Analysis complete")
 
         # Add JSON data at the end
         full_text = summary_text + "\n\n**📊 Complete Analysis Data (JSON)**:\n```json\n"

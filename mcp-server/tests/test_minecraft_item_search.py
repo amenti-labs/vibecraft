@@ -8,7 +8,7 @@ Note: Import paths are configured via conftest.py
 """
 
 import pytest
-from vibecraft.server import minecraft_items
+from vibecraft.minecraft_items_loader import minecraft_items
 
 
 def search_items(query: str, limit: int = 20) -> list:

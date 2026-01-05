@@ -11,6 +11,8 @@ from typing import List, Tuple, Dict, Any, Optional
 from .block_utils import fetch_block_state, block_is_air
 
 logger = logging.getLogger(__name__)
+
+
 class SymmetryChecker:
     """
     Analyze structure symmetry across different axes.
@@ -28,11 +30,15 @@ class SymmetryChecker:
 
     def check_symmetry(
         self,
-        x1: int, y1: int, z1: int,
-        x2: int, y2: int, z2: int,
+        x1: int,
+        y1: int,
+        z1: int,
+        x2: int,
+        y2: int,
+        z2: int,
         axis: str = "x",
         tolerance: int = 0,
-        resolution: int = 1
+        resolution: int = 1,
     ) -> Dict[str, Any]:
         """
         Check symmetry of a structure across a specified axis.
@@ -52,7 +58,9 @@ class SymmetryChecker:
         min_y, max_y = min(y1, y2), max(y1, y2)
         min_z, max_z = min(z1, z2), max(z1, z2)
 
-        logger.info(f"Checking symmetry on {axis} axis for region ({min_x},{min_y},{min_z}) to ({max_x},{max_y},{max_z})")
+        logger.info(
+            f"Checking symmetry on {axis} axis for region ({min_x},{min_y},{min_z}) to ({max_x},{max_y},{max_z})"
+        )
 
         # Calculate center plane based on axis
         if axis == "x":
@@ -99,19 +107,21 @@ class SymmetryChecker:
                     total_checked += 1
 
                     # Compare blocks
-                    key1 = block1.get('key') if block1 else None
-                    key2 = block2.get('key') if block2 else None
+                    key1 = block1.get("key") if block1 else None
+                    key2 = block2.get("key") if block2 else None
 
                     if key1 != key2:
                         display_block1 = key1 or "air"
                         display_block2 = key2 or "air"
-                        differences.append({
-                            "position1": [x, y, z],
-                            "block1": display_block1,
-                            "position2": [mirror_x, mirror_y, mirror_z],
-                            "block2": display_block2,
-                            "recommendation": f"Replace {display_block2} at ({mirror_x},{mirror_y},{mirror_z}) with {display_block1} for symmetry"
-                        })
+                        differences.append(
+                            {
+                                "position1": [x, y, z],
+                                "block1": display_block1,
+                                "position2": [mirror_x, mirror_y, mirror_z],
+                                "block2": display_block2,
+                                "recommendation": f"Replace {display_block2} at ({mirror_x},{mirror_y},{mirror_z}) with {display_block1} for symmetry",
+                            }
+                        )
 
         # Calculate symmetry score
         symmetric_count = total_checked - len(differences)
@@ -127,7 +137,9 @@ class SymmetryChecker:
         else:
             verdict = "ASYMMETRIC"
 
-        logger.info(f"Symmetry check complete: {symmetry_score:.1f}% symmetric ({len(differences)} differences)")
+        logger.info(
+            f"Symmetry check complete: {symmetry_score:.1f}% symmetric ({len(differences)} differences)"
+        )
 
         return {
             "symmetry_score": round(symmetry_score, 2),
@@ -140,15 +152,21 @@ class SymmetryChecker:
             "verdict": verdict,
             "differences": differences[:50],  # Limit to first 50 differences
             "total_differences": len(differences),
-            "summary": self._generate_symmetry_summary(symmetry_score, verdict, len(differences), axis)
+            "summary": self._generate_symmetry_summary(
+                symmetry_score, verdict, len(differences), axis
+            ),
         }
 
-    def _generate_symmetry_summary(self, score: float, verdict: str, diff_count: int, axis: str) -> str:
+    def _generate_symmetry_summary(
+        self, score: float, verdict: str, diff_count: int, axis: str
+    ) -> str:
         """Generate natural language summary of symmetry check."""
         if verdict == "SYMMETRIC":
             return f"Structure is perfectly symmetric across {axis} axis (within tolerance)"
         elif verdict == "MOSTLY_SYMMETRIC":
-            return f"Structure is mostly symmetric ({score:.1f}%) with {diff_count} minor differences"
+            return (
+                f"Structure is mostly symmetric ({score:.1f}%) with {diff_count} minor differences"
+            )
         elif verdict == "PARTIALLY_SYMMETRIC":
             return f"Structure has significant asymmetries ({score:.1f}%) - {diff_count} differences found"
         else:
@@ -162,29 +180,79 @@ class LightingAnalyzer:
     """
 
     LIGHT_SOURCE_ALWAYS = {
-        'torch', 'wall_torch', 'soul_torch', 'soul_wall_torch',
-        'lantern', 'soul_lantern', 'redstone_torch', 'redstone_wall_torch',
-        'glowstone', 'sea_lantern', 'shroomlight', 'jack_o_lantern',
-        'end_rod', 'amethyst_cluster', 'ochre_froglight', 'pearlescent_froglight',
-        'verdant_froglight', 'beacon', 'sea_pickle'
+        "torch",
+        "wall_torch",
+        "soul_torch",
+        "soul_wall_torch",
+        "lantern",
+        "soul_lantern",
+        "redstone_torch",
+        "redstone_wall_torch",
+        "glowstone",
+        "sea_lantern",
+        "shroomlight",
+        "jack_o_lantern",
+        "end_rod",
+        "amethyst_cluster",
+        "ochre_froglight",
+        "pearlescent_froglight",
+        "verdant_froglight",
+        "beacon",
+        "sea_pickle",
     }
 
     LIGHT_SOURCE_REQUIRES_LIT = {
-        'campfire', 'soul_campfire', 'redstone_lamp', 'furnace',
-        'blast_furnace', 'smoker', 'candle', 'candle_cake',
-        'white_candle', 'orange_candle', 'magenta_candle', 'light_blue_candle',
-        'yellow_candle', 'lime_candle', 'pink_candle', 'gray_candle',
-        'light_gray_candle', 'cyan_candle', 'purple_candle', 'blue_candle',
-        'brown_candle', 'green_candle', 'red_candle', 'black_candle'
+        "campfire",
+        "soul_campfire",
+        "redstone_lamp",
+        "furnace",
+        "blast_furnace",
+        "smoker",
+        "candle",
+        "candle_cake",
+        "white_candle",
+        "orange_candle",
+        "magenta_candle",
+        "light_blue_candle",
+        "yellow_candle",
+        "lime_candle",
+        "pink_candle",
+        "gray_candle",
+        "light_gray_candle",
+        "cyan_candle",
+        "purple_candle",
+        "blue_candle",
+        "brown_candle",
+        "green_candle",
+        "red_candle",
+        "black_candle",
     }
 
     TRANSPARENT_BLOCKS = {
-        'air', 'glass', 'glass_pane', 'white_stained_glass', 'light_gray_stained_glass',
-        'gray_stained_glass', 'black_stained_glass', 'red_stained_glass', 'blue_stained_glass',
-        'green_stained_glass', 'yellow_stained_glass', 'lime_stained_glass', 'brown_stained_glass',
-        'cyan_stained_glass', 'purple_stained_glass', 'pink_stained_glass', 'orange_stained_glass',
-        'magenta_stained_glass', 'light_blue_stained_glass', 'iron_bars', 'chain', 'vine', 'ladder',
-        'scaffolding'
+        "air",
+        "glass",
+        "glass_pane",
+        "white_stained_glass",
+        "light_gray_stained_glass",
+        "gray_stained_glass",
+        "black_stained_glass",
+        "red_stained_glass",
+        "blue_stained_glass",
+        "green_stained_glass",
+        "yellow_stained_glass",
+        "lime_stained_glass",
+        "brown_stained_glass",
+        "cyan_stained_glass",
+        "purple_stained_glass",
+        "pink_stained_glass",
+        "orange_stained_glass",
+        "magenta_stained_glass",
+        "light_blue_stained_glass",
+        "iron_bars",
+        "chain",
+        "vine",
+        "ladder",
+        "scaffolding",
     }
 
     LIGHT_OFFSETS = [
@@ -208,10 +276,7 @@ class LightingAnalyzer:
         self.rcon = rcon_manager
 
     def analyze_lighting(
-        self,
-        x1: int, y1: int, z1: int,
-        x2: int, y2: int, z2: int,
-        resolution: int = 2
+        self, x1: int, y1: int, z1: int, x2: int, y2: int, z2: int, resolution: int = 2
     ) -> Dict[str, Any]:
         """
         Analyze lighting in a region.
@@ -229,7 +294,9 @@ class LightingAnalyzer:
         min_y, max_y = min(y1, y2), max(y1, y2)
         min_z, max_z = min(z1, z2), max(z1, z2)
 
-        logger.info(f"Analyzing lighting for region ({min_x},{min_y},{min_z}) to ({max_x},{max_y},{max_z})")
+        logger.info(
+            f"Analyzing lighting for region ({min_x},{min_y},{min_z}) to ({max_x},{max_y},{max_z})"
+        )
 
         # Sample light levels
         light_samples = []
@@ -242,17 +309,11 @@ class LightingAnalyzer:
                     light_level = self._get_light_level(x, y, z, block_cache)
 
                     if light_level is not None:
-                        light_samples.append({
-                            "position": [x, y, z],
-                            "light_level": light_level
-                        })
+                        light_samples.append({"position": [x, y, z], "light_level": light_level})
 
                         # Dark spot detection (< 8 allows mob spawning)
                         if light_level < 8:
-                            dark_spots.append({
-                                "position": [x, y, z],
-                                "light_level": light_level
-                            })
+                            dark_spots.append({"position": [x, y, z], "light_level": light_level})
 
         if not light_samples:
             return {"error": "No light data collected from region"}
@@ -277,13 +338,12 @@ class LightingAnalyzer:
         # Calculate optimal light placements
         optimal_placements = self._calculate_light_placements(dark_spots, resolution, block_cache)
 
-        logger.info(f"Lighting analysis complete: {len(light_samples)} samples, {len(dark_spots)} dark spots")
+        logger.info(
+            f"Lighting analysis complete: {len(light_samples)} samples, {len(dark_spots)} dark spots"
+        )
 
         return {
-            "region": {
-                "min": [min_x, min_y, min_z],
-                "max": [max_x, max_y, max_z]
-            },
+            "region": {"min": [min_x, min_y, min_z], "max": [max_x, max_y, max_z]},
             "average_light_level": round(avg_light, 2),
             "total_samples": len(light_samples),
             "dark_spots_count": len(dark_spots),
@@ -294,19 +354,15 @@ class LightingAnalyzer:
                 "dark": dark,
                 "well_lit_percentage": round(well_lit / len(light_levels) * 100, 1),
                 "dim_percentage": round(dim / len(light_levels) * 100, 1),
-                "dark_percentage": round(dark / len(light_levels) * 100, 1)
+                "dark_percentage": round(dark / len(light_levels) * 100, 1),
             },
             "dark_spots": dark_spots[:20],  # First 20 dark spots
             "optimal_placements": optimal_placements,
-            "summary": self._generate_lighting_summary(avg_light, mob_risk, len(dark_spots))
+            "summary": self._generate_lighting_summary(avg_light, mob_risk, len(dark_spots)),
         }
 
     def _get_light_level(
-        self,
-        x: int,
-        y: int,
-        z: int,
-        cache: Dict[Tuple[int, int, int], Optional[Dict[str, Any]]]
+        self, x: int, y: int, z: int, cache: Dict[Tuple[int, int, int], Optional[Dict[str, Any]]]
     ) -> Optional[int]:
         block = self._get_cached_block(x, y, z, cache)
 
@@ -323,16 +379,12 @@ class LightingAnalyzer:
         if nearest is not None:
             light_level = max(1, 15 - nearest)
         else:
-            light_level = 8 if block.get('id') == 'air' else 5
+            light_level = 8 if block.get("id") == "air" else 5
 
         return max(0, min(15, light_level))
 
     def _get_cached_block(
-        self,
-        x: int,
-        y: int,
-        z: int,
-        cache: Dict[Tuple[int, int, int], Optional[Dict[str, Any]]]
+        self, x: int, y: int, z: int, cache: Dict[Tuple[int, int, int], Optional[Dict[str, Any]]]
     ) -> Optional[Dict[str, Any]]:
         key = (x, y, z)
         if key not in cache:
@@ -343,27 +395,23 @@ class LightingAnalyzer:
         if not block:
             return False
 
-        block_id = block.get('id')
+        block_id = block.get("id")
         if block_id in self.LIGHT_SOURCE_ALWAYS:
             return True
 
         if block_id in self.LIGHT_SOURCE_REQUIRES_LIT:
-            lit = block.get('properties', {}).get('lit', 'false')
-            if lit.lower() == 'true':
+            lit = block.get("properties", {}).get("lit", "false")
+            if lit.lower() == "true":
                 return True
 
-        if block_id == 'sea_pickle':
-            count = block.get('properties', {}).get('pickles', '1')
-            return count not in {'0', '1'}
+        if block_id == "sea_pickle":
+            count = block.get("properties", {}).get("pickles", "1")
+            return count not in {"0", "1"}
 
         return False
 
     def _nearest_light_source(
-        self,
-        x: int,
-        y: int,
-        z: int,
-        cache: Dict[Tuple[int, int, int], Optional[Dict[str, Any]]]
+        self, x: int, y: int, z: int, cache: Dict[Tuple[int, int, int], Optional[Dict[str, Any]]]
     ) -> Optional[int]:
         nearest: Optional[int] = None
 
@@ -379,18 +427,14 @@ class LightingAnalyzer:
         return nearest
 
     def _is_open_to_sky(
-        self,
-        x: int,
-        y: int,
-        z: int,
-        cache: Dict[Tuple[int, int, int], Optional[Dict[str, Any]]]
+        self, x: int, y: int, z: int, cache: Dict[Tuple[int, int, int], Optional[Dict[str, Any]]]
     ) -> bool:
         check_y = y + 1
         steps = 0
 
         while steps < self.SKY_CHECK_MAX and check_y <= self.MAX_WORLD_HEIGHT:
             block = self._get_cached_block(x, check_y, z, cache)
-            if block and block.get('id') not in self.TRANSPARENT_BLOCKS:
+            if block and block.get("id") not in self.TRANSPARENT_BLOCKS:
                 return False
             check_y += 1
             steps += 1
@@ -401,7 +445,7 @@ class LightingAnalyzer:
         self,
         dark_spots: List[Dict],
         resolution: int,
-        cache: Dict[Tuple[int, int, int], Optional[Dict[str, Any]]]
+        cache: Dict[Tuple[int, int, int], Optional[Dict[str, Any]]],
     ) -> List[Dict]:
         """Calculate optimal positions for light sources based on dark spots."""
         if not dark_spots:
@@ -427,14 +471,20 @@ class LightingAnalyzer:
                 x, y, z = spot["position"]
                 open_sky = self._is_open_to_sky(x, y, z, cache)
                 block_here = self._get_cached_block(x, y, z, cache)
-                suggested = "lantern" if open_sky or (block_here and block_here.get('id') not in {'air', 'water'}) else "torch"
+                suggested = (
+                    "lantern"
+                    if open_sky or (block_here and block_here.get("id") not in {"air", "water"})
+                    else "torch"
+                )
 
-                placements.append({
-                    "position": spot["position"],
-                    "current_light": spot["light_level"],
-                    "suggested_source": suggested,
-                    "reason": f"Dark spot (light={spot['light_level']}) - needs illumination"
-                })
+                placements.append(
+                    {
+                        "position": spot["position"],
+                        "current_light": spot["light_level"],
+                        "suggested_source": suggested,
+                        "reason": f"Dark spot (light={spot['light_level']}) - needs illumination",
+                    }
+                )
                 used_positions.add(pos)
 
                 # Limit to reasonable number of suggestions
@@ -450,7 +500,9 @@ class LightingAnalyzer:
         elif mob_risk == "MEDIUM":
             return f"Adequate lighting ({avg_light:.1f} avg) - {dark_count} dark spots with MEDIUM spawn risk"
         else:
-            return f"Good lighting ({avg_light:.1f} avg) - {dark_count} dark spots with LOW spawn risk"
+            return (
+                f"Good lighting ({avg_light:.1f} avg) - {dark_count} dark spots with LOW spawn risk"
+            )
 
 
 class StructureValidator:
@@ -461,21 +513,54 @@ class StructureValidator:
 
     # Blocks affected by gravity
     GRAVITY_BLOCKS = {
-        'sand', 'red_sand', 'gravel', 'concrete_powder',
-        'white_concrete_powder', 'orange_concrete_powder', 'magenta_concrete_powder',
-        'light_blue_concrete_powder', 'yellow_concrete_powder', 'lime_concrete_powder',
-        'pink_concrete_powder', 'gray_concrete_powder', 'light_gray_concrete_powder',
-        'cyan_concrete_powder', 'purple_concrete_powder', 'blue_concrete_powder',
-        'brown_concrete_powder', 'green_concrete_powder', 'red_concrete_powder',
-        'black_concrete_powder', 'anvil', 'chipped_anvil', 'damaged_anvil',
-        'dragon_egg', 'scaffolding'
+        "sand",
+        "red_sand",
+        "gravel",
+        "concrete_powder",
+        "white_concrete_powder",
+        "orange_concrete_powder",
+        "magenta_concrete_powder",
+        "light_blue_concrete_powder",
+        "yellow_concrete_powder",
+        "lime_concrete_powder",
+        "pink_concrete_powder",
+        "gray_concrete_powder",
+        "light_gray_concrete_powder",
+        "cyan_concrete_powder",
+        "purple_concrete_powder",
+        "blue_concrete_powder",
+        "brown_concrete_powder",
+        "green_concrete_powder",
+        "red_concrete_powder",
+        "black_concrete_powder",
+        "anvil",
+        "chipped_anvil",
+        "damaged_anvil",
+        "dragon_egg",
+        "scaffolding",
     }
 
     # Blocks that provide support
     SUPPORT_BLOCKS = {
-        'stone', 'dirt', 'grass_block', 'cobblestone', 'planks', 'log', 'wood',
-        'stone_bricks', 'bricks', 'obsidian', 'bedrock', 'concrete', 'terracotta',
-        'wool', 'glass', 'iron_block', 'gold_block', 'diamond_block', 'emerald_block'
+        "stone",
+        "dirt",
+        "grass_block",
+        "cobblestone",
+        "planks",
+        "log",
+        "wood",
+        "stone_bricks",
+        "bricks",
+        "obsidian",
+        "bedrock",
+        "concrete",
+        "terracotta",
+        "wool",
+        "glass",
+        "iron_block",
+        "gold_block",
+        "diamond_block",
+        "emerald_block",
         # Add more solid blocks as needed
     }
 
@@ -489,10 +574,7 @@ class StructureValidator:
         self.rcon = rcon_manager
 
     def validate_structure(
-        self,
-        x1: int, y1: int, z1: int,
-        x2: int, y2: int, z2: int,
-        resolution: int = 1
+        self, x1: int, y1: int, z1: int, x2: int, y2: int, z2: int, resolution: int = 1
     ) -> Dict[str, Any]:
         """
         Validate structural integrity of a build.
@@ -510,7 +592,9 @@ class StructureValidator:
         min_y, max_y = min(y1, y2), max(y1, y2)
         min_z, max_z = min(z1, z2), max(z1, z2)
 
-        logger.info(f"Validating structure integrity for ({min_x},{min_y},{min_z}) to ({max_x},{max_y},{max_z})")
+        logger.info(
+            f"Validating structure integrity for ({min_x},{min_y},{min_z}) to ({max_x},{max_y},{max_z})"
+        )
 
         floating_blocks = []
         gravity_violations = []
@@ -527,18 +611,20 @@ class StructureValidator:
                     total_blocks += 1
 
                     # Check if block is affected by gravity
-                    if block and block['id'] in self.GRAVITY_BLOCKS:
+                    if block and block["id"] in self.GRAVITY_BLOCKS:
                         # Check if there's support below
                         block_below = fetch_block_state(self.rcon, x, y - 1, z)
 
                         if block_is_air(block_below):
-                            gravity_violations.append({
-                                "position": [x, y, z],
-                                "block": block.get('key'),
-                                "issue": f"No support below (air at Y={y-1})",
-                                "severity": "HIGH",
-                                "recommendation": "Add support column or replace with non-gravity block"
-                            })
+                            gravity_violations.append(
+                                {
+                                    "position": [x, y, z],
+                                    "block": block.get("key"),
+                                    "issue": f"No support below (air at Y={y-1})",
+                                    "severity": "HIGH",
+                                    "recommendation": "Add support column or replace with non-gravity block",
+                                }
+                            )
 
                     # Check for floating non-supported blocks (simple heuristic)
                     # A block is "floating" if it has no solid neighbors (simplified check)
@@ -555,19 +641,23 @@ class StructureValidator:
 
                         # If no solid neighbors at all, likely floating
                         if solid_neighbors == 0:
-                            floating_blocks.append({
-                                "position": [x, y, z],
-                                "block": block.get('key'),
-                                "issue": "No adjacent solid blocks detected",
-                                "severity": "MEDIUM",
-                                "recommendation": "Connect to main structure or add supports"
-                            })
+                            floating_blocks.append(
+                                {
+                                    "position": [x, y, z],
+                                    "block": block.get("key"),
+                                    "issue": "No adjacent solid blocks detected",
+                                    "severity": "MEDIUM",
+                                    "recommendation": "Connect to main structure or add supports",
+                                }
+                            )
 
         # Combine all issues
         all_issues = gravity_violations + floating_blocks
         structure_valid = len(all_issues) == 0
 
-        logger.info(f"Validation complete: {total_blocks} blocks checked, {len(all_issues)} issues found")
+        logger.info(
+            f"Validation complete: {total_blocks} blocks checked, {len(all_issues)} issues found"
+        )
 
         return {
             "structure_valid": structure_valid,
@@ -576,7 +666,7 @@ class StructureValidator:
             "gravity_violations": gravity_violations,
             "floating_blocks": floating_blocks[:20],  # First 20
             "total_floating": len(floating_blocks),
-            "summary": self._generate_validation_summary(structure_valid, len(all_issues))
+            "summary": self._generate_validation_summary(structure_valid, len(all_issues)),
         }
 
     def _generate_validation_summary(self, valid: bool, issue_count: int) -> str:
@@ -588,4 +678,6 @@ class StructureValidator:
         elif issue_count < 20:
             return f"Structure has {issue_count} issues requiring attention"
         else:
-            return f"Structure has {issue_count} significant issues - major reconstruction recommended"
+            return (
+                f"Structure has {issue_count} significant issues - major reconstruction recommended"
+            )

@@ -50,7 +50,7 @@ class TerrainGenerator:
             if volume > self.MAX_REGION_SIZE:
                 return {
                     "success": False,
-                    "error": f"Region too large ({volume:,} blocks). Max: {self.MAX_REGION_SIZE:,}"
+                    "error": f"Region too large ({volume:,} blocks). Max: {self.MAX_REGION_SIZE:,}",
                 }
 
             # Set positions
@@ -62,9 +62,9 @@ class TerrainGenerator:
                 "region": {
                     "min": [min_x, min_y, min_z],
                     "max": [max_x, max_y, max_z],
-                    "volume": volume
+                    "volume": volume,
                 },
-                "output": f"{result1}\n{result2}"
+                "output": f"{result1}\n{result2}",
             }
 
         except Exception as e:
@@ -85,14 +85,16 @@ class TerrainGenerator:
                 "success": True,
                 "operation": "deform",
                 "expression": expression,
-                "output": result
+                "output": result,
             }
 
         except Exception as e:
             logger.error(f"Error applying deformation: {e}")
             return {"success": False, "error": str(e)}
 
-    def generate(self, pattern: str, expression: str, hollow: bool = False, timeout: int = 120) -> Dict[str, Any]:
+    def generate(
+        self, pattern: str, expression: str, hollow: bool = False, timeout: int = 120
+    ) -> Dict[str, Any]:
         """
         Generate blocks using an expression.
 
@@ -111,7 +113,7 @@ class TerrainGenerator:
                 "operation": "generate",
                 "pattern": pattern,
                 "expression": expression,
-                "output": result
+                "output": result,
             }
 
         except Exception as e:
@@ -140,7 +142,7 @@ class TerrainGenerator:
                 "success": True,
                 "operation": "smooth",
                 "iterations": iterations,
-                "output": result
+                "output": result,
             }
 
         except Exception as e:
@@ -156,18 +158,15 @@ class TerrainGenerator:
         try:
             result = self.rcon.send_command(f"//overlay {pattern}")
 
-            return {
-                "success": True,
-                "operation": "overlay",
-                "pattern": pattern,
-                "output": result
-            }
+            return {"success": True, "operation": "overlay", "pattern": pattern, "output": result}
 
         except Exception as e:
             logger.error(f"Error overlaying pattern: {e}")
             return {"success": False, "error": str(e)}
 
-    def replace(self, from_pattern: str, to_pattern: str, mask: Optional[str] = None) -> Dict[str, Any]:
+    def replace(
+        self, from_pattern: str, to_pattern: str, mask: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Replace blocks in the selected region.
 
@@ -189,7 +188,7 @@ class TerrainGenerator:
                 "operation": "replace",
                 "from": from_pattern,
                 "to": to_pattern,
-                "output": result
+                "output": result,
             }
 
         except Exception as e:
@@ -202,14 +201,18 @@ class TerrainGenerator:
 
     def generate_hills(
         self,
-        x1: int, y1: int, z1: int,
-        x2: int, y2: int, z2: int,
+        x1: int,
+        y1: int,
+        z1: int,
+        x2: int,
+        y2: int,
+        z2: int,
         scale: int = 18,
         amplitude: int = 6,
         octaves: int = 4,
         persistence: float = 0.55,
         smooth_iterations: int = 3,
-        seed: Optional[int] = None
+        seed: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Generate gentle rolling hills using Perlin noise.
@@ -256,21 +259,25 @@ class TerrainGenerator:
                 "amplitude": amplitude,
                 "octaves": octaves,
                 "persistence": persistence,
-                "seed": seed
+                "seed": seed,
             },
             "steps": steps,
-            "summary": f"Generated gentle rolling hills with scale={scale}, amplitude={amplitude}"
+            "summary": f"Generated gentle rolling hills with scale={scale}, amplitude={amplitude}",
         }
 
     def generate_mountains(
         self,
-        x1: int, y1: int, z1: int,
-        x2: int, y2: int, z2: int,
+        x1: int,
+        y1: int,
+        z1: int,
+        x2: int,
+        y2: int,
+        z2: int,
         scale: int = 28,
         amplitude: int = 18,
         octaves: int = 5,
         smooth_iterations: int = 2,
-        seed: Optional[int] = None
+        seed: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Generate rugged mountains using Ridged Multifractal noise.
@@ -314,21 +321,25 @@ class TerrainGenerator:
                 "scale": scale,
                 "amplitude": amplitude,
                 "octaves": octaves,
-                "seed": seed
+                "seed": seed,
             },
             "steps": steps,
-            "summary": f"Generated rugged mountains with scale={scale}, amplitude={amplitude}"
+            "summary": f"Generated rugged mountains with scale={scale}, amplitude={amplitude}",
         }
 
     def generate_valleys(
         self,
-        x1: int, y1: int, z1: int,
-        x2: int, y2: int, z2: int,
+        x1: int,
+        y1: int,
+        z1: int,
+        x2: int,
+        y2: int,
+        z2: int,
         scale: int = 22,
         depth: int = 10,
         octaves: int = 4,
         smooth_iterations: int = 2,
-        seed: Optional[int] = None
+        seed: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Generate valley networks using inverted Perlin noise.
@@ -367,26 +378,25 @@ class TerrainGenerator:
         return {
             "success": True,
             "terrain_type": "valley_network",
-            "parameters": {
-                "scale": scale,
-                "depth": depth,
-                "octaves": octaves,
-                "seed": seed
-            },
+            "parameters": {"scale": scale, "depth": depth, "octaves": octaves, "seed": seed},
             "steps": steps,
-            "summary": f"Generated valley network with scale={scale}, depth={depth}"
+            "summary": f"Generated valley network with scale={scale}, depth={depth}",
         }
 
     def generate_mountain_range(
         self,
-        x1: int, y1: int, z1: int,
-        x2: int, y2: int, z2: int,
+        x1: int,
+        y1: int,
+        z1: int,
+        x2: int,
+        y2: int,
+        z2: int,
         direction: str = "north-south",
         scale: int = 30,
         amplitude: int = 20,
         octaves: int = 5,
         smooth_iterations: int = 1,
-        seed: Optional[int] = None
+        seed: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Generate a directional mountain range using oriented ridged noise.
@@ -406,16 +416,21 @@ class TerrainGenerator:
 
         # Calculate rotation coefficients based on direction
         rotation_map = {
-            "north-south": (0.05, 0.01, 0.05, -0.01),  # (x_coeff_u, z_coeff_u, z_coeff_v, x_coeff_v)
+            "north-south": (
+                0.05,
+                0.01,
+                0.05,
+                -0.01,
+            ),  # (x_coeff_u, z_coeff_u, z_coeff_v, x_coeff_v)
             "east-west": (0.01, 0.05, -0.01, 0.05),
             "northeast-southwest": (0.04, 0.04, 0.04, -0.04),
-            "northwest-southeast": (0.04, -0.04, -0.04, -0.04)
+            "northwest-southeast": (0.04, -0.04, -0.04, -0.04),
         }
 
         if direction not in rotation_map:
             return {
                 "success": False,
-                "error": f"Invalid direction '{direction}'. Use: {', '.join(rotation_map.keys())}"
+                "error": f"Invalid direction '{direction}'. Use: {', '.join(rotation_map.keys())}",
             }
 
         xu, zu, zv, xv = rotation_map[direction]
@@ -447,20 +462,24 @@ class TerrainGenerator:
                 "scale": scale,
                 "amplitude": amplitude,
                 "octaves": octaves,
-                "seed": seed
+                "seed": seed,
             },
             "steps": steps,
-            "summary": f"Generated {direction} mountain range with amplitude={amplitude}"
+            "summary": f"Generated {direction} mountain range with amplitude={amplitude}",
         }
 
     def generate_plateau(
         self,
-        x1: int, y1: int, z1: int,
-        x2: int, y2: int, z2: int,
+        x1: int,
+        y1: int,
+        z1: int,
+        x2: int,
+        y2: int,
+        z2: int,
         height: int = 15,
         edge_roughness: float = 0.3,
         smooth_iterations: int = 2,
-        seed: Optional[int] = None
+        seed: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Generate a plateau with rough edges using noise-based masking.
@@ -503,13 +522,9 @@ class TerrainGenerator:
         return {
             "success": True,
             "terrain_type": "plateau",
-            "parameters": {
-                "height": height,
-                "edge_roughness": edge_roughness,
-                "seed": seed
-            },
+            "parameters": {"height": height, "edge_roughness": edge_roughness, "seed": seed},
             "steps": steps,
-            "summary": f"Generated plateau with height={height}, roughness={edge_roughness}"
+            "summary": f"Generated plateau with height={height}, roughness={edge_roughness}",
         }
 
     # =========================================================================
@@ -517,10 +532,7 @@ class TerrainGenerator:
     # =========================================================================
 
     def texture_natural_slopes(
-        self,
-        x1: int, y1: int, z1: int,
-        x2: int, y2: int, z2: int,
-        style: str = "temperate"
+        self, x1: int, y1: int, z1: int, x2: int, y2: int, z2: int, style: str = "temperate"
     ) -> Dict[str, Any]:
         """
         Apply natural surface texturing to terrain based on style.
@@ -534,26 +546,26 @@ class TerrainGenerator:
         texture_recipes = {
             "temperate": {
                 "base": "70%stone,20%andesite,10%deepslate",
-                "surface": "85%grass_block,10%moss_block,5%coarse_dirt"
+                "surface": "85%grass_block,10%moss_block,5%coarse_dirt",
             },
             "alpine": {
                 "base": "60%stone,25%andesite,15%calcite",
-                "surface": "70%snow_block,20%powder_snow,10%gravel"
+                "surface": "70%snow_block,20%powder_snow,10%gravel",
             },
             "desert": {
                 "base": "70%sandstone,20%smooth_sandstone,10%red_sandstone",
-                "surface": "80%sand,15%red_sand,5%terracotta"
+                "surface": "80%sand,15%red_sand,5%terracotta",
             },
             "volcanic": {
                 "base": "60%basalt,25%blackstone,15%deepslate",
-                "surface": "70%basalt,20%magma_block,10%blackstone"
-            }
+                "surface": "70%basalt,20%magma_block,10%blackstone",
+            },
         }
 
         if style not in texture_recipes:
             return {
                 "success": False,
-                "error": f"Invalid style '{style}'. Use: {', '.join(texture_recipes.keys())}"
+                "error": f"Invalid style '{style}'. Use: {', '.join(texture_recipes.keys())}",
             }
 
         recipe = texture_recipes[style]
@@ -580,5 +592,5 @@ class TerrainGenerator:
             "style": style,
             "recipe": recipe,
             "steps": steps,
-            "summary": f"Applied {style} texturing to terrain"
+            "summary": f"Applied {style} texturing to terrain",
         }

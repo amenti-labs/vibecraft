@@ -58,13 +58,14 @@ def prepare_worldedit_command(tool_name: str, command: str) -> str:
 
 
 async def handle_rcon_command(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle rcon_command tool - base RCON command execution."""
-    from ..sanitizer import sanitize_command, validate_coordinates_in_bounds, check_player_context_warning
+    from ..sanitizer import (
+        sanitize_command,
+        validate_coordinates_in_bounds,
+        check_player_context_warning,
+    )
 
     command = arguments.get("command", "").strip()
 
@@ -124,11 +125,7 @@ async def handle_rcon_command(
 
 
 async def handle_worldedit_generic(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance,
-    tool_name: str
+    arguments: Dict[str, Any], rcon, config, logger_instance, tool_name: str
 ) -> List[TextContent]:
     """Handle generic WorldEdit commands (20 tools via WORLD_EDIT_TOOL_PREFIXES)."""
     command = arguments.get("command", "").strip()
@@ -148,19 +145,11 @@ async def handle_worldedit_generic(
     command = prepare_worldedit_command(tool_name, command)
 
     # Execute via rcon_command handler
-    return await handle_rcon_command(
-        {"command": command},
-        rcon,
-        config,
-        logger_instance
-    )
+    return await handle_rcon_command({"command": command}, rcon, config, logger_instance)
 
 
 async def handle_get_server_info(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle get_server_info tool."""
     info = rcon.get_server_info()
@@ -188,12 +177,8 @@ async def handle_get_server_info(
     return [TextContent(type="text", text="\n".join(result))]
 
 
-
 async def handle_building_template(
-    arguments: Dict[str, Any],
-    rcon,
-    config,
-    logger_instance
+    arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
     """Handle building_template tool."""
     action = arguments.get("action")
@@ -201,10 +186,12 @@ async def handle_building_template(
         return [TextContent(type="text", text="❌ Error: 'action' parameter is required")]
 
     # Load templates from JSON file
-    templates_file = Path(__file__).parent.parent.parent.parent.parent / "context" / "building_templates.json"
+    templates_file = (
+        Path(__file__).parent.parent.parent.parent.parent / "context" / "building_templates.json"
+    )
 
     try:
-        with open(templates_file, 'r') as f:
+        with open(templates_file, "r") as f:
             templates_data = json.load(f)
             templates = templates_data.get("templates", {})
     except FileNotFoundError:
@@ -230,12 +217,18 @@ async def handle_building_template(
                 meta = tmpl["metadata"]
                 diff_emoji = {"beginner": "🟢", "intermediate": "🟡", "advanced": "🔴"}
                 emoji = diff_emoji.get(meta["difficulty"], "⚪")
-                result_text += f"  {emoji} **{tmpl['template_id']}** - {meta['name']} ({meta['difficulty']})\n"
+                result_text += (
+                    f"  {emoji} **{tmpl['template_id']}** - {meta['name']} ({meta['difficulty']})\n"
+                )
                 result_text += f"     {meta['description']}\n"
             result_text += "\n"
 
-        result_text += "\n💡 Use building_template(action='get', template_id='<id>') to view full details\n"
-        result_text += "💡 Use building_template(action='search', category='<cat>') to filter by category"
+        result_text += (
+            "\n💡 Use building_template(action='get', template_id='<id>') to view full details\n"
+        )
+        result_text += (
+            "💡 Use building_template(action='search', category='<cat>') to filter by category"
+        )
 
         logger_instance.info(f"Listed {len(templates)} building templates")
         return [TextContent(type="text", text=result_text)]
@@ -278,7 +271,9 @@ async def handle_building_template(
                 result_text += f"   Tags: {tags}\n"
             result_text += "\n"
 
-        result_text += "\n💡 Use building_template(action='get', template_id='<id>') to view full template"
+        result_text += (
+            "\n💡 Use building_template(action='get', template_id='<id>') to view full template"
+        )
 
         logger_instance.info(f"Template search: {len(results)} results")
         return [TextContent(type="text", text=result_text)]
@@ -287,11 +282,18 @@ async def handle_building_template(
         # Get full template details
         template_id = arguments.get("template_id")
         if not template_id:
-            return [TextContent(type="text", text="❌ Error: 'template_id' required for get action")]
+            return [
+                TextContent(type="text", text="❌ Error: 'template_id' required for get action")
+            ]
 
         if template_id not in templates:
             available = ", ".join(templates.keys())
-            return [TextContent(type="text", text=f"❌ Template '{template_id}' not found. Available: {available}")]
+            return [
+                TextContent(
+                    type="text",
+                    text=f"❌ Template '{template_id}' not found. Available: {available}",
+                )
+            ]
 
         tmpl = templates[template_id]
         meta = tmpl["metadata"]
@@ -327,7 +329,9 @@ async def handle_building_template(
             if ptype == "integer":
                 min_val = param_def.get("min", "")
                 max_val = param_def.get("max", "")
-                result_text += f"   • {param_name}: {min_val}-{max_val} blocks (default: {default}) - {desc}\n"
+                result_text += (
+                    f"   • {param_name}: {min_val}-{max_val} blocks (default: {default}) - {desc}\n"
+                )
             elif ptype == "enum":
                 options = ", ".join(param_def.get("options", []))
                 result_text += f"   • {param_name}: {options} (default: {default}) - {desc}\n"
@@ -373,7 +377,11 @@ async def handle_building_template(
         # Show customization guide for a template
         template_id = arguments.get("template_id")
         if not template_id:
-            return [TextContent(type="text", text="❌ Error: 'template_id' required for customize action")]
+            return [
+                TextContent(
+                    type="text", text="❌ Error: 'template_id' required for customize action"
+                )
+            ]
 
         if template_id not in templates:
             return [TextContent(type="text", text=f"❌ Template '{template_id}' not found")]
@@ -428,4 +436,9 @@ async def handle_building_template(
         return [TextContent(type="text", text=result_text)]
 
     else:
-        return [TextContent(type="text", text=f"❌ Unknown action: {action}. Use 'list', 'search', 'get', or 'customize'")]
+        return [
+            TextContent(
+                type="text",
+                text=f"❌ Unknown action: {action}. Use 'list', 'search', 'get', or 'customize'",
+            )
+        ]
