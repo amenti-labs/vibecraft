@@ -87,7 +87,7 @@ async def handle_generate_terrain(
             return [TextContent(type="text", text=f"❌ Error: {result.get('error', 'Unknown error')}")]
 
         # Format output
-        output = f"🏔️ Terrain Generation Complete\n\n"
+        output = "🏔️ Terrain Generation Complete\n\n"
         output += f"**Type:** {result['terrain_type'].replace('_', ' ').title()}\n"
         output += f"**Summary:** {result['summary']}\n\n"
 
@@ -139,7 +139,7 @@ async def handle_texture_terrain(
             return [TextContent(type="text", text=f"❌ Error: {result.get('error', 'Unknown error')}")]
 
         # Format output
-        output = f"🎨 Terrain Texturing Complete\n\n"
+        output = "🎨 Terrain Texturing Complete\n\n"
         output += f"**Style:** {style.title()}\n"
         output += f"**Summary:** {result['summary']}\n\n"
 
@@ -193,7 +193,7 @@ async def handle_smooth_terrain(
             return [TextContent(type="text", text=f"❌ Error: {result.get('error', 'Unknown error')}")]
 
         # Format output
-        output = f"✨ Terrain Smoothing Complete\n\n"
+        output = "✨ Terrain Smoothing Complete\n\n"
         output += f"**Iterations:** {result['iterations']}\n"
         output += f"**Region:** {select_result['region']['volume']:,} blocks\n"
         if mask:

@@ -247,7 +247,7 @@ async def handle_analyze_lighting(
             return [TextContent(type="text", text=f"❌ Error: {result['error']}")]
 
         # Format output
-        output = f"💡 Lighting Analysis\n\n"
+        output = "💡 Lighting Analysis\n\n"
         output += f"**Average Light Level:** {result['average_light_level']}\n"
         output += f"**Total Samples:** {result['total_samples']:,}\n"
         output += f"**Dark Spots:** {result['dark_spots_count']:,}\n"
@@ -328,7 +328,7 @@ async def handle_validate_structure(
             return [TextContent(type="text", text=f"❌ Error: {result['error']}")]
 
         # Format output
-        output = f"🏗️ Structure Integrity Validation\n\n"
+        output = "🏗️ Structure Integrity Validation\n\n"
         output += f"**Status:** {'✅ VALID' if result['structure_valid'] else '⚠️ ISSUES FOUND'}\n"
         output += f"**Blocks Checked:** {result['total_blocks_checked']:,}\n"
         output += f"**Issues Found:** {result['issues_found']}\n\n"

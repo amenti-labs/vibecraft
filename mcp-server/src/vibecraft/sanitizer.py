@@ -1,7 +1,7 @@
 """Command sanitization and validation for VibeCraft"""
 
 import re
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 from dataclasses import dataclass
 
 
@@ -14,8 +14,8 @@ class ValidationResult:
     sanitized_command: Optional[str] = None
 
 
-# Dangerous command patterns that should be blocked when safety is enabled
-DANGEROUS_PATTERNS = [
+# Dangerous command patterns - pre-compiled for performance
+_DANGEROUS_PATTERN_STRS = [
     r"//regen\s",  # World regeneration - can destroy builds
     r"//delchunks",  # Chunk deletion
     r"/stop\s",  # Stop server
@@ -23,6 +23,13 @@ DANGEROUS_PATTERNS = [
     r"//limit\s+\d{7,}",  # Extremely high limits
     r"//timeout\s+\d{7,}",  # Extremely high timeouts
 ]
+DANGEROUS_PATTERNS: List[re.Pattern] = [
+    re.compile(p, re.IGNORECASE) for p in _DANGEROUS_PATTERN_STRS
+]
+
+# Pre-compiled coordinate extraction patterns
+COORD_COMMA_PATTERN = re.compile(r"(-?\d+),(-?\d+),(-?\d+)")
+COORD_SPACE_PATTERN = re.compile(r"\s(-?\d+)\s+(-?\d+)\s+(-?\d+)")
 
 # Player-context commands that may not work from console
 PLAYER_CONTEXT_COMMANDS = [
@@ -91,11 +98,11 @@ def sanitize_command(
     # Check for dangerous commands if safety is enabled
     if not allow_dangerous:
         for pattern in DANGEROUS_PATTERNS:
-            if re.search(pattern, sanitized, re.IGNORECASE):
+            if pattern.search(sanitized):
                 return ValidationResult(
                     is_valid=False,
-                    error_message=f"Potentially dangerous command blocked. "
-                    f"Set VIBECRAFT_ALLOW_DANGEROUS_COMMANDS=true to enable.",
+                    error_message="Potentially dangerous command blocked. "
+                    "Set VIBECRAFT_ALLOW_DANGEROUS_COMMANDS=true to enable.",
                 )
 
     return ValidationResult(is_valid=True, sanitized_command=sanitized)
@@ -110,13 +117,11 @@ def extract_coordinates(command: str) -> list[Tuple[int, int, int]]:
     coords = []
 
     # Pattern for X,Y,Z format (WorldEdit console syntax)
-    comma_pattern = r"(-?\d+),(-?\d+),(-?\d+)"
-    for match in re.finditer(comma_pattern, command):
+    for match in COORD_COMMA_PATTERN.finditer(command):
         coords.append((int(match.group(1)), int(match.group(2)), int(match.group(3))))
 
     # Pattern for X Y Z format (vanilla Minecraft syntax)
-    space_pattern = r"\s(-?\d+)\s+(-?\d+)\s+(-?\d+)"
-    for match in re.finditer(space_pattern, command):
+    for match in COORD_SPACE_PATTERN.finditer(command):
         coords.append((int(match.group(1)), int(match.group(2)), int(match.group(3))))
 
     return coords

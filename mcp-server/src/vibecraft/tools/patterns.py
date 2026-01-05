@@ -4,9 +4,7 @@ Pattern Tool Handlers
 Building and terrain pattern lookup and placement.
 """
 
-import json
 import logging
-from pathlib import Path
 from typing import Dict, Any, List
 from mcp.types import TextContent
 

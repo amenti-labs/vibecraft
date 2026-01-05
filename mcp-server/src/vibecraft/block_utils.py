@@ -5,10 +5,9 @@ Utilities for querying and analyzing block states via RCON.
 """
 
 import logging
-import re
 from typing import Dict, Any, Optional
 
-from .rcon_manager import RCONManager
+from .rcon_manager import RCONManager, BLOCK_STATE_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ def fetch_block_state(rcon: RCONManager, x: int, y: int, z: int) -> Optional[Dic
         return None
 
     text = str(result)
-    match = re.search(r"minecraft:([a-z0-9_/]+)(?:\{([^}]*)\})?", text)
+    match = BLOCK_STATE_PATTERN.search(text)
     if not match:
         return None
 

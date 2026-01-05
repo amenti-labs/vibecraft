@@ -107,9 +107,9 @@ async def handle_rcon_command(
     # Check for player context warning
     warning = check_player_context_warning(command)
 
-    # Execute command
+    # Execute command (using async method to avoid blocking event loop)
     try:
-        response = rcon.execute_command(command)
+        response = await rcon.execute_command_async(command)
         result = f"✅ Command executed: {command}\n\nResponse: {response}"
 
         if warning:
@@ -139,8 +139,8 @@ async def handle_worldedit_generic(
     # CRITICAL: Set world context before any WorldEdit command
     # WorldEdit from RCON requires world context to be set first
     try:
-        # Use execute_command (not send_command which strips leading slash)
-        result = rcon.execute_command("/world world")
+        # Use execute_command_async for non-blocking operation
+        result = await rcon.execute_command_async("/world world")
         logger_instance.debug(f"WorldEdit world context set: {result}")
     except Exception as e:
         logger_instance.warning(f"Failed to set world context (may already be set): {e}")
@@ -357,7 +357,7 @@ async def handle_building_template(
         # Material palette reference
         if "material_palette" in tmpl:
             result_text += f"🎨 **Material Palette**: {tmpl['material_palette']}\n"
-            result_text += f"   (See context/minecraft_material_palettes.json for details)\n\n"
+            result_text += "   (See context/minecraft_material_palettes.json for details)\n\n"
 
         result_text += "💡 **Usage**:\n"
         result_text += "1. Customize parameters based on user preferences\n"

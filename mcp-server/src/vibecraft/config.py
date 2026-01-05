@@ -1,19 +1,20 @@
 """Configuration management for VibeCraft MCP server"""
 
-import os
 from typing import Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from .constants import RCONConstants
 
 
 class VibeCraftConfig(BaseSettings):
     """VibeCraft MCP Server Configuration"""
 
     # RCON Connection Settings
-    rcon_host: str = Field(default="127.0.0.1", description="Minecraft server RCON host")
-    rcon_port: int = Field(default=25575, description="Minecraft server RCON port")
+    rcon_host: str = Field(default=RCONConstants.DEFAULT_HOST, description="Minecraft server RCON host")
+    rcon_port: int = Field(default=RCONConstants.DEFAULT_PORT, description="Minecraft server RCON port")
     rcon_password: str = Field(default="minecraft", description="RCON password")
-    rcon_timeout: int = Field(default=10, description="RCON command timeout in seconds")
+    rcon_timeout: int = Field(default=RCONConstants.DEFAULT_TIMEOUT, description="RCON command timeout in seconds")
 
     # Safety Settings
     enable_safety_checks: bool = Field(

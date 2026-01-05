@@ -7,7 +7,6 @@ and exposes it for use by tools and the main server.
 
 import json
 import logging
-from pathlib import Path
 from .paths import CONTEXT_DIR
 from typing import List, Dict, Any
 

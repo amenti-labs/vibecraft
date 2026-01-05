@@ -7,13 +7,12 @@ Exposes ALL WorldEdit commands via MCP for AI-powered building in Minecraft
 import asyncio
 import json
 import logging
-import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Sequence, List, Optional
+from typing import Any, Dict, Sequence, List
 
 from mcp.server import Server
-from mcp.types import Resource, Tool, TextContent, EmbeddedResource
+from mcp.types import Resource, Tool, TextContent
 import mcp.server.stdio
 
 from .config import load_config, VibeCraftConfig
@@ -62,7 +61,6 @@ def setup_logging() -> Path:
     return log_file
 
 # Import Minecraft items data from loader module
-from .minecraft_items_loader import minecraft_items
 
 # Initialize server
 app = Server("vibecraft")

@@ -5,12 +5,9 @@ Algorithms for analyzing structure symmetry, lighting levels, and structural int
 Provides QA validation tools for professional-quality builds.
 """
 
-import math
 import logging
-from typing import List, Tuple, Dict, Any, Optional, Set
-from collections import Counter
+from typing import List, Tuple, Dict, Any, Optional
 
-from .rcon_manager import RCONManager
 from .block_utils import fetch_block_state, block_is_air
 
 logger = logging.getLogger(__name__)
@@ -68,7 +65,6 @@ class SymmetryChecker:
             return {"error": f"Invalid axis '{axis}'. Must be 'x', 'y', or 'z'."}
 
         # Sample blocks in region
-        samples = []
         differences = []
         total_checked = 0
 

@@ -7,8 +7,9 @@ item search, player positioning, surface detection, and region calculations.
 
 from typing import Dict, Any, List
 from mcp.types import TextContent
-import re
 import math
+
+from ..rcon_manager import PLAYER_POS_PATTERN, PLAYER_ROT_PATTERN, BLOCK_ID_PATTERN
 
 
 async def handle_calculate_region_size(
@@ -45,7 +46,7 @@ async def handle_calculate_region_size(
         f"Corner 1: ({x1}, {y1}, {z1})",
         f"Corner 2: ({x2}, {y2}, {z2})",
         "",
-        f"Dimensions:",
+        "Dimensions:",
         f"  Width (X): {width} blocks",
         f"  Height (Y): {height} blocks",
         f"  Depth (Z): {depth} blocks",
@@ -168,7 +169,7 @@ async def handle_get_player_position(
     try:
         # Get player position
         pos_result = rcon.send_command(f"data get entity {player_name} Pos")
-        coord_match = re.search(r'\[([-\d.]+)d?,\s*([-\d.]+)d?,\s*([-\d.]+)d?\]', pos_result)
+        coord_match = PLAYER_POS_PATTERN.search(pos_result)
 
         if not coord_match:
             return [TextContent(type="text", text=f"❌ Player '{player_name}' not found or error getting position")]
@@ -179,7 +180,7 @@ async def handle_get_player_position(
 
         # Get player rotation (yaw, pitch)
         rot_result = rcon.send_command(f"data get entity {player_name} Rotation")
-        rot_match = re.search(r'\[([-\d.]+)f?,\s*([-\d.]+)f?\]', rot_result)
+        rot_match = PLAYER_ROT_PATTERN.search(rot_result)
 
         yaw = 0.0
         pitch = 0.0
@@ -226,7 +227,7 @@ async def handle_get_player_position(
 
             if "air" not in block_check.lower() and "has the following" in block_check:
                 # Found a non-air block
-                block_match = re.search(r'"minecraft:([^"]+)"', block_check)
+                block_match = BLOCK_ID_PATTERN.search(block_check)
                 if block_match:
                     block_type = block_match.group(1)
                     target_info = f"{block_type} at {target_x},{target_y},{target_z} ({distance} blocks away)"
@@ -240,7 +241,7 @@ async def handle_get_player_position(
         surface_block = "unknown"
         block_check = rcon.send_command(f"execute positioned {int(x)} {player_y - 1} {int(z)} run data get block ~ ~ ~ id")
         if "has the following" in block_check:
-            block_match = re.search(r'"minecraft:([^"]+)"', block_check)
+            block_match = BLOCK_ID_PATTERN.search(block_check)
             if block_match:
                 surface_block = block_match.group(1)
 
@@ -317,7 +318,7 @@ async def handle_get_surface_level(
                     player_data = rcon.send_command(f"data get entity {player_name} Pos")
 
                     if "has the following entity data" in player_data:
-                        pos_match = re.search(r'\[([+-]?\d+\.?\d*)d,\s*([+-]?\d+\.?\d*)d,\s*([+-]?\d+\.?\d*)d\]', player_data)
+                        pos_match = PLAYER_POS_PATTERN.search(player_data)
                         if pos_match:
                             player_y_baseline = int(float(pos_match.group(2)))
                             logger_instance.info(f"Using player Y position {player_y_baseline} as baseline reference")
@@ -332,7 +333,7 @@ async def handle_get_surface_level(
         surface_block = "unknown"
         block_check = rcon.send_command(f"execute positioned {x} {surface_y} {z} run data get block ~ ~ ~ id")
         if "has the following" in block_check:
-            block_match = re.search(r'"minecraft:([^"]+)"', block_check)
+            block_match = BLOCK_ID_PATTERN.search(block_check)
             if block_match:
                 surface_block = block_match.group(1)
 

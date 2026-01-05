@@ -153,7 +153,7 @@ async def handle_calculate_window_spacing(
         )
 
         # Format output
-        output = f"🪟 Window Spacing Calculator\n\n"
+        output = "🪟 Window Spacing Calculator\n\n"
         output += f"**Wall Length:** {result['wall_length']} blocks\n"
         output += f"**Window Width:** {result['window_width']} blocks\n"
         output += f"**Number of Windows:** {result['window_count']}\n"

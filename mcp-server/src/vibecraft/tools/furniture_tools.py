@@ -37,7 +37,7 @@ async def handle_furniture_lookup(
         return [TextContent(type="text", text="❌ Error: No furniture data available (both layouts and catalog missing)")]
 
     # Create lookup index: map IDs to layouts
-    layout_index = {layout['id']: layout for layout in layouts}
+    {layout['id']: layout for layout in layouts}
 
     # Filter catalog to only actual furniture (not category headings)
     furniture_items = [item for item in catalog if item.get('heading_level', 2) >= 3]
@@ -169,18 +169,18 @@ async def handle_furniture_lookup(
                 result_text += f"   - Materials: {item['materials_count']} total blocks\n"
                 if item.get('tags'):
                     result_text += f"   - Tags: {', '.join(item['tags'])}\n"
-                result_text += f"   - ✅ Automated layout available\n"
+                result_text += "   - ✅ Automated layout available\n"
             else:
-                result_text += f"   - 📝 Manual instructions only (no automated layout yet)\n"
+                result_text += "   - 📝 Manual instructions only (no automated layout yet)\n"
 
             if item.get('notes'):
                 result_text += f"   - Notes: {item['notes']}\n"
             result_text += "\n"
 
-        result_text += f"\n💡 Legend:\n"
-        result_text += f"   ✅ = Has automated layout (can be placed with furniture_placer)\n"
-        result_text += f"   📝 = Manual instructions only (build by hand using catalog)\n\n"
-        result_text += f"To get details, use: `furniture_lookup` with action='get' and furniture_id='<id>'"
+        result_text += "\n💡 Legend:\n"
+        result_text += "   ✅ = Has automated layout (can be placed with furniture_placer)\n"
+        result_text += "   📝 = Manual instructions only (build by hand using catalog)\n\n"
+        result_text += "To get details, use: `furniture_lookup` with action='get' and furniture_id='<id>'"
 
         return [TextContent(type="text", text=result_text)]
 
@@ -227,7 +227,6 @@ async def handle_furniture_lookup(
                     result_text += block.get('text', '') + "\n\n"
                 elif block.get('type') == 'list':
                     style = block.get('style', 'unordered')
-                    prefix = '-' if style == 'unordered' else '1.'
                     for i, item_text in enumerate(block.get('items', []), 1):
                         if style == 'ordered':
                             result_text += f"{i}. {item_text}\n"

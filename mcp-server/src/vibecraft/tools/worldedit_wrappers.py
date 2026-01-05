@@ -5,9 +5,10 @@ This module provides intelligent wrappers for WorldEdit commands that need
 player position or selection context when run from RCON/console.
 """
 
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List
 from mcp.types import TextContent
-import re
+
+from ..rcon_manager import PLAYER_POS_PATTERN
 
 
 async def handle_worldedit_generation_smart(
@@ -51,8 +52,7 @@ async def handle_worldedit_generation_smart(
         logger_instance.info(f"Player position query result: {pos_result}")
 
         # Parse position from response like: "ereidjustpeed has the following entity data: [1364.5d, -60.0d, 87.5d]"
-        import re
-        pos_match = re.search(r'\[([\d.-]+)d,\s*([\d.-]+)d,\s*([\d.-]+)d\]', pos_result)
+        pos_match = PLAYER_POS_PATTERN.search(pos_result)
 
         if not pos_match:
             return [TextContent(type="text", text=f"❌ Could not get player position. Make sure a player is online.\nResponse: {pos_result}")]

@@ -5,10 +5,8 @@ Converts furniture layout definitions into executable WorldEdit commands.
 Handles coordinate transformation, rotation, and command generation.
 """
 
-import json
 from collections import OrderedDict
 from typing import Dict, List, Tuple, Optional
-from pathlib import Path
 
 
 class FurniturePlacer:
@@ -399,7 +397,7 @@ class FurniturePlacer:
         fill_count = sum(1 for cmd in commands if cmd.startswith('fill'))
         worldedit_count = sum(1 for cmd in commands if cmd.startswith('//'))
 
-        summary = f"**Placement Summary:**\n"
+        summary = "**Placement Summary:**\n"
         summary += f"- Total commands: {len([c for c in commands if not c.startswith('#')])}\n"
         if setblock_count:
             summary += f"- Single blocks: {setblock_count}\n"

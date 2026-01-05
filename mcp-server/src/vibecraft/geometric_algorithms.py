@@ -117,7 +117,7 @@ class CircleCalculator:
             "blocks_count": len(coords_list),
             "coordinates": coords_list,
             "worldedit_command": f"//sphere {'h' if hollow else ''} <block> {radius}",
-            "usage_tip": f"Teleport to center then use WorldEdit or place blocks at coordinates"
+            "usage_tip": "Teleport to center then use WorldEdit or place blocks at coordinates"
         }
 
     @staticmethod

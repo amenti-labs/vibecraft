@@ -8,11 +8,12 @@ Analyzes Minecraft terrain regions using efficient WorldEdit bulk commands:
 - Runs in seconds, not minutes
 """
 
-import re
 import math
 import logging
 from typing import Dict, List, Tuple, Optional, Any
-from collections import Counter, defaultdict
+
+from .constants import BlockCategories, TerrainConstants
+from .rcon_manager import DISTR_LINE_PATTERN, COUNT_BLOCKS_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -24,36 +25,11 @@ class TerrainAnalyzer:
     Performance: Analyzes 100x100 region in ~5-10 seconds (was 60+ seconds)
     """
 
-    # Block categories for analysis
-    LIQUID_BLOCKS = {
-        'water', 'lava', 'flowing_water', 'flowing_lava'
-    }
-
-    VEGETATION_BLOCKS = {
-        'oak_log', 'birch_log', 'spruce_log', 'jungle_log', 'acacia_log',
-        'dark_oak_log', 'mangrove_log', 'cherry_log',
-        'oak_leaves', 'birch_leaves', 'spruce_leaves', 'jungle_leaves',
-        'acacia_leaves', 'dark_oak_leaves', 'mangrove_leaves', 'cherry_leaves',
-        'grass', 'tall_grass', 'fern', 'large_fern', 'dead_bush',
-        'vine', 'lily_pad', 'sea_grass', 'tall_seagrass', 'kelp'
-    }
-
-    NATURAL_SURFACE_BLOCKS = {
-        'grass_block', 'dirt', 'coarse_dirt', 'podzol', 'mycelium',
-        'sand', 'red_sand', 'gravel', 'stone', 'deepslate',
-        'sandstone', 'red_sandstone', 'terracotta', 'snow', 'ice',
-        'packed_ice', 'blue_ice', 'netherrack', 'soul_sand', 'soul_soil',
-        'end_stone', 'moss_block', 'mud', 'clay'
-    }
-
-    HAZARD_BLOCKS = {
-        'lava': 'Lava flow',
-        'magma_block': 'Magma blocks',
-        'fire': 'Fire',
-        'sweet_berry_bush': 'Berry bushes (damage)',
-        'cactus': 'Cacti',
-        'powder_snow': 'Powder snow'
-    }
+    # Use centralized block categories
+    LIQUID_BLOCKS = BlockCategories.LIQUID_BLOCKS
+    VEGETATION_BLOCKS = BlockCategories.VEGETATION_BLOCKS
+    NATURAL_SURFACE_BLOCKS = BlockCategories.NATURAL_SURFACE_BLOCKS
+    HAZARD_BLOCKS = BlockCategories.HAZARD_BLOCKS
 
     def __init__(self, rcon_manager):
         """Initialize the terrain analyzer."""
@@ -63,8 +39,8 @@ class TerrainAnalyzer:
         self,
         x1: int, y1: int, z1: int,
         x2: int, y2: int, z2: int,
-        resolution: int = 5,
-        max_samples: int = 10000
+        resolution: int = TerrainConstants.DEFAULT_RESOLUTION,
+        max_samples: int = TerrainConstants.MAX_SAMPLES
     ) -> Dict[str, Any]:
         """
         Analyze terrain region using FAST WorldEdit bulk commands.
@@ -174,7 +150,7 @@ class TerrainAnalyzer:
             total_blocks = 0
 
             for line in str(result).split('\n'):
-                match = re.search(r'([\d.]+)%\s+([a-z_:]+)\s+\((\d+)', line, re.IGNORECASE)
+                match = DISTR_LINE_PATTERN.search(line)
                 if match:
                     percentage = float(match.group(1))
                     block_name = match.group(2)
@@ -306,7 +282,7 @@ class TerrainAnalyzer:
             # Parse to find highest non-air block
             block_heights = {}
             for line in str(result).split('\n'):
-                match = re.search(r'([\d.]+)%\s+([a-z_:]+)', line, re.IGNORECASE)
+                match = DISTR_LINE_PATTERN.search(line)
                 if match:
                     block_name = match.group(2)
                     if ':' in block_name:
@@ -357,7 +333,7 @@ class TerrainAnalyzer:
                 # Parse count
                 count = 0
                 if result:
-                    match = re.search(r'(\d+)\s+block', str(result), re.IGNORECASE)
+                    match = COUNT_BLOCKS_PATTERN.search(str(result))
                     if match:
                         count = int(match.group(1))
 
@@ -384,7 +360,7 @@ class TerrainAnalyzer:
 
                     count = 0
                     if result:
-                        match = re.search(r'(\d+)\s+block', str(result), re.IGNORECASE)
+                        match = COUNT_BLOCKS_PATTERN.search(str(result))
                         if match:
                             count = int(match.group(1))
 
@@ -423,7 +399,7 @@ class TerrainAnalyzer:
 
                 if result:
                     # Parse count from result (format: "X blocks counted")
-                    match = re.search(r'(\d+)\s+block', str(result), re.IGNORECASE)
+                    match = COUNT_BLOCKS_PATTERN.search(str(result))
                     if match:
                         count = int(match.group(1))
                         if count > 0:
@@ -493,14 +469,14 @@ class TerrainAnalyzer:
         height_range = max_height - min_height
         slope_index = std_dev / max(height_range, 1)
 
-        # Categorize terrain
-        if std_dev < 2:
+        # Categorize terrain using centralized constants
+        if std_dev < TerrainConstants.FLAT_THRESHOLD:
             terrain_type = "Very flat"
-        elif std_dev < 5:
+        elif std_dev < TerrainConstants.GENTLE_THRESHOLD:
             terrain_type = "Gentle slopes"
-        elif std_dev < 10:
+        elif std_dev < TerrainConstants.HILLY_THRESHOLD:
             terrain_type = "Hilly"
-        elif std_dev < 20:
+        elif std_dev < TerrainConstants.MOUNTAINOUS_THRESHOLD:
             terrain_type = "Mountainous"
         else:
             terrain_type = "Extreme terrain"

@@ -13,8 +13,7 @@ Key capabilities:
 """
 
 import logging
-import math
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional
 from .rcon_manager import RCONManager
 
 logger = logging.getLogger(__name__)
