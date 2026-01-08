@@ -36,19 +36,46 @@ Support blocks FIRST, then dependent blocks. Wire/buttons drop without support!
 - **Vanilla /fill**: Small regions (1-100 blocks), precise control
 - **Vanilla /setblock**: Single blocks, decorations, exact states
 
-## 🎯 Agent Skills (Auto-Loaded)
+## 🎯 SKILLS - Your Specialized Knowledge Base
 
-Skills in `.claude/skills/` provide detailed knowledge. Claude loads them automatically based on your request.
+**⚡ SKILLS ARE YOUR PRIMARY REFERENCE!** Before building anything complex, the relevant skill is automatically loaded with detailed workflows, code examples, and best practices.
 
-| Skill | Triggers | What It Provides |
-|-------|----------|------------------|
-| **building-structures** | "build house", "castle" | Floor placement, walls, roofs |
-| **building-redstone** | "redstone", "circuit", "farm" | Block order, logic gates, farms |
-| **generating-terrain** | "terrain", "mountains" | Procedural noise, biome texturing |
-| **placing-furniture** | "furniture", "interior" | Spatial scanning, room layouts |
-| **choosing-materials** | "palette", "materials" | 60-30-10 rule, 10 palettes |
-| **using-worldedit** | "worldedit", "//set" | Commands, patterns, masks, expressions |
-| **creating-shapes** | "sphere", "dome" | build() code, shape formulas |
+### How Skills Work
+1. **Auto-Detection**: When your request matches a skill trigger, it's loaded automatically
+2. **Deep Knowledge**: Skills contain the detailed instructions this prompt summarizes
+3. **Always Available**: Located in `.claude/skills/` - 7 specialized skills covering all building tasks
+
+### Available Skills
+
+| Skill | When It Activates | What You Get |
+|-------|-------------------|--------------|
+| 🏠 **building-structures** | "build house", "castle", "cottage", "tower" | Complete building workflow: ground detection, floor placement, wall construction, roof layer-by-layer guide, architectural styles reference |
+| ⚡ **building-redstone** | "redstone", "circuit", "farm", "automation" | Block placement order rules, logic gate implementations (NOT/OR/AND/XOR), memory circuits, timing, 10+ automatic farm designs |
+| 🏔️ **generating-terrain** | "terrain", "mountains", "hills", "landscape" | Procedural noise algorithms, biome texturing (temperate/alpine/desert/volcanic), smoothing techniques |
+| 🪑 **placing-furniture** | "furniture", "interior", "decorate", "furnish" | Spatial scanning workflow, room layout templates (bedroom/living/dining/kitchen), lighting placement |
+| 🎨 **choosing-materials** | "palette", "materials", "colors", "blocks" | 60-30-10 rule explained, 10 curated palettes (Medieval/Gothic/Modern/Japanese/etc.), color relationships |
+| 🔧 **using-worldedit** | "worldedit", "//set", "//replace", "selection" | Full command syntax, patterns, masks, expressions, brushes |
+| 🔮 **creating-shapes** | "sphere", "dome", "pyramid", "torus", "arch" | build() code patterns, distance functions, shape formulas, spiral staircases, procedural geometry |
+
+### Skill-First Approach
+
+**For any non-trivial task, think: "Which skill has the detailed workflow for this?"**
+
+```
+User: "Build a medieval castle"
+→ Skill loaded: building-structures + choosing-materials
+→ Contains: Floor placement rules, wall construction, roof workflows, medieval palette
+
+User: "Create a redstone door"  
+→ Skill loaded: building-redstone
+→ Contains: Block placement order, piston door designs, observer/piston wiring
+
+User: "Make rolling hills with trees"
+→ Skill loaded: generating-terrain
+→ Contains: Noise algorithms, biome texturing, tree placement
+```
+
+**The skills have the code examples and step-by-step workflows. This prompt has the critical rules and quick references.**
 
 ## 🔧 MCP Tools Summary
 
