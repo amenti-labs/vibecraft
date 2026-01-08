@@ -1,214 +1,116 @@
 # Automatic Farm Designs
 
-Complete farm builds using redstone automation.
-
-## Sugar Cane Farm (Zero-Tick)
-
-Observer detects cane growth, piston breaks it.
+## Sugar Cane Farm
+Observer detects growth → piston breaks cane.
 
 ```python
-# Single cell
 build(commands=[
-    # Water source
     "/setblock X Y Z water",
-    # Dirt for cane
     "/setblock X+1 Y Z dirt",
-    # Observer watching cane position
     "/setblock X+3 Y+2 Z observer[facing=west]",
-    # Piston to break cane
     "/setblock X+2 Y+2 Z sticky_piston[facing=west]",
-    # Connect observer to piston
     "/setblock X+3 Y+2 Z+1 redstone_wire",
 ])
-
-# Place sugar cane manually or wait for growth
-# Hopper minecart below for collection
-```
-
-### Tileable Design
-```
-Repeat every 2 blocks on X axis:
-[water][dirt][cane][piston][observer]
-[water][dirt][cane][piston][observer]
-...
-
-Collection: hopper minecart rail below dirt row
+# Tileable every 2 blocks. Hopper minecart below for collection.
 ```
 
 ## Pumpkin/Melon Farm
-
-Observer watches growth block, piston harvests.
+Observer watches growth block → piston harvests.
 
 ```python
 build(commands=[
-    # Farmland for stem
     "/setblock X Y Z farmland",
-    # Dirt for fruit growth
-    "/setblock X+1 Y Z dirt",
-    # Observer watching growth spot
+    "/setblock X+1 Y Z dirt",  # Fruit grows here
     "/setblock X+1 Y+1 Z observer[facing=down]",
-    # Piston to break fruit
     "/setblock X+2 Y Z sticky_piston[facing=west]",
-    # Connect observer to piston
     "/setblock X+1 Y+2 Z redstone_wire",
     "/setblock X+2 Y+2 Z redstone_wire",
 ])
 ```
 
-### Double-Sided Design
-```
-[piston][growth][stem][growth][piston]
-         ↑                ↑
-    [observer]       [observer]
-
-Stem can grow fruit on either side.
-Both observers connect to respective pistons.
-```
-
 ## Chicken Farm (Egg-Based)
-
-Chickens lay eggs → dispenser shoots → baby chickens → grow → lava cooks.
+Chickens lay eggs → dispenser shoots → babies grow → lava cooks adults.
 
 ```python
 build(commands=[
-    # Chicken containment (2x2x2 glass box)
-    "/fill X Y Z X+2 Y+2 Z+2 glass hollow",
-    # Hopper floor to collect eggs
-    "/setblock X+1 Y Z+1 hopper[facing=south]",
-    # Dispenser shoots eggs into cooking area
-    "/setblock X+1 Y-1 Z+3 dispenser[facing=north]",
-    # Slab ceiling (babies fall through, adults don't)
-    "/setblock X+1 Y-1 Z+4 stone_slab[type=bottom]",
-    # Lava above slab (cooks adults)
-    "/setblock X+1 Y Z+4 lava",
-    # Collection hopper below
+    "/fill X Y Z X+2 Y+2 Z+2 glass hollow",  # Chicken box
+    "/setblock X+1 Y Z+1 hopper[facing=south]",  # Collect eggs
+    "/setblock X+1 Y-1 Z+3 dispenser[facing=north]",  # Shoot eggs
+    "/setblock X+1 Y-1 Z+4 stone_slab[type=bottom]",  # Baby filter
+    "/setblock X+1 Y Z+4 lava",  # Cook adults
     "/setblock X+1 Y-2 Z+4 hopper[facing=south]",
     "/setblock X+1 Y-3 Z+4 chest[facing=south]",
 ])
-
-# Clock to fire dispenser
-# Eggs → dispenser → 1/8 chance of chicken
+# Add clock to fire dispenser
 ```
 
-## Iron Farm (Simple)
+## Iron Farm
+Villagers + zombie = iron golem spawns → killed → iron collected.
 
-Villagers + zombie = iron golem spawns.
-
-```
-Layout (side view):
-[bed][bed][bed]     ← Villager pod (3 beds)
-[villager pods]      ← 3+ villagers with line of sight
-    ↓
-[zombie]             ← Scares villagers (3+ blocks away)
-    ↓
-[spawn platform]     ← Golem spawns here
-    ↓
-[lava/cacti]         ← Kills golem
-    ↓
-[hoppers]→[chest]    ← Collects iron
-```
-
-### Key Requirements
-- 3+ villagers per pod
-- 3+ beds per pod
-- Villagers must see zombie
-- Zombie must be 3+ blocks from villagers
-- Spawn platform clear of blocks above
+**Requirements:**
+- 3+ villagers per pod with 3+ beds
+- Zombie 3+ blocks away (scares villagers)
+- Clear spawn platform below
+- Lava/cacti kill system → hoppers → chest
 
 ## Crop Farm (Wheat/Carrot/Potato)
-
 Water stream harvests, hopper collects.
 
 ```python
 build(commands=[
-    # 9x9 farmland with water center
     "/fill X Y Z X+8 Y Z+8 farmland",
-    "/setblock X+4 Y Z+4 water",
-    # Dispensers with water buckets
-    "/setblock X-1 Y+1 Z+4 dispenser[facing=east]",
-    # Redstone clock triggers harvest
-    # Water flows, breaks crops
-    # Hopper line at end collects
-    "/fill X+9 Y-1 Z X+9 Y-1 Z+8 hopper[facing=south]",
+    "/setblock X+4 Y Z+4 water",  # Center water
+    "/setblock X-1 Y+1 Z+4 dispenser[facing=east]",  # Water bucket
+    "/fill X+9 Y-1 Z X+9 Y-1 Z+8 hopper[facing=south]",  # Collection
 ])
+# Clock triggers dispenser → water breaks crops
 ```
 
-## Mob Farm (Spawner-Based)
-
-Dark room spawns mobs, water pushes to kill chamber.
+## Mob Farm
+Dark room spawns → water pushes → 22+ block drop → hoppers collect.
 
 ```
 [dark room 9x9x3]
     ↓ (water channels)
 [collection point]
     ↓
-[drop shaft 22+ blocks]
-    ↓
-[landing pad]
+[drop shaft 22+ blocks]  ← 1-hit kill height
     ↓
 [hoppers]→[chest]
 ```
-
-### Key Points
-- Light level 0 in spawn room
-- Water pushes mobs to edge
-- 22-block drop = 1-hit kill
-- Trapdoors fool mob pathfinding
+Use trapdoors to fool mob pathfinding.
 
 ## Item Sorter
-
-Hopper filtering system.
-
 ```python
-# Single filter cell
 build(commands=[
-    # Input hopper (items flow down)
-    "/setblock X Y Z hopper[facing=south]",
-    # Filter hopper (locked by default)
-    "/setblock X Y-1 Z hopper[facing=east]",
-    # Comparator reads filter hopper
+    "/setblock X Y Z hopper[facing=south]",      # Input
+    "/setblock X Y-1 Z hopper[facing=east]",     # Filter (locked)
     "/setblock X+1 Y-1 Z comparator[facing=east]",
-    # Redstone dust to repeater
     "/setblock X+2 Y-1 Z redstone_wire",
-    # Repeater boosts signal
     "/setblock X+3 Y-1 Z repeater[facing=east]",
-    # Torch inverts (unlocks hopper when item detected)
-    "/setblock X+4 Y-1 Z redstone_torch",
-    # Output hopper
-    "/setblock X Y-2 Z hopper[facing=south]",
-    # Output chest
+    "/setblock X+4 Y-1 Z redstone_torch",        # Inverts
+    "/setblock X Y-2 Z hopper[facing=south]",    # Output
     "/setblock X Y-3 Z chest[facing=south]",
 ])
-
-# Filter hopper contains:
-# - Slot 1: 1x target item
-# - Slots 2-5: 21x target item each (or junk items to fill)
-# Total: 22 items to trigger comparator at right level
+# Filter hopper: slot1=1x target, slots2-5=21x each (22 total)
 ```
 
 ## Wool Farm
-
-Sheep regrow wool, observer detects, dispenser shears.
+Observer detects sheep wool regrowth → dispenser shears.
 
 ```python
 build(commands=[
-    # Sheep pen (glass walls)
     "/fill X Y Z X+3 Y+2 Z+3 glass hollow",
-    # Grass floor (sheep eat to regrow wool)
     "/fill X+1 Y Z+1 X+2 Y Z+2 grass_block",
-    # Observer watching sheep
     "/setblock X+4 Y+1 Z+2 observer[facing=west]",
-    # Dispenser with shears
-    "/setblock X+4 Y+1 Z+1 dispenser[facing=west]",
-    # Connect observer to dispenser
+    "/setblock X+4 Y+1 Z+1 dispenser[facing=west]",  # With shears
     "/setblock X+4 Y+2 Z+1 redstone_wire",
     "/setblock X+4 Y+2 Z+2 redstone_wire",
 ])
 ```
 
 ## Honey Farm
-
-Bees fill hive, dispenser harvests.
+Observer detects honey_level=5 → dispenser bottles it.
 
 ```
 [hive][dispenser with bottle]
@@ -216,14 +118,11 @@ Bees fill hive, dispenser harvests.
 [observer facing hive]
    ↓
 [redstone to dispenser]
-
-Observer detects honey_level=5, dispenser bottles it.
 ```
 
 ## Performance Tips
-
-1. **Chunk loading**: Farms only work in loaded chunks
-2. **Mob caps**: Too many mobs stop spawns
-3. **Hopper lag**: Minimize hopper count
-4. **Water streams**: Use ice for faster flow
-5. **Clock speed**: Slower clocks = less lag
+1. Farms only work in loaded chunks
+2. Too many mobs stop spawns (mob cap)
+3. Minimize hopper count (lag)
+4. Use ice for faster water flow
+5. Slower clocks = less lag

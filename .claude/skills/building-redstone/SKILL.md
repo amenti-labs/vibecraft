@@ -5,120 +5,52 @@ description: Builds redstone circuits, mechanisms, and automation in Minecraft u
 
 # Building Redstone
 
-Build redstone circuits and automation using VibeCraft MCP tools.
+## Critical: Block Placement Order
 
-## Critical Rule: Block Placement Order
-
-**Support blocks FIRST, then dependent blocks!**
-
-Blocks drop as items if their support doesn't exist:
+**Support blocks FIRST, then dependent blocks!** Blocks drop as items if support doesn't exist.
 
 ```
-WRONG ORDER (breaks!):        CORRECT ORDER (works!):
-1. redstone_wire              1. solid blocks (platform)
-2. button                     2. solid blocks (walls)
-3. solid blocks               3. redstone_wire
-   → Wire breaks!             4. button (on wall)
+WRONG: 1.wire 2.button 3.blocks → Wire breaks!
+RIGHT: 1.platform 2.walls 3.wire 4.button
 ```
 
 ## Attachment Rules
 
-```
-BLOCK TYPE              SUPPORT LOCATION
-─────────────────────────────────────────
-redstone_wire           Y-1 (block below)
-repeater/comparator     Y-1 (block below)
-redstone_wall_torch     Same Y, offset by facing
-stone_button            Same Y, offset by facing
-wall_sign               Same Y, offset by facing
-carpet/pressure_plate   Y-1 (block below)
-```
+| Block | Support Location |
+|-------|------------------|
+| redstone_wire, repeater, comparator, carpet, pressure_plate | Y-1 (below) |
+| redstone_wall_torch, button, wall_sign | Same Y, offset by facing |
 
-**Wall torch/button facing:**
-- `facing=east` → block to WEST (X-1)
-- `facing=west` → block to EAST (X+1)
-- `facing=north` → block to SOUTH (Z+1)
-- `facing=south` → block to NORTH (Z-1)
+**Wall attachment facing:** `east`→block at X-1, `west`→X+1, `north`→Z+1, `south`→Z-1
 
 ## MCP Tools
 
-Use `build()` for redstone circuits:
-
 ```python
 build(commands=[
-    # Phase 1: Support blocks
-    "/fill X Y Z X2 Y Z2 stone",
-    # Phase 2: Redstone
-    "/setblock X Y+1 Z redstone_wire",
-    # Phase 3: Attachments
-    "/setblock X+1 Y+1 Z stone_button[facing=west,face=wall]",
+    "/fill X Y Z X2 Y Z2 stone",           # 1. Support
+    "/setblock X Y+1 Z redstone_wire",     # 2. Redstone
+    "/setblock X+1 Y+1 Z stone_button[facing=west,face=wall]",  # 3. Attachments
 ])
 ```
 
 ## Logic Gates
 
-### NOT (Inverter)
-```
-[input]→[block]→[torch]→[output]
+**NOT**: `[in]→[block]→[torch]→[out]` — Torch inverts signal
+**OR**: Merge two wires at same block
+**AND**: Two torches→junction block→inverting torch→output
+**XOR**: Two comparators in subtract mode, OR their outputs
 
-/setblock X Y Z redstone_wire
-/setblock X+1 Y Z stone
-/setblock X+2 Y Z redstone_wall_torch[facing=west]
-```
-
-### OR Gate
-```
-[A]→─┐
-     ├→[output]
-[B]→─┘
-
-Merge two wires at same block.
-```
-
-### AND Gate
-```
-[A]→[block+torch]─┐
-                  ├→[block]→[torch]→[output]
-[B]→[block+torch]─┘
-
-Two torches pointing at same block, then invert.
-```
-
-### XOR Gate
-```
-[A]→[comparator subtract]→┐
-                           ├→[OR]→[output]
-[B]→[comparator subtract]→┘
-```
-
-For detailed gate implementations, see [gates.md](gates.md).
+See [gates.md](gates.md) for implementations.
 
 ## Memory Circuits
 
-### RS Latch (Set/Reset)
+**RS Latch**: Two torches in feedback loop (Set/Reset)
+**T Flip-Flop**: `[in]→[dropper↔dropper]→[comparator]→[out]` — Toggles state
+
+## Timing
+
+**Repeater Clock** (3 minimum):
 ```python
-# Two torches in feedback loop
-build(commands=[
-    "/setblock X Y Z stone",
-    "/setblock X+2 Y Z stone",
-    "/setblock X+1 Y Z redstone_wall_torch[facing=west]",
-    "/setblock X+1 Y Z+1 redstone_wall_torch[facing=east]",
-])
-```
-
-### T Flip-Flop (Toggle)
-```
-[input]→[dropper↔dropper]→[comparator]→[output]
-
-Two droppers facing each other with 1 item.
-Comparator reads which dropper has item.
-```
-
-## Timing Circuits
-
-### Repeater Clock
-```python
-# 3-repeater clock (minimum stable)
 build(commands=[
     "/setblock X Y Z repeater[facing=east,delay=1]",
     "/setblock X+1 Y Z repeater[facing=south,delay=1]",
@@ -127,119 +59,48 @@ build(commands=[
 ])
 ```
 
-### Hopper Clock
-```
-[hopper→]→[hopper]
-    ↑         ↓
-    └←comparator←┘
+**Hopper Clock**: `[hopper→hopper]` with comparator. Timing = items × 0.4s
 
-Timing = items × 0.4s per item
-```
+## Piston Door (2x2)
 
-## Piston Mechanisms
-
-### 2x2 Piston Door
 ```python
-# Simple retract door
 build(commands=[
-    # Door blocks
     "/setblock X Y Z stone_bricks",
     "/setblock X Y+1 Z stone_bricks",
-    # Pistons (sticky, facing toward door)
     "/setblock X-1 Y Z sticky_piston[facing=east]",
     "/setblock X-1 Y+1 Z sticky_piston[facing=east]",
-    # Redstone behind pistons
     "/setblock X-2 Y Z redstone_wire",
     "/setblock X-2 Y+1 Z redstone_wire",
 ])
 ```
 
-### Flying Machine
-```
-[slime][observer][slime][piston→]
+## Block States
 
-Observer detects motion → activates piston → moves assembly
 ```
-
-## Automatic Farms
-
-### Sugar Cane Farm
-```
-[water][dirt][cane][piston→][observer]
-
-Observer detects growth → piston breaks cane
-```
-
-### Pumpkin/Melon Farm
-```
-[stem][dirt][observer]
-       ↓        ↓
-   (grows)  (detects)
-       ↓
-    [piston]→[hoppers]→[chest]
-```
-
-For farm designs, see [farms.md](farms.md).
-
-## Block States Reference
-
-### Repeater
-```
-repeater[facing=north,delay=1,locked=false,powered=false]
-# delay: 1-4 ticks
-# locked: powered from side
-```
-
-### Comparator
-```
-comparator[facing=south,mode=compare,powered=false]
-# mode: compare or subtract
-```
-
-### Piston
-```
+repeater[facing=north,delay=1-4,locked=false]
+comparator[facing=south,mode=compare|subtract]
 piston[facing=up,extended=false]
 sticky_piston[facing=east,extended=true]
+observer[facing=north]  # watches that direction
+lever[face=wall,facing=north]
+stone_button[face=wall,facing=east]
 ```
 
-### Observer
-```
-observer[facing=north,powered=false]
-# facing: direction it watches
-```
-
-### Lever/Button
-```
-lever[face=wall,facing=north,powered=false]
-stone_button[face=wall,facing=east,powered=false]
-# face: floor, wall, ceiling
-```
-
-## Signal Travel
+## Signal Properties
 
 | Method | Distance | Speed |
 |--------|----------|-------|
-| Redstone dust | 15 blocks | 1 block/tick |
+| Dust | 15 blocks | 1 block/tick |
 | Repeater chain | Unlimited | 1-4 ticks each |
-| Instant wire (observer) | 15+ blocks | Instant |
-| Torch ladder | Unlimited | 1 tick per torch |
-
-## Component Delays
+| Observer chain | 15+ | Instant |
 
 | Component | Delay |
 |-----------|-------|
-| Redstone dust | ~0 ticks |
 | Repeater | 1-4 ticks |
-| Comparator | 1 tick |
-| Torch | 1 tick |
+| Comparator, Torch | 1 tick |
 | Piston | 0-3 ticks |
 | Observer | 2 ticks |
 
-## Debugging
+## Farms
 
-1. Check signal strength (target block shows power)
-2. Check timing (add repeaters to slow down)
-3. Common issues:
-   - Signal too weak → add repeater
-   - Wrong facing direction
-   - Component not attached to block
+See [farms.md](farms.md) for: sugar cane, pumpkin/melon, chicken, iron, crop, mob, item sorter, wool, honey farms.

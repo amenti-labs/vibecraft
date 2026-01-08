@@ -5,313 +5,81 @@ description: Places furniture and decorates Minecraft interiors using VibeCraft 
 
 # Placing Furniture
 
-Furnish Minecraft interiors using VibeCraft MCP tools.
+## Critical: SCAN BEFORE PLACING
 
-## Critical Rule: Floor Placement
-
-**SCAN BEFORE PLACING** to avoid furniture embedded in floor!
+Avoid furniture embedded in floor!
 
 ```python
-# 1. Scan the area
-scan = spatial_awareness_scan(
-    center_x=100, center_y=65, center_z=200,
-    radius=5, detail_level="medium"
-)
+# 1. Scan area
+scan = spatial_awareness_scan(center_x=100, center_y=65, center_z=200, radius=5, detail_level="medium")
 
 # 2. Get placement Y from recommendations
 placement_y = scan['recommendations']['floor_placement_y']  # e.g., 65
 
 # 3. Place furniture AT that Y
-place_furniture(
-    furniture_id="simple_dining_table",
-    origin_x=100,
-    origin_y=placement_y,  # NOT floor_y!
-    origin_z=200
-)
+place_furniture(furniture_id="simple_dining_table", origin_x=100, origin_y=placement_y, origin_z=200)
 ```
 
-**Common mistake:**
-```
-Floor block:  Y=64
-Furniture:    Y=64  ← WRONG! Embedded in floor!
-
-Floor block:  Y=64
-Furniture:    Y=65  ← CORRECT! Sits on floor!
-```
+**Common mistake**: Floor at Y=64, furniture at Y=64 = EMBEDDED! Use Y=65 (on floor).
 
 ## MCP Tools
-
-### Furniture
-- `furniture_lookup(action="browse/search/get")` - 60+ furniture designs
+- `furniture_lookup(action="browse/search/get")` - 60+ designs
 - `place_furniture(furniture_id, origin_x, origin_y, origin_z)` - Auto-place
-
-### Spatial
 - `spatial_awareness_scan` - Find floor/ceiling levels
-- `get_surface_level(x, z)` - Ground Y at coordinates
+- `build(commands=[...])` - Manual construction
 
-### Building
-- `build(commands=[...])` - Manual furniture construction
+## Furniture Categories
 
-## Furniture Catalog
-
-Use `furniture_lookup(action="browse")` to see all categories.
-
-### By Category
-
-**Seating:**
-- chair, armchair, bench, stool
-
-**Tables:**
-- simple_dining_table, coffee_table, corner_table, desk
-
-**Bedroom:**
-- bed, nightstand, wardrobe, closet
-
-**Storage:**
-- chest, barrel, bookshelf, wall_cabinet
-
-**Lighting:**
-- floor_lamp, hanging_lantern, chandelier, wall_sconce
-
-**Kitchen:**
-- sink, stove, counter, cabinet
+**Seating**: chair, armchair, bench, stool
+**Tables**: simple_dining_table, coffee_table, desk
+**Bedroom**: bed, nightstand, wardrobe
+**Storage**: chest, barrel, bookshelf, wall_cabinet
+**Lighting**: floor_lamp, hanging_lantern, chandelier, wall_sconce
+**Kitchen**: sink, stove, counter, cabinet
 
 ## Workflow
 
-### 1. Scan Room
 ```python
-scan = spatial_awareness_scan(
-    center_x=room_x,
-    center_y=room_y,
-    center_z=room_z,
-    radius=8,
-    detail_level="medium"
-)
-
-floor_y = scan['floor_y']
-ceiling_y = scan['ceiling_y']
+# 1. Scan room
+scan = spatial_awareness_scan(center_x=X, center_y=Y, center_z=Z, radius=8, detail_level="medium")
 placement_y = scan['recommendations']['floor_placement_y']
-```
 
-### 2. Search Furniture
-```python
-# Browse categories
+# 2. Search furniture
 furniture_lookup(action="browse")
-
-# Search by keyword
 furniture_lookup(action="search", query="table")
 
-# Get specific item
-furniture_lookup(action="get", furniture_id="simple_dining_table")
-```
+# 3. Place (preview first!)
+place_furniture(furniture_id="simple_dining_table", origin_x=100, origin_y=placement_y, origin_z=200, preview_only=True)
+place_furniture(furniture_id="simple_dining_table", origin_x=100, origin_y=placement_y, origin_z=200)
 
-### 3. Place Furniture
-```python
-# Automated placement
-place_furniture(
-    furniture_id="simple_dining_table",
-    origin_x=100,
-    origin_y=placement_y,
-    origin_z=200,
-    preview_only=True  # Check first!
-)
-
-# Execute
-place_furniture(
-    furniture_id="simple_dining_table",
-    origin_x=100,
-    origin_y=placement_y,
-    origin_z=200,
-    preview_only=False
-)
-```
-
-### 4. Add Details with build()
-```python
-# Decorative details
-build(commands=[
-    f"/setblock 102 {placement_y} 205 flower_pot",
-    f"/setblock 102 {placement_y+1} 205 potted_poppy",
-    f"/setblock 104 {placement_y} 208 item_frame[facing=north]",
-])
+# 4. Add details
+build(commands=[f"/setblock 102 {placement_y} 205 flower_pot"])
 ```
 
 ## Room Layouts
 
-### Bedroom (5×6)
-```
-┌──────────────┐
-│ [bed]        │
-│              │
-│ [nightstand] │
-│ [wardrobe]   │
-└──────────────┘
+**Bedroom (5×6)**: Bed against wall, nightstand beside, wardrobe opposite, lamp on nightstand
+**Living (7×9)**: Sofa against wall, coffee table in front, armchairs angled, bookshelf
+**Dining (7×9)**: Table centered, chairs around, lantern above, cabinet against wall
+**Kitchen (5×7)**: Counters along wall, stove recessed, sink with water, small dining area
 
-Placement:
-- Bed against wall
-- Nightstand beside bed
-- Wardrobe opposite wall
-- Lamp on nightstand
-```
+## Manual Builds
 
-### Living Room (7×9)
-```
-┌──────────────────┐
-│                  │
-│ [sofa]           │
-│     [coffee_table]
-│ [armchair]       │
-│                  │
-│ [bookshelf]      │
-└──────────────────┘
-
-Placement:
-- Sofa against wall
-- Coffee table in front
-- Armchairs angled
-- Bookshelf/decor
-```
-
-### Dining Room (7×9)
-```
-┌──────────────────┐
-│                  │
-│ [chair]          │
-│ [table][table]   │
-│ [chair]          │
-│                  │
-│ [cabinet]        │
-└──────────────────┘
-
-Placement:
-- Table centered
-- Chairs around table
-- Lantern above table
-- Cabinet against wall
-```
-
-### Kitchen (5×7)
-```
-┌────────────────┐
-│ [counter]      │
-│ [stove]        │
-│ [sink]         │
-│                │
-│ [table][chair] │
-└────────────────┘
-
-Placement:
-- Counters along wall
-- Stove recessed
-- Sink with water texture
-- Small dining area
-```
-
-## Manual Furniture Builds
-
-### Simple Table
-```python
-build(commands=[
-    # Legs (fence posts)
-    f"/setblock {x} {y} {z} oak_fence",
-    f"/setblock {x+2} {y} {z} oak_fence",
-    f"/setblock {x} {y} {z+1} oak_fence",
-    f"/setblock {x+2} {y} {z+1} oak_fence",
-    # Top (pressure plates)
-    f"/fill {x} {y+1} {z} {x+2} {y+1} {z+1} oak_pressure_plate",
-])
-```
-
-### Chair
-```python
-build(commands=[
-    # Seat (stairs)
-    f"/setblock {x} {y} {z} oak_stairs[facing=south]",
-    # Back (sign or trapdoor)
-    f"/setblock {x} {y+1} {z-1} oak_trapdoor[facing=south,half=bottom,open=true]",
-])
-```
-
-### Bed (decorative)
-```python
-build(commands=[
-    # Base (slabs)
-    f"/fill {x} {y} {z} {x+1} {y} {z+2} oak_slab[type=bottom]",
-    # Blanket (carpet)
-    f"/fill {x} {y+1} {z} {x+1} {y+1} {z+1} red_carpet",
-    # Pillow (wool)
-    f"/setblock {x} {y+1} {z+2} white_wool",
-    f"/setblock {x+1} {y+1} {z+2} white_wool",
-])
-```
-
-### Bookshelf Wall
-```python
-build(commands=[
-    # Full bookshelves
-    f"/fill {x} {y} {z} {x+3} {y+2} {z} bookshelf",
-    # Random gaps for variety
-    f"/setblock {x+1} {y+1} {z} oak_planks",
-])
-```
+**Table**: Fence posts as legs + pressure plates on top
+**Chair**: Stairs block + trapdoor back
+**Bed**: Slabs base + carpet blanket + wool pillows
+**Bookshelf wall**: Fill with bookshelf, random oak_planks gaps
 
 ## Lighting
 
-### Floor Placement
-```python
-# Floor lamp
-build(commands=[
-    f"/setblock {x} {y} {z} oak_fence",
-    f"/setblock {x} {y+1} {z} lantern",
-])
-```
-
-### Ceiling Placement
-```python
-# Get ceiling Y first
-ceiling_y = scan['recommendations']['ceiling_placement_y']
-
-# Hanging lantern
-build(commands=[
-    f"/setblock {x} {ceiling_y} {z} chain",
-    f"/setblock {x} {ceiling_y-1} {z} lantern[hanging=true]",
-])
-```
-
-### Wall Sconce
-```python
-# Torch on wall
-build(commands=[
-    f"/setblock {x} {y} {z} wall_torch[facing=north]",
-])
-```
+**Floor**: `oak_fence` + `lantern` on top
+**Ceiling**: `chain` + `lantern[hanging=true]` (use ceiling_placement_y from scan)
+**Wall**: `wall_torch[facing=north]`
 
 ## Decorative Details
-
-### Carpet Placement
-```python
-# Area rug
-build(commands=[
-    f"/fill {x} {y} {z} {x+3} {y} {z+2} red_carpet",
-])
-```
-
-### Item Frames
-```python
-# Picture on wall
-build(commands=[
-    f"/setblock {x} {y} {z} item_frame[facing=north]",
-])
-```
-
-### Flower Pots
-```python
-# Potted plant
-build(commands=[
-    f"/setblock {x} {y} {z} flower_pot",
-    f"/setblock {x} {y} {z} potted_oak_sapling",
-])
-```
+- Area rug: `/fill X Y Z X+3 Y Z+2 red_carpet`
+- Picture: `/setblock X Y Z item_frame[facing=north]`
+- Potted plant: `/setblock X Y Z potted_oak_sapling`
 
 ## Style Coordination
 
@@ -320,12 +88,10 @@ build(commands=[
 | Rustic | Oak, Spruce | Barrels, lanterns | Brown carpet |
 | Modern | Birch, Quartz | Sea lanterns | White carpet |
 | Medieval | Dark Oak | Chains, anvils | Red carpet |
-| Japanese | Bamboo, Spruce | Paper lanterns | Cyan carpet |
 
-## Spacing Guidelines
-
-- **Tables**: 1 block clearance around
-- **Chairs**: Push against table
-- **Beds**: 1 block on access side
-- **Walkways**: 2 blocks minimum
-- **Ceiling lights**: Every 4-5 blocks
+## Spacing
+- Tables: 1 block clearance around
+- Chairs: Push against table
+- Beds: 1 block on access side
+- Walkways: 2 blocks minimum
+- Ceiling lights: Every 4-5 blocks

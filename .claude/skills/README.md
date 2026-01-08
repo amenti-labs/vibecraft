@@ -4,15 +4,17 @@ Agent Skills for Minecraft building with VibeCraft MCP tools. Claude Code automa
 
 ## Available Skills
 
-| Skill | Triggers | Description |
-|-------|----------|-------------|
-| **building-structures** | "build house", "castle", "cottage" | Architectural structures with proper floor placement, walls, roofs |
-| **building-redstone** | "redstone", "circuit", "farm" | Logic gates, memory circuits, automation, contraptions |
-| **generating-terrain** | "terrain", "mountains", "hills" | Procedural landscapes, terrain texturing |
-| **placing-furniture** | "furniture", "interior", "decorate" | Room layouts, furniture placement, interior design |
-| **choosing-materials** | "palette", "materials", "colors" | Block selection, color theory, style palettes |
-| **using-worldedit** | "worldedit", "//set", "//replace" | WorldEdit commands, patterns, masks, expressions |
-| **creating-shapes** | "sphere", "dome", "pyramid" | Procedural geometry, organic shapes, complex forms |
+| Skill | Lines | Triggers | Description |
+|-------|-------|----------|-------------|
+| **building-structures** | 66+43 | "build house", "castle", "cottage" | Floor placement, walls, roofs, architectural styles |
+| **building-redstone** | 106+65+128 | "redstone", "circuit", "farm" | Logic gates, memory, timing, farms |
+| **generating-terrain** | 92 | "terrain", "mountains", "hills" | Procedural landscapes, biome texturing |
+| **placing-furniture** | 97 | "furniture", "interior", "decorate" | Spatial scanning, room layouts |
+| **choosing-materials** | 66 | "palette", "materials", "colors" | 60-30-10 rule, 10 palettes |
+| **using-worldedit** | 134 | "worldedit", "//set", "//replace" | Commands, patterns, masks, expressions |
+| **creating-shapes** | 139 | "sphere", "dome", "pyramid" | build() code, shape formulas |
+
+**Total**: ~936 lines (compressed from ~2,500 lines - 63% reduction)
 
 ## How Skills Work
 
@@ -52,25 +54,19 @@ All skills have access to VibeCraft's 46 MCP tools:
 - **Terrain**: `generate_terrain`, `texture_terrain`, `smooth_terrain`
 - **Analysis**: `spatial_awareness_scan`, `search_minecraft_item`
 
-## Creating New Skills
+## Compression Stats
 
-1. Create directory: `.claude/skills/my-skill/`
-2. Create `SKILL.md` with YAML frontmatter:
+| File | Before | After | Reduction |
+|------|--------|-------|-----------|
+| building-redstone/SKILL.md | 245 | 106 | 57% |
+| building-redstone/gates.md | 170 | 65 | 62% |
+| building-redstone/farms.md | 229 | 128 | 44% |
+| building-structures/styles.md | 218 | 43 | 80% |
+| choosing-materials/SKILL.md | 256 | 66 | 74% |
+| creating-shapes/SKILL.md | 347 | 139 | 60% |
+| generating-terrain/SKILL.md | 277 | 92 | 67% |
+| placing-furniture/SKILL.md | 331 | 97 | 71% |
+| using-worldedit/SKILL.md | 320 | 134 | 58% |
+| SYSTEM_PROMPT.md | 1529 | 200 | 87% |
 
-```yaml
----
-name: my-skill
-description: What it does and when to use it
----
-
-# Instructions here
-```
-
-3. Skills are auto-discovered by Claude Code
-
-## Best Practices
-
-- **Concise**: Keep SKILL.md under 500 lines
-- **Task-oriented**: Skills should do things, not just describe topics
-- **Progressive disclosure**: Put detailed docs in reference files
-- **MCP-aware**: Reference VibeCraft tools in instructions
+**Total prompt reduction**: ~3,900 lines → ~1,100 lines (72% reduction)

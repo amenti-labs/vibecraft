@@ -5,244 +5,55 @@ description: Chooses Minecraft block materials, color palettes, and textures usi
 
 # Choosing Materials
 
-Select professional block palettes using VibeCraft MCP tools.
-
 ## MCP Tools
-
-- `search_minecraft_item(query)` - Search 1,375 blocks by name
+- `search_minecraft_item(query)` - Search 1,375 blocks
 - `buildscript_palettes` - 10 curated material palettes
 
-## The 60-30-10 Rule
-
-Professional builds use three material tiers:
-
-| Tier | Percentage | Use |
-|------|------------|-----|
-| **Primary** | 60% | Walls, main surfaces |
-| **Secondary** | 30% | Roof, accents, trim |
-| **Detail** | 10% | Decorations, contrast |
-
-**Example:**
-```
-Stone Castle:
-- 60% stone_bricks (walls)
-- 30% deepslate_bricks (roof, towers)
-- 10% polished_andesite (trim, windows)
-```
+## 60-30-10 Rule
+| Tier | % | Use |
+|------|---|-----|
+| Primary | 60% | Walls, main surfaces |
+| Secondary | 30% | Roof, accents, trim |
+| Detail | 10% | Decorations, contrast |
 
 ## Curated Palettes
 
-### Medieval Oak
-```
-Primary:   oak_planks
-Secondary: cobblestone
-Accent:    stripped_oak_log
-Roof:      dark_oak_stairs
-Details:   oak_fence, lantern
-```
-
-### Stone Castle
-```
-Primary:   stone_bricks
-Secondary: cobblestone
-Accent:    polished_andesite
-Roof:      deepslate_tile_stairs
-Details:   iron_bars, chains
-```
-
-### Modern
-```
-Primary:   white_concrete
-Secondary: light_gray_concrete
-Accent:    black_concrete
-Windows:   glass_pane
-Details:   iron_bars, sea_lantern
-```
-
-### Japanese
-```
-Primary:   spruce_planks
-Secondary: white_wool (shoji)
-Accent:    dark_oak_log
-Roof:      deepslate_tile_stairs
-Details:   bamboo, lantern
-```
-
-### Gothic
-```
-Primary:   deepslate_bricks
-Secondary: stone_bricks
-Accent:    polished_blackstone
-Windows:   black_stained_glass
-Details:   chains, soul_lantern
-```
-
-### Desert
-```
-Primary:   smooth_sandstone
-Secondary: cut_sandstone
-Accent:    orange_terracotta
-Roof:      sandstone_stairs
-Details:   terracotta patterns
-```
-
-### Fantasy
-```
-Primary:   prismarine_bricks
-Secondary: purpur_block
-Accent:    amethyst_block
-Lighting:  end_rod, sea_lantern
-Details:   crying_obsidian
-```
-
-### Nether
-```
-Primary:   blackstone
-Secondary: nether_bricks
-Accent:    crimson_planks
-Lighting:  shroomlight, soul_lantern
-Details:   chains, gilded_blackstone
-```
-
-### Rustic
-```
-Primary:   spruce_planks
-Secondary: cobblestone
-Accent:    stripped_spruce_log
-Roof:      spruce_stairs
-Details:   barrel, lantern
-```
-
-### Cherry Blossom
-```
-Primary:   cherry_planks
-Secondary: pink_terracotta
-Accent:    stripped_cherry_log
-Roof:      cherry_stairs
-Details:   cherry_leaves, lantern
-```
+**Medieval Oak**: oak_planks, cobblestone, stripped_oak_log, dark_oak_stairs, oak_fence/lantern
+**Stone Castle**: stone_bricks, cobblestone, polished_andesite, deepslate_tile_stairs, iron_bars/chains
+**Modern**: white_concrete, light_gray_concrete, black_concrete, glass_pane, iron_bars/sea_lantern
+**Japanese**: spruce_planks, white_wool, dark_oak_log, deepslate_tile_stairs, bamboo/lantern
+**Gothic**: deepslate_bricks, stone_bricks, polished_blackstone, black_stained_glass, chains/soul_lantern
+**Desert**: smooth_sandstone, cut_sandstone, orange_terracotta, sandstone_stairs
+**Fantasy**: prismarine_bricks, purpur_block, amethyst_block, end_rod/sea_lantern, crying_obsidian
+**Nether**: blackstone, nether_bricks, crimson_planks, shroomlight/soul_lantern, chains/gilded_blackstone
+**Rustic**: spruce_planks, cobblestone, stripped_spruce_log, spruce_stairs, barrel/lantern
+**Cherry Blossom**: cherry_planks, pink_terracotta, stripped_cherry_log, cherry_stairs, cherry_leaves/lantern
 
 ## Color Relationships
 
-### Complementary (High Contrast)
-```
-Orange + Blue:    terracotta + prismarine
-Red + Cyan:       red_nether_brick + warped_planks
-Yellow + Purple:  gold_block + purpur_block
-```
-
-### Analogous (Harmonious)
-```
-Warm:   oak → spruce → dark_oak
-Cool:   prismarine → diamond → lapis
-Neutral: stone → andesite → cobblestone
-```
-
-### Monochromatic
-```
-Gray:   white_concrete → light_gray → gray → black
-Brown:  birch_planks → oak → spruce → dark_oak
-Stone:  smooth_stone → stone → cobblestone → mossy
-```
+**Complementary** (high contrast): orange+blue (terracotta+prismarine), red+cyan (red_nether_brick+warped_planks)
+**Analogous** (harmonious): oak→spruce→dark_oak, prismarine→diamond→lapis, stone→andesite→cobblestone
+**Monochromatic**: white→light_gray→gray→black, birch→oak→spruce→dark_oak
 
 ## Material Properties
 
-### Wood Types
-| Wood | Tone | Best For |
-|------|------|----------|
-| Oak | Warm yellow | Generic, medieval |
-| Spruce | Dark brown | Rustic, cabin |
-| Birch | Light cream | Modern, light |
-| Dark Oak | Deep brown | Medieval, dramatic |
-| Jungle | Red-brown | Tropical |
-| Acacia | Orange | Desert, savanna |
-| Cherry | Pink | Japanese, fantasy |
-| Mangrove | Red | Swamp |
+**Wood tones**: Oak (warm yellow), Spruce (dark brown), Birch (light cream), Dark Oak (deep brown), Cherry (pink)
+**Stone tones**: Stone bricks (gray), Cobblestone (dark gray), Andesite (light gray), Deepslate (dark blue-gray), Blackstone (black)
 
-### Stone Types
-| Stone | Tone | Best For |
-|-------|------|----------|
-| Stone bricks | Gray | Castle, fortress |
-| Cobblestone | Dark gray | Rustic, path |
-| Andesite | Light gray | Modern, clean |
-| Granite | Pink-gray | Warm builds |
-| Diorite | White-gray | Light accents |
-| Deepslate | Dark blue-gray | Gothic, dungeon |
-| Blackstone | Black | Nether, dark |
-
-### Concrete Colors
+## Texture Variety
+Large surfaces need patterns:
 ```
-White, Light Gray, Gray, Black
-Brown, Red, Orange, Yellow
-Lime, Green, Cyan, Light Blue
-Blue, Purple, Magenta, Pink
+# Instead of: //set stone_bricks
+# Use: //set 80%stone_bricks,15%cracked_stone_bricks,5%mossy_stone_bricks
 ```
 
-## Texture Considerations
-
-### Smooth vs Rough
-```
-Smooth (formal): quartz, concrete, smooth_stone
-Rough (rustic):  cobblestone, stone, mossy variants
-```
-
-### Weathering
-```
-New:      stone_bricks, oak_planks
-Aged:     cracked_stone_bricks, mossy variants
-Ancient:  infested variants, cobblestone
-```
-
-### Repetition
-Large surfaces need variety:
-```
-# Instead of:
-//set stone_bricks
-
-# Use pattern:
-//set 80%stone_bricks,15%cracked_stone_bricks,5%mossy_stone_bricks
-```
-
-## Block Search
-
-Find blocks by name:
-```python
-# Search for all oak blocks
-search_minecraft_item(query="oak")
-
-# Search for stairs
-search_minecraft_item(query="stairs")
-
-# Search by color
-search_minecraft_item(query="blue")
-```
+**Weathering**: New (stone_bricks) → Aged (cracked_stone_bricks) → Ancient (mossy variants)
 
 ## Common Mistakes
-
-### Too Many Materials
-```
-❌ 5+ different materials = chaotic
-✅ 3-4 materials max = cohesive
-```
-
-### No Contrast
-```
-❌ Oak planks + oak stairs + oak fence
-✅ Oak planks + cobblestone corners + dark_oak trim
-```
-
-### Clashing Colors
-```
-❌ Orange terracotta + cyan terracotta (jarring)
-✅ Orange terracotta + brown terracotta (harmonious)
-```
-
-### Ignoring Scale
-```
-Small build: 2-3 materials
-Medium build: 3-4 materials
-Large build: 4-5 materials (with clear hierarchy)
-```
+- ❌ 5+ materials = chaotic → ✅ 3-4 max
+- ❌ No contrast (all same wood) → ✅ Different corner/trim materials
+- ❌ Clashing colors → ✅ Use analogous colors
+- ❌ Ignoring scale → Small: 2-3 materials, Large: 4-5
 
 ## Quick Reference
 
@@ -253,4 +64,3 @@ Large build: 4-5 materials (with clear hierarchy)
 | Modern | White concrete | Flat/quartz | Iron bars |
 | Japanese | Spruce | Deepslate tiles | Dark oak |
 | Desert | Sandstone | Terracotta | Cut sandstone |
-| Gothic | Deepslate bricks | Deepslate tiles | Blackstone |
