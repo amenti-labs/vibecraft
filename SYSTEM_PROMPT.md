@@ -1096,9 +1096,34 @@ If building on slope:
 
 ## Context Files
 
-**minecraft_scale_reference.md** - Room sizes (bedroom 5×6, hall 15×20), ceiling heights (3=comfortable, 6-8=grand), player 1.8 blocks tall
-**worldedit_recipe_book.md** - Command sequences
-**minecraft_furniture_catalog.json** - Furniture build instructions
+### Core Reference Files (in /context/)
+
+**Building & Scale:**
+- **minecraft_scale_reference.md** - Room sizes (bedroom 5×6, hall 15×20), ceiling heights (3=comfortable, 6-8=grand), player 1.8 blocks tall
+- **architectural_styles.md** - Medieval, Gothic, Japanese, Modern, Castle, Fantasy, Desert styles with material palettes, proportions, and key features
+- **block_palette_guide.md** - 60-30-10 rule, color theory, 15+ curated palettes, gradient techniques, contrast principles
+
+**Commands & Expressions:**
+- **worldedit_recipe_book.md** - Ready-made WorldEdit command sequences
+- **worldedit_expression_guide.md** - Complete //generate and //deform syntax with 30+ shape formulas (sphere, torus, helix, heart, etc.), noise functions (perlin, voronoi), and expression masks
+- **minecraft_commands_reference.md** - Vanilla /setblock, /fill, /clone, /execute, complete block state reference
+
+**Data Files (loaded by MCP server):**
+- **minecraft_furniture_catalog.json** - 60+ furniture build instructions
+- **building_patterns_complete.json** - 29 building patterns (roofing, facades, corners, details)
+- **terrain_patterns_complete.json** - 41 terrain patterns (vegetation, features, paths)
+- **building_templates.json** - 5 parametric templates (tower, cottage, guard tower, wizard tower, barn)
+
+### When to Use Which Reference
+
+| Task | Primary Reference |
+|------|-------------------|
+| Planning room sizes | minecraft_scale_reference.md |
+| Choosing materials | block_palette_guide.md |
+| Building specific style | architectural_styles.md |
+| Procedural shapes | worldedit_expression_guide.md |
+| Precision commands | minecraft_commands_reference.md |
+| Terrain generation | worldedit_expression_guide.md (noise functions) |
 
 ## 🏗️ Building with build() - ALL Structures
 

@@ -1,6 +1,6 @@
 # VibeCraft Context Files
 
-Essential data files for AI-powered Minecraft building.
+Essential data files and reference guides for AI-powered Minecraft building.
 
 ---
 
@@ -56,7 +56,7 @@ Essential data files for AI-powered Minecraft building.
 
 ---
 
-## Reference Files (Not Loaded, Used as Context)
+## Reference Guides (AI Context)
 
 ### minecraft_scale_reference.md
 - **Size**: 15KB
@@ -72,16 +72,77 @@ Essential data files for AI-powered Minecraft building.
 - **Content**: Structure recipes, terrain recipes, brush recipes, snapshot recipes
 - **Usage**: Quick reference for common WorldEdit operations
 
+### worldedit_expression_guide.md
+- **Size**: ~20KB
+- **Format**: Markdown
+- **Purpose**: Complete //generate and //deform expression syntax
+- **Content**: 
+  - All operators, functions, and constants
+  - 30+ shape formulas (sphere, torus, helix, heart, etc.)
+  - Noise functions (perlin, voronoi, ridgedmulti)
+  - Deformation expressions for twists, bulges, waves
+  - Expression masks for advanced filtering
+- **Usage**: Creating procedural shapes and organic terrain
+
+### minecraft_commands_reference.md
+- **Size**: ~15KB
+- **Format**: Markdown
+- **Purpose**: Vanilla Minecraft commands beyond WorldEdit
+- **Content**:
+  - /setblock with all block states
+  - /fill modes (hollow, outline, replace)
+  - /clone for copying regions
+  - /execute for conditional building
+  - /data for NBT manipulation
+  - /structure for templates
+  - Complete block state reference
+- **Usage**: Precision work where WorldEdit isn't needed
+
+### architectural_styles.md
+- **Size**: ~20KB
+- **Format**: Markdown
+- **Purpose**: Building strategies by architectural style
+- **Content**:
+  - Medieval European (timber framing, steep roofs)
+  - Gothic (pointed arches, flying buttresses)
+  - Japanese Traditional (low roofs, sliding doors)
+  - Modern/Contemporary (flat roofs, large glass)
+  - Castle/Fortress (walls, towers, battlements)
+  - Fantasy/Wizard (cylindrical towers, magical elements)
+  - Desert/Sandstone (domes, courtyards)
+  - Proportions and scale guidelines per style
+- **Usage**: Building in specific architectural styles
+
+### block_palette_guide.md
+- **Size**: ~15KB
+- **Format**: Markdown
+- **Purpose**: Color theory and material combinations
+- **Content**:
+  - 60-30-10 rule for material distribution
+  - Color wheel relationships in Minecraft
+  - 15+ curated palettes (castle, medieval, modern, etc.)
+  - Gradient techniques
+  - Contrast principles
+  - Common mistakes to avoid
+- **Usage**: Choosing materials for professional-looking builds
+
+### voxel_generation_guide.md
+- **Size**: ~8KB
+- **Format**: Markdown
+- **Purpose**: Procedural voxel generation with build() tool
+- **Content**: Code patterns for spheres, curves, organic shapes
+- **Usage**: Complex procedural builds using code generation
+
 ---
 
 ## File Organization
 
-**Total files**: 10 (down from 18!)
+**Total files**: 15
 - **Production**: 7 JSON files loaded by Python code
-- **Reference**: 2 files used as AI context
+- **Reference**: 7 markdown files used as AI context
 - **Documentation**: 1 README
 
-**Total size**: ~435KB
+**Total size**: ~550KB
 
 ---
 
@@ -95,9 +156,14 @@ The 7 production JSON files are loaded at server startup by `server.py` and `too
 - Template tool loads building templates
 
 ### By AI Assistant
-The 2 reference files are read on-demand when planning builds:
-- Scale reference for proper room dimensions
-- Recipe book for WorldEdit command sequences
+The 7 reference files are read on-demand when planning builds:
+- **Scale reference** — Proper room dimensions and proportions
+- **Recipe book** — WorldEdit command sequences
+- **Expression guide** — //generate formulas for shapes
+- **Commands reference** — Vanilla /setblock and /fill workflows
+- **Architectural styles** — Style-specific building strategies
+- **Block palette guide** — Color and material combinations
+- **Voxel generation** — Code-based procedural building
 
 ---
 
@@ -114,9 +180,23 @@ The 2 reference files are read on-demand when planning builds:
 - Easy to read and maintain
 
 **Markdown**: Documentation format
-- Used for recipe book
+- Used for all reference guides
 - Human and AI readable
-- Standard formatting
+- Standard formatting with code examples
+
+---
+
+## Quick Reference by Task
+
+| Task | Primary Reference | Secondary Reference |
+|------|-------------------|---------------------|
+| Building structure | minecraft_scale_reference.md | architectural_styles.md |
+| Choosing materials | block_palette_guide.md | architectural_styles.md |
+| Procedural shapes | worldedit_expression_guide.md | voxel_generation_guide.md |
+| Precision placement | minecraft_commands_reference.md | worldedit_recipe_book.md |
+| Furniture | minecraft_furniture_catalog.json | minecraft_scale_reference.md |
+| Terrain | worldedit_expression_guide.md | terrain_patterns_complete.json |
+| Specific style | architectural_styles.md | block_palette_guide.md |
 
 ---
 
@@ -141,6 +221,11 @@ The 2 reference files are read on-demand when planning builds:
 2. Include parameters, defaults, and build_sequence
 3. Update template count in this README
 
+### Adding New Reference Guides
+1. Create markdown file with clear structure
+2. Add to this README with size, purpose, content summary
+3. Update file counts and total size
+
 ---
 
-**Clean, organized, and every file has a purpose!** ✨
+**Comprehensive knowledge base for AI Minecraft building!** ✨
