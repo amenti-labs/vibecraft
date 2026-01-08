@@ -133,16 +133,45 @@ Essential data files and reference guides for AI-powered Minecraft building.
 - **Content**: Code patterns for spheres, curves, organic shapes
 - **Usage**: Complex procedural builds using code generation
 
+### redstone_contraptions.md
+- **Size**: ~25KB
+- **Format**: Markdown
+- **Purpose**: Complete redstone mechanism reference
+- **Content**:
+  - Logic gates (NOT, OR, AND, NAND, XOR, NOR)
+  - Memory circuits (RS latch, T flip-flop, D flip-flop, counters)
+  - Timing circuits (clocks, pulse extenders/limiters, edge detectors)
+  - Piston contraptions (doors, extenders, flying machines)
+  - Automatic farms (sugar cane, pumpkin, chicken, iron)
+  - Traps (arrow, lava, TNT, pitfall)
+  - Advanced (combination locks, item sorters, elevators)
+  - Block state reference for all redstone components
+- **Usage**: Building redstone mechanisms and automation
+
+### procedural_generation_guide.md
+- **Size**: ~20KB
+- **Format**: Markdown
+- **Purpose**: Algorithms for procedural generation with build() tool
+- **Content**:
+  - Basic shapes (sphere, dome, cylinder, cone, pyramid, torus)
+  - Organic shapes (trees, boulders, vines)
+  - Terrain generation (hills, mountains, valleys)
+  - Architectural algorithms (spiral stairs, arches, rose windows)
+  - Pattern generation (checkerboard, gradient, radial, brick)
+  - Complex structures (towers, bridges, spirals)
+  - Performance tips and integration with WorldEdit
+- **Usage**: Procedural/algorithmic building using code generation
+
 ---
 
 ## File Organization
 
-**Total files**: 15
+**Total files**: 17
 - **Production**: 7 JSON files loaded by Python code
-- **Reference**: 7 markdown files used as AI context
+- **Reference**: 9 markdown files used as AI context
 - **Documentation**: 1 README
 
-**Total size**: ~550KB
+**Total size**: ~600KB
 
 ---
 
@@ -156,7 +185,7 @@ The 7 production JSON files are loaded at server startup by `server.py` and `too
 - Template tool loads building templates
 
 ### By AI Assistant
-The 7 reference files are read on-demand when planning builds:
+The 9 reference files are read on-demand when planning builds:
 - **Scale reference** — Proper room dimensions and proportions
 - **Recipe book** — WorldEdit command sequences
 - **Expression guide** — //generate formulas for shapes
@@ -164,6 +193,8 @@ The 7 reference files are read on-demand when planning builds:
 - **Architectural styles** — Style-specific building strategies
 - **Block palette guide** — Color and material combinations
 - **Voxel generation** — Code-based procedural building
+- **Redstone contraptions** — Logic gates, circuits, automation
+- **Procedural generation** — Algorithms for shapes, terrain, structures
 
 ---
 
@@ -192,11 +223,14 @@ The 7 reference files are read on-demand when planning builds:
 |------|-------------------|---------------------|
 | Building structure | minecraft_scale_reference.md | architectural_styles.md |
 | Choosing materials | block_palette_guide.md | architectural_styles.md |
-| Procedural shapes | worldedit_expression_guide.md | voxel_generation_guide.md |
+| Procedural shapes | procedural_generation_guide.md | worldedit_expression_guide.md |
 | Precision placement | minecraft_commands_reference.md | worldedit_recipe_book.md |
 | Furniture | minecraft_furniture_catalog.json | minecraft_scale_reference.md |
-| Terrain | worldedit_expression_guide.md | terrain_patterns_complete.json |
+| Terrain | procedural_generation_guide.md | worldedit_expression_guide.md |
 | Specific style | architectural_styles.md | block_palette_guide.md |
+| Redstone circuits | redstone_contraptions.md | minecraft_commands_reference.md |
+| Organic shapes | procedural_generation_guide.md | voxel_generation_guide.md |
+| Automation/farms | redstone_contraptions.md | - |
 
 ---
 

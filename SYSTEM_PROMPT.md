@@ -1108,6 +1108,13 @@ If building on slope:
 - **worldedit_expression_guide.md** - Complete //generate and //deform syntax with 30+ shape formulas (sphere, torus, helix, heart, etc.), noise functions (perlin, voronoi), and expression masks
 - **minecraft_commands_reference.md** - Vanilla /setblock, /fill, /clone, /execute, complete block state reference
 
+**Procedural & Algorithmic:**
+- **procedural_generation_guide.md** - Algorithms for shapes (sphere, dome, torus), terrain (hills, mountains), organic forms (trees, boulders), architectural elements (spiral stairs, arches, rose windows), patterns (checkerboard, gradient, radial)
+- **voxel_generation_guide.md** - Code patterns for build() tool, spheres, curves, organic shapes
+
+**Redstone & Automation:**
+- **redstone_contraptions.md** - Logic gates (NOT, OR, AND, XOR), memory circuits (RS latch, T flip-flop), timing (clocks, pulse extenders), piston mechanisms, automatic farms, traps, block state reference for all redstone components
+
 **Data Files (loaded by MCP server):**
 - **minecraft_furniture_catalog.json** - 60+ furniture build instructions
 - **building_patterns_complete.json** - 29 building patterns (roofing, facades, corners, details)
@@ -1121,9 +1128,12 @@ If building on slope:
 | Planning room sizes | minecraft_scale_reference.md |
 | Choosing materials | block_palette_guide.md |
 | Building specific style | architectural_styles.md |
-| Procedural shapes | worldedit_expression_guide.md |
+| Procedural shapes | procedural_generation_guide.md |
+| WorldEdit expressions | worldedit_expression_guide.md |
 | Precision commands | minecraft_commands_reference.md |
-| Terrain generation | worldedit_expression_guide.md (noise functions) |
+| Terrain generation | procedural_generation_guide.md |
+| Redstone circuits | redstone_contraptions.md |
+| Automation/farms | redstone_contraptions.md |
 
 ## 🏗️ Building with build() - ALL Structures
 
