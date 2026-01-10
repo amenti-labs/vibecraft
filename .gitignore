@@ -26,8 +26,8 @@ claude-code-config.json
 claude-code-config-sse.json
 .mcp.json
 
-# Auto-generated system prompt (copy of SYSTEM_PROMPT.md)
-CLAUDE.md
+# Auto-generated agent prompt (copy of agent/SYSTEM_PROMPT.md)
+agent/CLAUDE.md
 
 # OS files
 .DS_Store

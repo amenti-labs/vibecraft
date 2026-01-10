@@ -10,6 +10,8 @@ from mcp.types import TextContent
 from pathlib import Path
 import json
 
+from ..paths import get_data_file
+
 
 # WorldEdit tool prefixes - maps tool names to command prefixes
 # NOTE: Double slash (//) because sanitizer strips one slash before sending to RCON
@@ -186,9 +188,7 @@ async def handle_building_template(
         return [TextContent(type="text", text="❌ Error: 'action' parameter is required")]
 
     # Load templates from JSON file
-    templates_file = (
-        Path(__file__).parent.parent.parent.parent.parent / "context" / "building_templates.json"
-    )
+    templates_file = get_data_file("building_templates.json")
 
     try:
         with open(templates_file, "r") as f:

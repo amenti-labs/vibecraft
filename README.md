@@ -24,21 +24,46 @@
 
 ### Context Library & Default Commands
 
-VibeCraft isn’t just a WorldEdit wrapper. The repository ships a full AI-readable knowledge base in `context/`—block catalogs, building patterns, furniture layouts, scale references, terrain recipes, and more. Agents read these files before they build, so they understand materials, proportions, and style conventions. When a task calls for vanilla `/fill` or `/setblock` workflows (farm plots, redstone details, small interior tweaks), the extra context lets the AI combine standard commands with WorldEdit for precise results.
+VibeCraft isn't just a WorldEdit wrapper. The repository ships a full AI-readable knowledge base in `agent/context/`—block catalogs, building patterns, furniture layouts, scale references, terrain recipes, and more. Agents read these files before they build, so they understand materials, proportions, and style conventions. When a task calls for vanilla `/fill` or `/setblock` workflows (farm plots, redstone details, small interior tweaks), the extra context lets the AI combine standard commands with WorldEdit for precise results.
+
+### 📁 Important: Where to Run Claude Code
+
+| Goal | Run from | Why |
+|------|----------|-----|
+| **Build in Minecraft** | `cd agent && claude` | Has building skills, WorldEdit prompts, context files |
+| **Develop VibeCraft** | `cd vibecraft && claude` | Has developer guide, codebase context |
+
+```
+vibecraft/
+├── agent/                    # 🎮 BUILDING AGENT - run Claude here to build!
+│   ├── .claude/skills/       # 7 building skills (worldedit, structures, etc.)
+│   ├── context/              # AI knowledge base (items, patterns, templates)
+│   └── CLAUDE.md             # VibeCraft agent system prompt
+│
+├── mcp-server/               # MCP server code (Python)
+└── CLAUDE.md                 # 🔧 Developer guide (for working on codebase)
+```
 
 ## Installation
 
 ### Prerequisites
 
-- **uv** — Fast Python package manager — [Install](https://github.com/astral-sh/uv) with `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - **Python 3.10+** — [Download](https://www.python.org/downloads/)
+- **uv** — Fast Python package manager — [Install](https://github.com/astral-sh/uv)
 - **Docker Desktop** with Docker Compose — [Download](https://www.docker.com/products/docker-desktop)
 - **MCP-compatible AI client** — [Claude Code](https://claude.com/claude-code), [Claude Desktop](https://claude.ai/download), or [Cursor](https://cursor.sh/)
 
 ### Setup
 
-1. **Clone and run setup script:**
+<details open>
+<summary><b>🍎 macOS / 🐧 Linux</b></summary>
 
+1. **Install uv:**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+2. **Clone and run setup script:**
 ```bash
 git clone https://github.com/amenti-labs/vibecraft.git
 cd vibecraft
@@ -51,6 +76,65 @@ The script automatically:
 - ✅ Configures RCON with secure auto-generated password
 - ✅ Creates AI client configuration file
 - ✅ Tests all connections
+
+</details>
+
+<details>
+<summary><b>🪟 Windows</b> ⚠️ (Not fully tested)</summary>
+
+> **Note:** Windows instructions have not been fully tested. The MCP server and all Python code should work, but shell scripts require manual equivalents. Please report issues!
+
+1. **Install uv** (PowerShell as Administrator):
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+2. **Clone the repository:**
+```powershell
+git clone https://github.com/amenti-labs/vibecraft.git
+cd vibecraft
+```
+
+3. **Start Docker Desktop** and ensure it's running.
+
+4. **Start Minecraft server:**
+```powershell
+docker compose up -d
+```
+
+5. **Wait for server to start** (~30 seconds), then generate an RCON password:
+```powershell
+# Generate a random password and save it
+$password = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 16 | ForEach-Object {[char]$_})
+$password | Out-File -FilePath .rcon_password -NoNewline
+echo "Your RCON password: $password"
+```
+
+6. **Configure RCON password** in server.properties (inside Docker):
+```powershell
+docker exec vibecraft-minecraft bash -c "sed -i 's/rcon.password=.*/rcon.password=YOUR_PASSWORD/' server.properties"
+docker restart vibecraft-minecraft
+```
+
+7. **Install Python dependencies:**
+```powershell
+cd mcp-server
+uv sync
+```
+
+8. **Create environment file** (`mcp-server/.env`):
+```
+VIBECRAFT_RCON_HOST=127.0.0.1
+VIBECRAFT_RCON_PORT=25575
+VIBECRAFT_RCON_PASSWORD=YOUR_PASSWORD
+```
+
+9. **Start MCP server:**
+```powershell
+uv run python server_http.py --port 8765
+```
+
+</details>
 
 
 2. **Choose your server mode:**
@@ -69,8 +153,8 @@ The AI client launches the MCP server as a subprocess when needed.
 <summary><b>Claude Code (VSCode)</b></summary>
 
 ```bash
-# Copy system prompt
-cp SYSTEM_PROMPT.md CLAUDE.md
+# Run Claude Code from the agent folder to use VibeCraft as a building agent
+cd agent
 ```
 
 Add to VSCode settings (Settings > Search "MCP" > Add configuration):
@@ -96,13 +180,10 @@ Add to VSCode settings (Settings > Search "MCP" > Add configuration):
 <details>
 <summary><b>Claude Desktop</b></summary>
 
-```bash
-# macOS
-nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
-
-# Linux
-nano ~/.config/Claude/claude_desktop_config.json
-```
+Config file location:
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Linux:** `~/.config/Claude/claude_desktop_config.json`
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
 Add this configuration:
 ```json
@@ -155,11 +236,18 @@ Add to `.cursor/mcp.json` in your project:
 
 Run VibeCraft as a standalone server that multiple clients can connect to.
 
-**Start the server (from project root):**
+**Start the server:**
+
+macOS/Linux:
 ```bash
-# From the vibecraft root directory
 cd mcp-server
 ./start-vibecraft.sh
+```
+
+Windows (PowerShell):
+```powershell
+cd mcp-server
+uv run python server_http.py --port 8765
 ```
 
 You'll see:
@@ -243,7 +331,28 @@ Replace `your_password_from_setup` in the configs above with this password.
 
 4. **Restart your AI client completely**
 
-5. **Verify setup:**
+5. **Start the MCP server:**
+
+macOS/Linux:
+```bash
+cd mcp-server && ./start-vibecraft.sh
+```
+
+Windows (PowerShell):
+```powershell
+cd mcp-server; uv run python server_http.py --port 8765
+```
+
+Keep this terminal open - you'll see all commands logged here.
+
+6. **Start building!** (in a new terminal)
+```bash
+cd agent    # Important: run from agent folder for building!
+claude      # or open VSCode here
+```
+The `agent/` folder has a pre-configured `.mcp.json` that connects to the local server.
+
+7. **Verify setup:**
 ```
 Ask your AI: "Can you connect to the Minecraft server?"
 ```
@@ -314,40 +423,50 @@ VibeCraft implements the **Model Context Protocol (MCP)** to connect AI assistan
 
 ```
 vibecraft/
-├── mcp-server/                # Core MCP server
+├── agent/                     # VibeCraft AGENT (run Claude Code here to BUILD)
+│   ├── .claude/skills/        # 7 building skills
+│   │   ├── using-worldedit/   # PRIMARY - WorldEdit commands & batch operations
+│   │   ├── building-structures/
+│   │   ├── creating-shapes/
+│   │   ├── generating-terrain/
+│   │   ├── choosing-materials/
+│   │   ├── placing-furniture/
+│   │   └── building-redstone/
+│   ├── context/               # AI reference guides (agent reads these)
+│   │   ├── minecraft_scale_reference.md
+│   │   ├── block_palette_guide.md
+│   │   ├── architectural_styles.md
+│   │   ├── procedural_generation_guide.md
+│   │   ├── worldedit_expression_guide.md
+│   │   └── redstone_contraptions.md
+│   ├── .mcp.json              # MCP server config (connects to localhost:8765)
+│   ├── CLAUDE.md              # Agent system prompt
+│   └── SYSTEM_PROMPT.md       # Source for agent prompt
+│
+├── mcp-server/                # MCP SERVER CODE (Python)
 │   ├── src/vibecraft/
 │   │   ├── server.py          # Main MCP server
-│   │   ├── rcon_manager.py    # RCON connection handler
-│   │   ├── sanitizer.py       # Command validation
 │   │   ├── tools/             # Tool handlers (47 tools)
-│   │   └── minecraft_items_loader.py  # Item database
+│   │   ├── rcon_manager.py    # RCON connection handler
+│   │   └── sanitizer.py       # Command validation
+│   ├── data/                  # Server data files (loaded by tools)
+│   │   ├── minecraft_items_filtered.json  # 2,565 items
+│   │   ├── minecraft_furniture_*.json     # 66 furniture designs
+│   │   ├── building_*.json                # Patterns & templates
+│   │   └── terrain_patterns_complete.json # 41 terrain patterns
 │   ├── tests/                 # Unit tests
-│   ├── pyproject.toml         # Project metadata & dependencies
-│   └── uv.lock                # Locked dependencies (managed by uv)
-├── context/                   # AI knowledge base
-│   ├── minecraft_items_filtered.json  # 2,565 items
-│   ├── minecraft_furniture_catalog.json  # 66 designs
-│   ├── building_patterns.json  # 29 building patterns
-│   ├── terrain_patterns.json  # 41 terrain patterns
-│   └── building_templates.json  # 5 parametric templates
-├── AGENTS/                    # Specialist AI prompts
-│   ├── minecraft-master-planner.md
-│   ├── minecraft-shell-engineer.md
-│   ├── minecraft-facade-architect.md
-│   ├── minecraft-roofing-specialist.md
-│   └── minecraft-interior-designer.md
-├── SYSTEM_PROMPT.md           # Main AI instructions
-├── docs/                      # Setup guides
-├── scripts/                   # Helper scripts
+│   └── pyproject.toml         # Dependencies
+│
+├── dev_docs/                  # Development documentation
+├── docs/                      # User documentation
+├── CLAUDE.md                  # Developer guide (for working on codebase)
 ├── setup-all.sh               # Automated setup
 └── docker-compose.yml         # Minecraft server config
 
 # Generated during use:
 minecraft-data/                # Docker volume (world, logs)
 .rcon_password                 # Auto-generated RCON password
-claude-code-config.json        # AI client configuration
-CLAUDE.md                      # System prompt (copy of SYSTEM_PROMPT.md)
-mcp-server/.venv/              # Python virtual environment (managed by uv)
+mcp-server/.venv/              # Python virtual environment
 ```
 
 ## Examples

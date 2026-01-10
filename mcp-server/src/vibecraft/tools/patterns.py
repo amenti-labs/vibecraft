@@ -9,7 +9,7 @@ from typing import Dict, Any, List
 from mcp.types import TextContent
 
 from .pattern_lookup_base import PatternLookupHandler
-from ..paths import CONTEXT_DIR
+from ..paths import DATA_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ async def handle_building_pattern_lookup(
 
     # Create handler with building-specific parameters
     handler = PatternLookupHandler(
-        patterns_file=CONTEXT_DIR / "building_patterns_complete.json",
+        patterns_file=DATA_DIR / "building_patterns_complete.json",
         emoji_prefix="🏗️",
         category_name="Building",
         logger_instance=logger_instance,
@@ -94,7 +94,7 @@ async def handle_place_building_pattern(
     metadata_pattern = next(
         (
             p
-            for p in _load_json_list(CONTEXT_DIR / "building_patterns_complete.json")
+            for p in _load_json_list(DATA_DIR / "building_patterns_complete.json")
             if p.get("id") == pattern_id
         ),
         None,
@@ -222,7 +222,7 @@ async def handle_terrain_pattern_lookup(
     """
     # Create handler with terrain-specific parameters
     handler = PatternLookupHandler(
-        patterns_file=CONTEXT_DIR / "terrain_patterns_complete.json",
+        patterns_file=DATA_DIR / "terrain_patterns_complete.json",
         emoji_prefix="🌲",
         category_name="Terrain",
         logger_instance=logger_instance,

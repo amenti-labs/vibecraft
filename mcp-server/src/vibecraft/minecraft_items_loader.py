@@ -1,23 +1,21 @@
 """
 Minecraft items database loader.
 
-This module loads the Minecraft items database from the context directory
+This module loads the Minecraft items database from the data directory
 and exposes it for use by tools and the main server.
 """
 
 import json
 import logging
-from .paths import CONTEXT_DIR
+from .paths import DATA_DIR
 from typing import List, Dict, Any
 
 logger = logging.getLogger(__name__)
 
-# Context directory path
-
 
 def load_minecraft_items() -> List[Dict[str, Any]]:
     """Load Minecraft items database from JSON file."""
-    items_file = CONTEXT_DIR / "minecraft_items_filtered.json"
+    items_file = DATA_DIR / "minecraft_items_filtered.json"
 
     if not items_file.exists():
         logger.warning(f"Minecraft items file not found at {items_file}")

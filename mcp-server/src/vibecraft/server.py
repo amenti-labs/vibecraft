@@ -26,7 +26,7 @@ from .resources import (
     COMMON_WORKFLOWS,
     PLAYER_CONTEXT_WARNING,
 )
-from .paths import CONTEXT_DIR
+from .paths import DATA_DIR
 from .tools import TOOL_REGISTRY
 
 # Logger will be initialized in setup_logging()
@@ -93,15 +93,15 @@ def _load_json_list(path: Path) -> List[Dict[str, Any]]:
 
 
 def load_furniture_layouts() -> List[Dict[str, Any]]:
-    return _load_json_list(CONTEXT_DIR / "minecraft_furniture_layouts.json")
+    return _load_json_list(DATA_DIR / "minecraft_furniture_layouts.json")
 
 
 def load_furniture_catalog() -> List[Dict[str, Any]]:
-    return _load_json_list(CONTEXT_DIR / "minecraft_furniture_catalog.json")
+    return _load_json_list(DATA_DIR / "minecraft_furniture_catalog.json")
 
 
 def load_structured_patterns() -> List[Dict[str, Any]]:
-    return _load_json_list(CONTEXT_DIR / "building_patterns_structured.json")
+    return _load_json_list(DATA_DIR / "building_patterns_structured.json")
 
 
 workflow_state_path = Path(__file__).parent.parent.parent / "logs" / "workflow_state.json"
