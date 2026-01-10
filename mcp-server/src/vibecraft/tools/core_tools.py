@@ -7,7 +7,6 @@ server info, schematics, templates, and generic WorldEdit commands.
 
 from typing import Dict, Any, List
 from mcp.types import TextContent
-from pathlib import Path
 import json
 
 from ..paths import get_data_file

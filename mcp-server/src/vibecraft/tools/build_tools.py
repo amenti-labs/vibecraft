@@ -190,12 +190,14 @@ async def handle_build(
         ]
 
         if worldedit_mode:
-            result_lines.extend([
-                "",
-                "⚡ **WorldEdit Mode**: Commands starting with `//` will be auto-wrapped:",
-                "   `//set stone` → `execute as <player> at @s run /set stone`",
-                "",
-            ])
+            result_lines.extend(
+                [
+                    "",
+                    "⚡ **WorldEdit Mode**: Commands starting with `//` will be auto-wrapped:",
+                    "   `//set stone` → `execute as <player> at @s run /set stone`",
+                    "",
+                ]
+            )
 
         # Show all commands if 20 or less
         if command_count <= 20:
@@ -239,7 +241,7 @@ async def handle_build(
                     type="text",
                     text=f"❌ WorldEdit commands detected but no player online.\n\n"
                     f"WorldEdit commands require a player to be online.\n"
-                    f"Error: {str(e)}"
+                    f"Error: {str(e)}",
                 )
             ]
 
