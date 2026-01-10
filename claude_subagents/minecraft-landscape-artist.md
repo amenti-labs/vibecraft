@@ -20,7 +20,7 @@ You are responsible for:
 
 ## Context You Have Access To
 
-### Landscape Materials (Minecraft 1.21.3)
+### Landscape Materials (Minecraft 1.21.11)
 **Reference**: Use `search_minecraft_item` tool to find blocks (7,662 items available)
 
 **Terrain blocks**:

@@ -177,7 +177,7 @@ VibeCraft provides three tiers of tools:
 - `validate_mask` - Validate WorldEdit masks
 - `get_server_info` - Get server status and info
 - `calculate_region_size` - Calculate region dimensions and block count
-- `search_minecraft_item` - Find blocks by name (1,375 items from Minecraft 1.21.3)
+- `search_minecraft_item` - Find blocks by name (2,565 items from Minecraft 1.21.11)
 - `get_player_position` - Get player coordinates, rotation, target block, ground level
 - `get_surface_level` - Find ground Y-coordinate at X,Z position
 

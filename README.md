@@ -17,7 +17,7 @@
 - 🤖 **AI-Native Design** – Token-optimized context files, specialist agent prompts, and structured workflows
 - 🏗️ **Smart Building Tools** – Furniture placement, building patterns, parametric templates, and terrain generation
 - 🧠 **Spatial Awareness** – Advanced system prevents common placement errors with fast, accurate scanning
-- 📚 **Knowledge Base** – 1,375 Minecraft items, 70+ patterns, 66 furniture designs, scale references
+- 📚 **Knowledge Base** – 2,565 Minecraft items, 70+ patterns, 66 furniture designs, scale references
 - 🧰 **Context-Aware Builds** – AI consumes curated docs so it can plan with block palettes, furniture layouts, and default `/fill` workflows when WorldEdit isn’t the right tool
 - 🛠️ **Production Ready** – Docker-based setup, automated testing, comprehensive error handling
 - 🔄 **Multi-Client Support** – Works with Claude Code, Claude Desktop, Cursor, and any MCP-compatible AI
@@ -47,7 +47,7 @@ cd vibecraft
 
 The script automatically:
 - ✅ Installs dependencies with uv (fast, modern Python package manager)
-- ✅ Downloads and starts PaperMC 1.21.3 + WorldEdit 7.3.17 in Docker
+- ✅ Downloads and starts PaperMC 1.21.11 + WorldEdit 7.3.18 in Docker
 - ✅ Configures RCON with secure auto-generated password
 - ✅ Creates AI client configuration file
 - ✅ Tests all connections
@@ -169,7 +169,7 @@ You'll see:
 ============================================================
 📡 RCON Host: 127.0.0.1:25575
 ✅ RCON connected
-✅ WorldEdit 7.3.17 detected
+✅ WorldEdit 7.3.18 detected
 🚀 Server running at http://127.0.0.1:8765/sse
 ```
 
@@ -325,7 +325,7 @@ vibecraft/
 │   ├── pyproject.toml         # Project metadata & dependencies
 │   └── uv.lock                # Locked dependencies (managed by uv)
 ├── context/                   # AI knowledge base
-│   ├── minecraft_items_filtered.json  # 1,375 items
+│   ├── minecraft_items_filtered.json  # 2,565 items
 │   ├── minecraft_furniture_catalog.json  # 66 designs
 │   ├── building_patterns.json  # 29 building patterns
 │   ├── terrain_patterns.json  # 41 terrain patterns
@@ -461,7 +461,7 @@ Advanced spatial analysis prevents common placement errors:
    - Fully customizable (height, materials, features)
 
 4. **Leverage the Knowledge Base**
-   - AI has access to 1,375 Minecraft items (blocks and items for Minecraft 1.21.3)
+   - AI has access to 2,565 Minecraft items (blocks and items for Minecraft 1.21.11)
    - Ask: "What oak blocks are available?" for material suggestions
 
 5. **Build in Phases**
@@ -546,8 +546,8 @@ docker restart vibecraft-minecraft
 
 - **Package Manager**: uv (10-100x faster than pip)
 - **MCP Server**: Python 3.10+ with MCP SDK
-- **Minecraft Server**: PaperMC 1.21.3 (latest)
-- **WorldEdit**: Version 7.3.17
+- **Minecraft Server**: PaperMC 1.21.11 (latest)
+- **WorldEdit**: Version 7.3.18
 - **RCON Protocol**: TCP connection to port 25575
 - **Tools**: 46 MCP tools covering 130+ WorldEdit commands
 - **Context Window**: Optimized for Claude models (200K tokens)

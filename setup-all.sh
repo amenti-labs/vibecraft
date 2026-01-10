@@ -240,7 +240,7 @@ if docker ps -a --format '{{.Names}}' | grep -q '^vibecraft-minecraft$'; then
     fi
 else
     log_info "Creating new container (first run may take several minutes)..."
-    log_info "Downloading Paper 1.21.3 and WorldEdit 7.3.17..."
+    log_info "Downloading Paper 1.21.11 and WorldEdit 7.3.18..."
     $DOCKER_COMPOSE up -d
 fi
 
