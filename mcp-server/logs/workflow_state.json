@@ -29,6 +29,22 @@
         "issues_found": 0,
         "valid": true
       }
+    ],
+    "symmetry_check": [
+      {
+        "region": {
+          "x1": -35,
+          "y1": -60,
+          "z1": 358,
+          "x2": -18,
+          "y2": -50,
+          "z2": 368
+        },
+        "axis": "x",
+        "resolution": 1,
+        "symmetry_score": 0.0,
+        "differences": 4
+      }
     ]
   }
 }

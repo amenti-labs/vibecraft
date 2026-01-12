@@ -1,25 +1,55 @@
 """Configuration management for VibeCraft MCP server"""
 
-from typing import Optional
+from typing import Optional, Literal
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from .constants import RCONConstants
+from .constants import RCONConstants, ClientBridgeConstants
 
 
 class VibeCraftConfig(BaseSettings):
     """VibeCraft MCP Server Configuration"""
 
-    # RCON Connection Settings
-    rcon_host: str = Field(
-        default=RCONConstants.DEFAULT_HOST, description="Minecraft server RCON host"
-    )
-    rcon_port: int = Field(
-        default=RCONConstants.DEFAULT_PORT, description="Minecraft server RCON port"
-    )
-    rcon_password: str = Field(default="minecraft", description="RCON password")
+    # RCON Connection Settings (deprecated)
+    rcon_host: str = Field(default=RCONConstants.DEFAULT_HOST, description="Deprecated RCON host")
+    rcon_port: int = Field(default=RCONConstants.DEFAULT_PORT, description="Deprecated RCON port")
+    rcon_password: str = Field(default="minecraft", description="Deprecated RCON password")
     rcon_timeout: int = Field(
-        default=RCONConstants.DEFAULT_TIMEOUT, description="RCON command timeout in seconds"
+        default=RCONConstants.DEFAULT_TIMEOUT, description="Deprecated RCON timeout in seconds"
+    )
+
+    # Client Bridge Settings
+    client_host: str = Field(
+        default=ClientBridgeConstants.DEFAULT_HOST,
+        description="Local Fabric client bridge host",
+    )
+    client_port: int = Field(
+        default=ClientBridgeConstants.DEFAULT_PORT,
+        description="Local Fabric client bridge port",
+    )
+    client_path: str = Field(
+        default=ClientBridgeConstants.DEFAULT_PATH,
+        description="WebSocket path for the client bridge",
+    )
+    client_token: str = Field(default="", description="Client bridge auth token")
+    client_timeout: int = Field(
+        default=ClientBridgeConstants.DEFAULT_TIMEOUT,
+        description="Client bridge request timeout in seconds",
+    )
+    client_use_ssl: bool = Field(default=False, description="Use TLS for client bridge")
+    client_max_idle: float = Field(
+        default=ClientBridgeConstants.MAX_CONNECTION_IDLE,
+        description="Max idle time before reconnecting to client bridge",
+    )
+
+    # WorldEdit Capability Policy
+    worldedit_mode: Literal["auto", "force", "off"] = Field(
+        default="auto",
+        description="WorldEdit availability mode: auto, force (require), or off",
+    )
+    worldedit_fallback: Literal["warn", "disable", "auto"] = Field(
+        default="warn",
+        description="Behavior when WorldEdit is unavailable in auto mode",
     )
 
     # Safety Settings

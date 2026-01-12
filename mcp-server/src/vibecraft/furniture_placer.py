@@ -240,7 +240,7 @@ class FurniturePlacer:
         # This prevents furniture from replacing floor blocks
         if place_on_surface:
             origin_y = origin_y + 1
-            placement_note = f"on surface at Y={origin_y-1}"
+            placement_note = f"on surface at Y={origin_y - 1}"
         else:
             placement_note = f"at exact Y={origin_y}"
 

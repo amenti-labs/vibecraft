@@ -20,7 +20,7 @@ async def handle_spatial_awareness_scan(
 
     Args:
         arguments: Tool arguments (center_x, center_y, center_z, radius, detail_level)
-        rcon: RCON manager instance
+        rcon: Command executor instance
         config: Server configuration
         logger_instance: Logger instance
 

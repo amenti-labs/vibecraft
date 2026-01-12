@@ -1,29 +1,41 @@
 """
 Block State Utilities for VibeCraft
 
-Utilities for querying and analyzing block states via RCON.
+Utilities for querying and analyzing block states via command execution.
 """
 
 import logging
 from typing import Dict, Any, Optional
 
-from .rcon_manager import RCONManager, BLOCK_STATE_PATTERN
+from .command_patterns import BLOCK_STATE_PATTERN
 
 logger = logging.getLogger(__name__)
 
 
-def fetch_block_state(rcon: RCONManager, x: int, y: int, z: int) -> Optional[Dict[str, Any]]:
-    """Fetch block state (id + properties) at coordinates via RCON."""
+def fetch_block_state(executor, x: int, y: int, z: int) -> Optional[Dict[str, Any]]:
+    """Fetch block state (id + properties) at coordinates via command execution.
+
+    Note: This uses 'data get block' which only returns data for tile entities
+    (blocks with NBT like chests, signs, etc.). For regular blocks, this returns None.
+    The "target block is not a block entity" response is expected and handled silently.
+    """
     try:
-        result = rcon.send_command(f"execute positioned {x} {y} {z} run data get block ~ ~ ~")
+        result = executor.send_command(f"execute positioned {x} {y} {z} run data get block ~ ~ ~")
     except Exception as exc:
-        logger.error(f"Error querying block at ({x},{y},{z}): {exc}")
+        # Only log actual errors, not expected "not a block entity" responses
+        if "not a block entity" not in str(exc).lower():
+            logger.error(f"Error querying block at ({x},{y},{z}): {exc}")
         return None
 
     if result is None:
         return None
 
     text = str(result)
+
+    # "not a block entity" is expected for regular blocks - return None silently
+    if "not a block entity" in text.lower() or "not an entity" in text.lower():
+        return None
+
     match = BLOCK_STATE_PATTERN.search(text)
     if not match:
         return None

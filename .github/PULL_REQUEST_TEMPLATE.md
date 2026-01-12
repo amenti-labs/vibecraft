@@ -44,7 +44,7 @@ Before submitting, ensure you have:
 - [ ] Run `black` for code formatting
 - [ ] Run `ruff check` for linting
 - [ ] Run `pytest` (if tests exist)
-- [ ] Updated documentation (README, SYSTEM_PROMPT.md, etc.)
+- [ ] Updated documentation (README, AGENTS.md, skills, etc.)
 - [ ] Added/updated tests (if applicable)
 - [ ] Tested with actual Minecraft WorldEdit commands
 

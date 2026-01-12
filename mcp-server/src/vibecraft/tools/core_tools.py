@@ -1,7 +1,7 @@
 """
 Core/fundamental tool handlers.
 
-This module contains handlers for core operations including RCON commands,
+This module contains handlers for core operations including command execution,
 server info, schematics, templates, and generic WorldEdit commands.
 """
 
@@ -13,8 +13,6 @@ from ..paths import get_data_file
 
 
 # WorldEdit tool prefixes - maps tool names to command prefixes
-# NOTE: Double slash (//) because sanitizer strips one slash before sending to RCON
-# Result: WorldEdit receives single slash (/) which is the correct format from RCON
 WORLD_EDIT_TOOL_PREFIXES = {
     "worldedit_selection": "//",
     "worldedit_region": "//",
@@ -43,7 +41,7 @@ def prepare_worldedit_command(tool_name: str, command: str) -> str:
     # worldedit_tools: Different commands use different prefixes
     if tool_name == "worldedit_tools":
         # Super pickaxe shorthand uses /sp, other tools use /tool, /mask, etc.
-        # Use // (sanitizer will strip one slash → / reaches WorldEdit)
+        # Use // for WorldEdit commands sent via the client bridge
         if normalized.startswith("sp ") or normalized.startswith("superpickaxe"):
             return "//" + normalized
         return "//" + normalized
@@ -51,8 +49,6 @@ def prepare_worldedit_command(tool_name: str, command: str) -> str:
     prefix = WORLD_EDIT_TOOL_PREFIXES.get(tool_name)
     if prefix:
         # Build the command with prefix (//)
-        # Sanitizer will strip one slash, WorldEdit receives single slash (/)
-        # World context is automatically set by handle_worldedit_generic
         return prefix + normalized
 
     return command
@@ -61,7 +57,7 @@ def prepare_worldedit_command(tool_name: str, command: str) -> str:
 async def handle_rcon_command(
     arguments: Dict[str, Any], rcon, config, logger_instance
 ) -> List[TextContent]:
-    """Handle rcon_command tool - base RCON command execution."""
+    """Handle rcon_command tool - base command execution."""
     from ..sanitizer import (
         sanitize_command,
         validate_coordinates_in_bounds,
@@ -117,11 +113,11 @@ async def handle_rcon_command(
         if warning:
             result = f"⚠️ {warning}\n\n{result}"
 
-        logger_instance.info(f"RCON command executed: {command[:50]}...")
+        logger_instance.info(f"Command executed: {command[:50]}...")
         return [TextContent(type="text", text=result)]
 
     except Exception as e:
-        logger_instance.error(f"Error executing RCON command: {str(e)}", exc_info=True)
+        logger_instance.error(f"Error executing command: {str(e)}", exc_info=True)
         return [TextContent(type="text", text=f"❌ Error executing command: {str(e)}")]
 
 
@@ -133,15 +129,6 @@ async def handle_worldedit_generic(
 
     if not command:
         return [TextContent(type="text", text="❌ Command cannot be empty")]
-
-    # CRITICAL: Set world context before any WorldEdit command
-    # WorldEdit from RCON requires world context to be set first
-    try:
-        # Use execute_command_async for non-blocking operation
-        result = await rcon.execute_command_async("/world world")
-        logger_instance.debug(f"WorldEdit world context set: {result}")
-    except Exception as e:
-        logger_instance.warning(f"Failed to set world context (may already be set): {e}")
 
     command = prepare_worldedit_command(tool_name, command)
 
@@ -170,7 +157,7 @@ async def handle_get_server_info(
         f"Difficulty: {info.get('difficulty', 'Unknown')}",
         f"WorldEdit Version: {worldedit_version}",
         "",
-        f"RCON Host: {config.rcon_host}:{config.rcon_port}",
+        f"Client Bridge: ws://{config.client_host}:{config.client_port}{config.client_path}",
         f"Safety Checks: {'Enabled' if config.enable_safety_checks else 'Disabled'}",
     ]
 

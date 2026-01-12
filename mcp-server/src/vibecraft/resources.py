@@ -94,8 +94,8 @@ EXPRESSION_SYNTAX_GUIDE = """# WorldEdit Expression Syntax Guide
 
 COORDINATE_GUIDE = """# WorldEdit Coordinate System Guide
 
-## Console vs In-Game Commands
-From console/RCON, WorldEdit uses comma-separated coordinates:
+## Client vs In-Game Commands
+From the client bridge, WorldEdit uses comma-separated coordinates:
 ```
 //pos1 100,64,100
 //pos2 120,80,120
@@ -119,7 +119,7 @@ In-game, you can use relative coordinates:
 
 ## Tips for AI Building
 1. Always set pos1 and pos2 before region commands
-2. Use absolute coordinates from console/RCON
+2. Use absolute coordinates with comma-separated syntax
 3. Remember Y=64 is typically ground level
 4. Structures should fit within coordinate bounds
 """
@@ -216,9 +216,9 @@ Some WorldEdit navigation commands require a player to be logged in and looking 
 - Use vanilla /tp for teleportation
 - For selections, specify coordinates explicitly
 
-**From Console (RCON):**
-✅ Works: /pos1 100,64,100 ; /pos2 200,100,200 ; /set stone ; /copy ; /paste
-❌ Requires Player: /hpos1 ; /jumpto ; /thru ; /ascend ; /descend
+**From Client Bridge:**
+✅ Works: //pos1 100,64,100 ; //pos2 200,100,200 ; //set stone ; //copy ; //paste
+❌ Requires Player Input: //hpos1 ; //jumpto ; //thru ; //ascend ; //descend
 
-Note: World context is automatically set - you can use all coordinate-based WorldEdit commands from RCON.
+Note: Commands run as the local player, so coordinate-based WorldEdit commands work directly.
 """

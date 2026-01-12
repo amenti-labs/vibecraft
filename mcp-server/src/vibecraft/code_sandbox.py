@@ -530,8 +530,7 @@ def execute_command_generator(
     for i, cmd in enumerate(commands):
         if not isinstance(cmd, str):
             raise CodeSandboxError(
-                f"Command {i} is not a string: {type(cmd).__name__}. "
-                f"All commands must be strings."
+                f"Command {i} is not a string: {type(cmd).__name__}. All commands must be strings."
             )
 
         cmd = cmd.strip()

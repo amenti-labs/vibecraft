@@ -13,7 +13,7 @@ import logging
 from typing import Dict, List, Tuple, Optional, Any
 
 from .constants import BlockCategories, TerrainConstants
-from .rcon_manager import DISTR_LINE_PATTERN, COUNT_BLOCKS_PATTERN
+from .command_patterns import DISTR_LINE_PATTERN, COUNT_BLOCKS_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -327,7 +327,7 @@ class TerrainAnalyzer:
         Use binary search to find surface Y efficiently.
 
         Much faster than checking every Y level.
-        Uses WorldEdit //count instead of execute commands (works from RCON console).
+        Uses WorldEdit //count instead of execute commands (works via client bridge).
         """
         # Start from top, work down with binary search
         low = min_y
@@ -431,7 +431,9 @@ class TerrainAnalyzer:
                                     "severity": (
                                         "high"
                                         if percentage > 5
-                                        else "medium" if percentage > 1 else "low"
+                                        else "medium"
+                                        if percentage > 1
+                                        else "low"
                                     ),
                                     "count": count,
                                     "percentage": percentage,

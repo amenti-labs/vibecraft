@@ -2,66 +2,14 @@
 Helper utility tool handlers.
 
 This module contains handlers for utility operations including
-item search, player positioning, surface detection, and region calculations.
+item search, player positioning, and surface detection.
 """
 
 from typing import Dict, Any, List
 from mcp.types import TextContent
 import math
 
-from ..rcon_manager import PLAYER_POS_PATTERN, PLAYER_ROT_PATTERN, BLOCK_ID_PATTERN
-
-
-async def handle_calculate_region_size(
-    arguments: Dict[str, Any], rcon, config, logger_instance
-) -> List[TextContent]:
-    """Handle calculate_region_size tool."""
-    x1, y1, z1 = arguments["x1"], arguments["y1"], arguments["z1"]
-    x2, y2, z2 = arguments["x2"], arguments["y2"], arguments["z2"]
-
-    # Calculate dimensions
-    width = abs(x2 - x1) + 1
-    height = abs(y2 - y1) + 1
-    depth = abs(z2 - z1) + 1
-
-    # Calculate block count
-    block_count = width * height * depth
-
-    # Estimate operation time (very rough)
-    # Assume ~100k blocks/second for simple operations
-    estimated_seconds = block_count / 100000
-    if estimated_seconds < 0.1:
-        time_estimate = "< 0.1 seconds"
-    elif estimated_seconds < 60:
-        time_estimate = f"~{estimated_seconds:.1f} seconds"
-    else:
-        time_estimate = f"~{estimated_seconds/60:.1f} minutes"
-
-    result = [
-        "📐 Region Size Calculation:",
-        "",
-        f"Corner 1: ({x1}, {y1}, {z1})",
-        f"Corner 2: ({x2}, {y2}, {z2})",
-        "",
-        "Dimensions:",
-        f"  Width (X): {width} blocks",
-        f"  Height (Y): {height} blocks",
-        f"  Depth (Z): {depth} blocks",
-        "",
-        f"Total Blocks: {block_count:,}",
-        f"Estimated Time: {time_estimate}",
-        "",
-    ]
-
-    # Warnings for large operations
-    if block_count > 1000000:
-        result.append("⚠️ WARNING: Very large region! Operation may take significant time.")
-        result.append("   Consider breaking into smaller operations.")
-    elif block_count > 100000:
-        result.append("⚠️ Note: Large region. Operation may take some time.")
-
-    logger_instance.info(f"Region size calculated: {block_count:,} blocks")
-    return [TextContent(type="text", text="\n".join(result))]
+from ..command_patterns import PLAYER_POS_PATTERN, PLAYER_ROT_PATTERN
 
 
 async def handle_search_minecraft_item(
@@ -222,7 +170,8 @@ async def handle_get_player_position(
         yaw_rad = math.radians(yaw)
         pitch_rad = math.radians(pitch)
 
-        # Try execute raycast - position 1-5 blocks in look direction
+        # Try raycast - position 1-5 blocks in look direction
+        # Use 'execute if block' to check for non-air blocks (works on all block types)
         for distance in [1, 2, 3, 4, 5]:
             # Calculate offset using look direction
             dx = -math.sin(yaw_rad) * math.cos(pitch_rad) * distance
@@ -233,34 +182,59 @@ async def handle_get_player_position(
             target_y = int(y + 1.62 + dy)  # Eye level
             target_z = int(z + dz)
 
-            # Check if there's a non-air block at this position
-            block_check = rcon.send_command(
-                f"execute positioned {target_x} {target_y} {target_z} run data get block ~ ~ ~ id"
-            )
+            # Check if there's a non-air block at this position using 'execute unless block'
+            # This works on ALL blocks, not just tile entities
+            air_check = rcon.send_command(f"execute if block {target_x} {target_y} {target_z} air")
 
-            if "air" not in block_check.lower() and "has the following" in block_check:
-                # Found a non-air block
-                block_match = BLOCK_ID_PATTERN.search(block_check)
-                if block_match:
-                    block_type = block_match.group(1)
-                    target_info = (
-                        f"{block_type} at {target_x},{target_y},{target_z} ({distance} blocks away)"
+            # If the test fails (returns 0 or "Test failed"), there's a non-air block
+            if "failed" in air_check.lower() or air_check.strip() == "0":
+                # Found a non-air block - try to identify it with clone trick or just report position
+                # Use testforblock pattern matching to identify common blocks
+                block_type = "solid block"
+                for test_block in [
+                    "stone",
+                    "dirt",
+                    "grass_block",
+                    "oak_planks",
+                    "cobblestone",
+                    "oak_log",
+                ]:
+                    test_result = rcon.send_command(
+                        f"execute if block {target_x} {target_y} {target_z} {test_block}"
                     )
-                    break
+                    if "passed" in test_result.lower() or test_result.strip() == "1":
+                        block_type = test_block
+                        break
+
+                target_info = (
+                    f"{block_type} at {target_x},{target_y},{target_z} ({distance} blocks away)"
+                )
+                break
 
         # Use player Y position as ground reference (simpler and more reliable)
         # Player is always standing on solid ground, so their feet Y IS the ground level
         player_y = int(y)
 
         # Check block directly below player's feet to identify surface type
-        surface_block = "unknown"
-        block_check = rcon.send_command(
-            f"execute positioned {int(x)} {player_y - 1} {int(z)} run data get block ~ ~ ~ id"
-        )
-        if "has the following" in block_check:
-            block_match = BLOCK_ID_PATTERN.search(block_check)
-            if block_match:
-                surface_block = block_match.group(1)
+        # Use 'execute if block' pattern matching (works on all blocks, not just tile entities)
+        surface_block = "solid"
+        surface_x, surface_y, surface_z = int(x), player_y - 1, int(z)
+        for test_block in [
+            "grass_block",
+            "dirt",
+            "stone",
+            "sand",
+            "gravel",
+            "oak_planks",
+            "cobblestone",
+            "deepslate",
+        ]:
+            test_result = rcon.send_command(
+                f"execute if block {surface_x} {surface_y} {surface_z} {test_block}"
+            )
+            if "passed" in test_result.lower() or test_result.strip() == "1":
+                surface_block = test_block
+                break
 
         # Build surface info section
         surface_info = f"""**Ground Level (Player-based):**
@@ -352,15 +326,24 @@ async def handle_get_surface_level(
         # This assumes terrain doesn't vary drastically across the world
         surface_y = player_y_baseline - 1  # Ground is typically 1 block below player feet
 
-        # Check what block is at that level
-        surface_block = "unknown"
-        block_check = rcon.send_command(
-            f"execute positioned {x} {surface_y} {z} run data get block ~ ~ ~ id"
-        )
-        if "has the following" in block_check:
-            block_match = BLOCK_ID_PATTERN.search(block_check)
-            if block_match:
-                surface_block = block_match.group(1)
+        # Check what block is at that level using pattern matching
+        # (data get block only works on tile entities, so we use execute if block)
+        surface_block = "solid"
+        for test_block in [
+            "grass_block",
+            "dirt",
+            "stone",
+            "sand",
+            "gravel",
+            "oak_planks",
+            "cobblestone",
+            "deepslate",
+            "water",
+        ]:
+            test_result = rcon.send_command(f"execute if block {x} {surface_y} {z} {test_block}")
+            if "passed" in test_result.lower() or test_result.strip() == "1":
+                surface_block = test_block
+                break
 
         logger_instance.info(f"Surface at ({x}, {z}): Y={surface_y}, block={surface_block}")
 

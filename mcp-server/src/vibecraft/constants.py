@@ -36,6 +36,21 @@ class RCONConstants:
 
 
 # =============================================================================
+# Client Bridge Constants
+# =============================================================================
+
+
+class ClientBridgeConstants:
+    """Constants for the client bridge connection."""
+
+    DEFAULT_HOST = "127.0.0.1"
+    DEFAULT_PORT = 8766
+    DEFAULT_PATH = "/vibecraft"
+    DEFAULT_TIMEOUT = 10
+    MAX_CONNECTION_IDLE = 300.0
+
+
+# =============================================================================
 # WorldEdit Constants
 # =============================================================================
 
@@ -82,6 +97,59 @@ class WorldEditConstants:
         "gmask",
         "sel",
     }
+
+    # Broad set of WorldEdit command roots for client policy checks.
+    WORLD_EDIT_COMMANDS = WORLD_CONTEXT_COMMANDS.union(
+        {
+            "hpos1",
+            "hpos2",
+            "size",
+            "count",
+            "distr",
+            "overlay",
+            "center",
+            "line",
+            "curve",
+            "move",
+            "stack",
+            "copy",
+            "cut",
+            "paste",
+            "rotate",
+            "flip",
+            "wand",
+            "schem",
+            "schematic",
+            "snapshot",
+            "snap",
+            "biomelist",
+            "biomeinfo",
+            "setbiome",
+            "chunkinfo",
+            "listchunks",
+            "delchunks",
+            "undo",
+            "redo",
+            "clearhistory",
+            "br",
+            "brush",
+            "tool",
+            "forestgen",
+            "flora",
+            "drain",
+            "fixwater",
+            "fixlava",
+            "naturalize",
+            "pyramid",
+            "hpyramid",
+            "sphere",
+            "hsphere",
+            "cyl",
+            "hcyl",
+            "generate",
+            "deform",
+        }
+    )
 
 
 # =============================================================================

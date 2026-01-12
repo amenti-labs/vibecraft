@@ -1,7 +1,20 @@
 #!/bin/bash
 ###############################################################################
-# VibeCraft Complete Setup Script
-# This script automates the entire VibeCraft setup process
+# VibeCraft RCON Setup Script (Legacy/Server-Only Mode)
+#
+# ⚠️  LEGACY APPROACH - For most users, use the Client Mod instead!
+#
+# This script sets up VibeCraft with direct RCON connection to a Minecraft
+# server running in Docker. This is useful for:
+#   - Headless/CI environments without a Minecraft client
+#   - Server-side automation
+#   - Development/testing of the MCP server
+#
+# For the recommended approach (works with ANY server, multiplayer, etc.):
+#   1. Build the client mod: cd client-mod && ./build.sh
+#   2. Install in your Minecraft client with Fabric
+#   3. See README.md for details
+#
 ###############################################################################
 
 set -e  # Exit on error

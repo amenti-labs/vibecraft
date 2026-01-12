@@ -24,7 +24,7 @@ async def handle_worldedit_deform(
     warning = "⚠️ **Deformation Warning**: //deform modifies terrain mathematically. Ensure you have a selection set and understand the expression.\n\n"
 
     try:
-        # Execute RCON command
+        # Execute command
         result = rcon.send_command(command)
         output = warning + f"**Command:** `{command}`\n\n**Result:**\n{result}"
 
@@ -127,7 +127,7 @@ async def handle_worldedit_vegetation(
         return [TextContent(type="text", text=f"❌ Unknown vegetation command: {cmd}")]
 
     try:
-        # Execute RCON command
+        # Execute command
         result = rcon.send_command(command)
         output = f"**Command:** `{command}`\n\n**Result:**\n{result}"
 
@@ -196,7 +196,7 @@ async def handle_worldedit_terrain_advanced(
         return [TextContent(type="text", text=f"❌ Unknown terrain command: {cmd}")]
 
     try:
-        # Execute RCON command
+        # Execute command
         result = rcon.send_command(command)
         output = warning + f"**Command:** `{command}`\n\n**Result:**\n{result}"
 
@@ -231,7 +231,7 @@ async def handle_worldedit_analysis(
         return [TextContent(type="text", text=f"❌ Unknown analysis command: {cmd}")]
 
     try:
-        # Execute RCON command
+        # Execute command
         result = rcon.send_command(command)
         output = f"**Command:** `{command}`\n\n**Result:**\n{result}"
 

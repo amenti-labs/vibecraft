@@ -3,78 +3,118 @@ Build Tool Handlers
 
 Handles direct Minecraft command execution for building structures.
 Supports both direct command lists and code-generated commands.
-
-WorldEdit commands (starting with //) are automatically wrapped with
-`execute as <player> at @s run` for proper RCON execution.
 """
 
+import re
 from typing import Dict, Any, List
 from mcp.types import TextContent
 import logging
-import re
 from ..code_sandbox import execute_command_generator, CodeSandboxError
+from ..minecraft_items_loader import validate_block
 
 logger = logging.getLogger(__name__)
 
-# Pattern to detect player name from position response
-PLAYER_POS_PATTERN = re.compile(r"(\w+) has the following entity data:")
+
+def extract_blocks_from_command(cmd: str) -> List[str]:
+    """
+    Extract block names from Minecraft commands for validation.
+
+    Handles:
+    - /setblock X Y Z block_name
+    - /fill X Y Z X2 Y2 Z2 block_name [replace|destroy|keep|...]
+    - //set block_pattern
+    - //replace from_block to_block
+    - //walls block_name
+    - //faces block_name
+    - //outline block_name
+    """
+    cmd = cmd.strip()
+    blocks = []
+
+    # /setblock X Y Z block_name
+    setblock_match = re.match(
+        r"/setblock\s+[\d~^.-]+\s+[\d~^.-]+\s+[\d~^.-]+\s+(\S+)", cmd, re.IGNORECASE
+    )
+    if setblock_match:
+        blocks.append(setblock_match.group(1))
+        return blocks
+
+    # /fill X Y Z X2 Y2 Z2 block_name [mode]
+    fill_match = re.match(
+        r"/fill\s+[\d~^.-]+\s+[\d~^.-]+\s+[\d~^.-]+\s+[\d~^.-]+\s+[\d~^.-]+\s+[\d~^.-]+\s+(\S+)",
+        cmd,
+        re.IGNORECASE,
+    )
+    if fill_match:
+        blocks.append(fill_match.group(1))
+        return blocks
+
+    # WorldEdit commands - extract patterns
+    # //set, //walls, //faces, //outline, etc.
+    we_simple_match = re.match(
+        r"//(?:set|walls|faces|outline|overlay|naturalize)\s+(\S+)", cmd, re.IGNORECASE
+    )
+    if we_simple_match:
+        pattern = we_simple_match.group(1)
+        blocks.extend(extract_blocks_from_pattern(pattern))
+        return blocks
+
+    # //replace from to
+    replace_match = re.match(r"//replace\s+(\S+)\s+(\S+)", cmd, re.IGNORECASE)
+    if replace_match:
+        blocks.extend(extract_blocks_from_pattern(replace_match.group(1)))
+        blocks.extend(extract_blocks_from_pattern(replace_match.group(2)))
+        return blocks
+
+    return blocks
+
+
+def extract_blocks_from_pattern(pattern: str) -> List[str]:
+    """
+    Extract individual block names from WorldEdit patterns.
+
+    Patterns like: "70%stone,30%cobblestone" or "stone_bricks"
+    """
+    blocks = []
+    # Split by comma for multiple blocks
+    parts = pattern.split(",")
+    for part in parts:
+        # Remove percentage prefix like "70%"
+        block = re.sub(r"^\d+%", "", part.strip())
+        # Remove any mask prefix like "!"
+        block = block.lstrip("!")
+        if block and block not in ("air", ".", "_", "*"):
+            blocks.append(block)
+    return blocks
+
+
+def validate_commands_blocks(commands: List[str]) -> List[str]:
+    """
+    Validate all block names in a list of commands.
+    Returns list of error messages (empty if all valid).
+    """
+    errors = []
+    seen_blocks = set()  # Avoid duplicate error messages
+
+    for i, cmd in enumerate(commands):
+        blocks = extract_blocks_from_command(cmd)
+        for block in blocks:
+            if block in seen_blocks:
+                continue
+            seen_blocks.add(block)
+
+            error = validate_block(block)
+            if error:
+                errors.append(
+                    f"Command {i + 1}: {error}\n  → {cmd[:80]}{'...' if len(cmd) > 80 else ''}"
+                )
+
+    return errors
 
 
 def has_worldedit_commands(commands: List[str]) -> bool:
     """Check if any commands are WorldEdit commands (start with //)."""
     return any(cmd.strip().startswith("//") for cmd in commands)
-
-
-def prepare_worldedit_command(cmd: str, player_name: str) -> str:
-    """
-    Wrap a WorldEdit command with execute as player context.
-
-    WorldEdit commands via RCON need player context:
-    - Input: //set stone
-    - Output: execute as PlayerName at @s run /set stone
-
-    Vanilla commands are returned unchanged.
-    """
-    cmd = cmd.strip()
-
-    # WorldEdit command (starts with //)
-    if cmd.startswith("//"):
-        # Remove // and wrap with execute as player, using single /
-        we_cmd = cmd[2:]  # Remove //
-        return f"execute as {player_name} at @s run /{we_cmd}"
-
-    # Vanilla command - return unchanged
-    return cmd
-
-
-async def get_player_name_for_worldedit(rcon, logger_instance) -> str:
-    """
-    Get the player name for WorldEdit command wrapping.
-
-    Returns the player name or raises an exception if no player found.
-    """
-    try:
-        pos_result = rcon.send_command("data get entity @p Pos")
-        match = PLAYER_POS_PATTERN.search(pos_result)
-
-        if match:
-            return match.group(1)
-
-        # Fallback: try list command
-        list_result = rcon.send_command("list")
-        # Parse "There are X of a max of Y players online: player1, player2"
-        if "players online:" in list_result:
-            players_part = list_result.split("players online:")[-1].strip()
-            if players_part:
-                first_player = players_part.split(",")[0].strip()
-                if first_player:
-                    return first_player
-
-        raise ValueError("No players found online. WorldEdit commands require a player context.")
-
-    except Exception as e:
-        logger_instance.error(f"Failed to get player name: {e}")
-        raise
 
 
 async def handle_build(
@@ -87,7 +127,7 @@ async def handle_build(
 
     Args:
         arguments: Tool arguments containing commands list and optional preview_only
-        rcon: RCON manager instance
+        rcon: Command executor instance
         config: Server configuration
         logger_instance: Logger instance
 
@@ -174,6 +214,16 @@ async def handle_build(
                 )
             ]
 
+    # Validate block names in commands
+    block_errors = validate_commands_blocks(commands)
+    if block_errors:
+        error_text = "❌ Invalid block names detected:\n\n"
+        error_text += "\n\n".join(block_errors[:5])
+        if len(block_errors) > 5:
+            error_text += f"\n\n... and {len(block_errors) - 5} more invalid blocks"
+        error_text += "\n\n💡 Use search_minecraft_item() to find valid block names."
+        return [TextContent(type="text", text=error_text)]
+
     command_count = len(commands)
     logger_instance.info(f"Processing build: {description} ({command_count} commands)")
 
@@ -188,16 +238,6 @@ async def handle_build(
             "",
             f"**Commands:** {command_count} total ({we_count} WorldEdit, {vanilla_count} vanilla)",
         ]
-
-        if worldedit_mode:
-            result_lines.extend(
-                [
-                    "",
-                    "⚡ **WorldEdit Mode**: Commands starting with `//` will be auto-wrapped:",
-                    "   `//set stone` → `execute as <player> at @s run /set stone`",
-                    "",
-                ]
-            )
 
         # Show all commands if 20 or less
         if command_count <= 20:
@@ -221,29 +261,7 @@ async def handle_build(
     # Execute commands
     logger_instance.info(f"Executing {command_count} commands...")
 
-    # Check if WorldEdit commands are present - need player context
-    player_name = None
     worldedit_mode = has_worldedit_commands(commands)
-
-    if worldedit_mode:
-        try:
-            player_name = await get_player_name_for_worldedit(rcon, logger_instance)
-            logger_instance.info(f"WorldEdit mode enabled, using player: {player_name}")
-
-            # Set world context once at the start
-            world_cmd = f"execute as {player_name} at @s run /world world"
-            world_result = rcon.send_command(world_cmd)
-            logger_instance.debug(f"WorldEdit world context set: {world_result}")
-
-        except ValueError as e:
-            return [
-                TextContent(
-                    type="text",
-                    text=f"❌ WorldEdit commands detected but no player online.\n\n"
-                    f"WorldEdit commands require a player to be online.\n"
-                    f"Error: {str(e)}",
-                )
-            ]
 
     result_lines = [
         f"🏗️ Building: {description}",
@@ -252,7 +270,7 @@ async def handle_build(
     ]
 
     if worldedit_mode:
-        result_lines.append(f"WorldEdit Mode: ✅ (player: {player_name})")
+        result_lines.append("WorldEdit Mode: ✅")
 
     result_lines.extend(["", "Progress:"])
 
@@ -261,11 +279,7 @@ async def handle_build(
 
     for i, cmd in enumerate(commands):
         try:
-            # Wrap WorldEdit commands with execute as player context
-            if worldedit_mode and player_name:
-                cmd = prepare_worldedit_command(cmd, player_name)
-
-            # Execute command via RCON
+            # Execute command via client bridge
             result = rcon.send_command(cmd)
 
             # Check for errors in result
@@ -273,7 +287,7 @@ async def handle_build(
                 err_word in result.lower()
                 for err_word in ["error", "unknown", "incorrect", "invalid", "cannot"]
             ):
-                errors.append(f"Command {i+1} failed: {cmd}\nResult: {result}")
+                errors.append(f"Command {i + 1} failed: {cmd}\nResult: {result}")
                 logger_instance.warning(f"Command error: {cmd} -> {result}")
 
             commands_executed += 1
@@ -284,8 +298,8 @@ async def handle_build(
                 result_lines.append(f"  [{commands_executed}/{command_count}] {progress_pct:.1f}%")
 
         except Exception as e:
-            logger_instance.error(f"Error executing command {i+1}: {e}", exc_info=True)
-            errors.append(f"Command {i+1}: {cmd}\nError: {str(e)}")
+            logger_instance.error(f"Error executing command {i + 1}: {e}", exc_info=True)
+            errors.append(f"Command {i + 1}: {cmd}\nError: {str(e)}")
 
     # Final result
     result_lines.append("")

@@ -3,7 +3,7 @@ Spatial Analysis V3 - Ultra-Fast Floor/Ceiling Detection
 
 GOAL: Be FAST. 2-5 seconds, not 30+ seconds.
 
-Strategy: Use MINIMAL RCON commands
+Strategy: Use minimal command execution
 - Binary search for floor (~12 commands: 4 iterations × 3 commands)
 - Linear scan for ceiling (~9-15 commands: stops at first solid)
 - One //distr for materials (3 commands, optional)
@@ -27,7 +27,7 @@ class SpatialAnalyzerV2:
     """
 
     def __init__(self, rcon_manager):
-        """Initialize with RCON manager."""
+        """Initialize with command executor."""
         self.rcon = rcon_manager
 
     def analyze_area(
@@ -89,7 +89,7 @@ class SpatialAnalyzerV2:
         Strategy: Check if Y level is mostly solid (>50% non-air).
         Binary search from center_y down to find highest solid layer.
 
-        ~5-6 RCON commands total.
+        ~5-6 commands total.
         """
         # Search range: center_y down to center_y - 10
         low = center_y - 10
@@ -121,7 +121,7 @@ class SpatialAnalyzerV2:
         pattern is not monotonic (air below, solid ceiling, air above).
         Linear scan finds first solid layer going up.
 
-        ~10-15 RCON commands (3 per layer checked, stops at first solid).
+        ~10-15 commands (3 per layer checked, stops at first solid).
         """
         # Linear scan upward to find first solid layer
         for y in range(center_y, center_y + 11):
@@ -134,7 +134,7 @@ class SpatialAnalyzerV2:
         """
         Check if a horizontal layer at Y is mostly solid (>50% non-air).
 
-        Uses 3 RCON commands: pos1, pos2, count.
+        Uses 3 commands: pos1, pos2, count.
         """
         try:
             # Select thin horizontal slice
@@ -171,8 +171,12 @@ class SpatialAnalyzerV2:
         """
         try:
             # Select region
-            self.rcon.send_command(f"//pos1 {center_x-radius},{center_y-radius},{center_z-radius}")
-            self.rcon.send_command(f"//pos2 {center_x+radius},{center_y+radius},{center_z+radius}")
+            self.rcon.send_command(
+                f"//pos1 {center_x - radius},{center_y - radius},{center_z - radius}"
+            )
+            self.rcon.send_command(
+                f"//pos2 {center_x + radius},{center_y + radius},{center_z + radius}"
+            )
 
             result = self.rcon.send_command("//distr")
 

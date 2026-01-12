@@ -2,13 +2,13 @@
 WorldEdit command wrappers that handle player context and selections automatically.
 
 This module provides intelligent wrappers for WorldEdit commands that need
-player position or selection context when run from RCON/console.
+player position or selection context when run without direct player input.
 """
 
 from typing import Dict, Any, List
 from mcp.types import TextContent
 
-from ..rcon_manager import PLAYER_POS_PATTERN
+from ..command_patterns import PLAYER_POS_PATTERN
 
 
 async def handle_worldedit_generation_smart(
@@ -38,12 +38,6 @@ async def handle_worldedit_generation_smart(
     cmd_type = parts[0].lower()
 
     try:
-        # CRITICAL: Set world context first
-        # WorldEdit from RCON requires world context to be set before selection commands
-        # Use execute_command (not send_command which strips leading slash)
-        result = rcon.execute_command("/world world")
-        logger_instance.debug(f"WorldEdit world context set: {result}")
-
         # Get player position first
         pos_result = rcon.send_command("data get entity @p Pos")
         logger_instance.info(f"Player position query result: {pos_result}")

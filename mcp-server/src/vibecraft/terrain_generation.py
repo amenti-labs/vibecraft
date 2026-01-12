@@ -14,7 +14,6 @@ Key capabilities:
 
 import logging
 from typing import Dict, Any, Optional
-from .rcon_manager import RCONManager
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ class TerrainGenerator:
     All operations are console-safe (no player clicks required).
     """
 
-    def __init__(self, rcon: RCONManager):
+    def __init__(self, rcon):
         self.rcon = rcon
 
         # Safety limits

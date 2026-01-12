@@ -4,16 +4,89 @@ Complete reference for configuring VibeCraft MCP server.
 
 ## Table of Contents
 
+- [Operation Modes](#operation-modes)
 - [Configuration File Location](#configuration-file-location)
 - [Environment Variables Reference](#environment-variables-reference)
 - [Configuration Categories](#configuration-categories)
-  - [RCON Connection](#rcon-connection)
+  - [Client Bridge Connection](#client-bridge-connection)
   - [Safety Settings](#safety-settings)
   - [Build Area Constraints](#build-area-constraints)
   - [Feature Flags](#feature-flags)
 - [MCP Client Configuration](#mcp-client-configuration)
 - [Advanced Configuration](#advanced-configuration)
 - [Troubleshooting](#troubleshooting)
+
+---
+
+## Operation Modes
+
+VibeCraft supports two operation modes for communicating with Minecraft:
+
+### Client Bridge Mode (Recommended)
+
+The **Client Bridge** is the primary and recommended mode. It uses a local WebSocket
+connection to a Fabric client mod running on your Minecraft client.
+
+```
+┌─────────────────┐     WebSocket      ┌──────────────────┐
+│   MCP Server    │◄──────────────────►│  Fabric Mod      │
+│   (Python)      │    localhost:8766  │  (Java Client)   │
+└─────────────────┘                    └────────┬─────────┘
+                                                │
+                                       Minecraft Client
+                                                │
+                                       ┌────────▼─────────┐
+                                       │  Minecraft       │
+                                       │  Server          │
+                                       │  (any server)    │
+                                       └──────────────────┘
+```
+
+**Advantages:**
+- Works with **any Minecraft server** (vanilla, Paper, Fabric, etc.)
+- Works in **multiplayer** without server-side setup
+- WorldEdit commands work when the **server** has WorldEdit installed
+- User has explicit control via in-game `/vibecraft` commands
+- No RCON password management
+
+**Requirements:**
+- VibeCraft Fabric client mod installed
+- Player must enable "AI Control" in the mod
+
+### RCON Mode (Legacy/Deprecated)
+
+The **RCON Mode** connects directly to a Minecraft server's RCON port. This mode
+is deprecated and kept for backwards compatibility with existing setups.
+
+```
+┌─────────────────┐       RCON         ┌──────────────────┐
+│   MCP Server    │◄──────────────────►│  Minecraft       │
+│   (Python)      │    localhost:25575 │  Server          │
+└─────────────────┘                    └──────────────────┘
+```
+
+**When to use RCON:**
+- Server-side automation without a player client
+- Headless/CI environments
+- Legacy deployments
+
+**Limitations:**
+- Requires server access to configure RCON
+- WorldEdit commands need manual player context wrapping
+- No multiplayer support without server modifications
+- Security: RCON password must be managed
+
+### Mode Selection
+
+VibeCraft automatically uses Client Bridge mode when configured. To use RCON mode,
+set `VIBECRAFT_CLIENT_HOST` to empty and configure `VIBECRAFT_RCON_*` variables.
+
+| Configuration | Mode Used |
+|---------------|-----------|
+| `VIBECRAFT_CLIENT_HOST=127.0.0.1` | Client Bridge |
+| `VIBECRAFT_CLIENT_HOST=` + `VIBECRAFT_RCON_HOST=...` | RCON (Legacy) |
+
+**Recommendation:** Use Client Bridge mode for all new deployments.
 
 ---
 
@@ -39,10 +112,14 @@ touch .env
 
 | Variable | Type | Default | Required | Description |
 |----------|------|---------|----------|-------------|
-| `VIBECRAFT_RCON_HOST` | string | `127.0.0.1` | Yes | Minecraft server hostname |
-| `VIBECRAFT_RCON_PORT` | integer | `25575` | Yes | RCON port |
-| `VIBECRAFT_RCON_PASSWORD` | string | - | Yes | RCON password |
-| `VIBECRAFT_RCON_TIMEOUT` | integer | `10` | No | RCON connection timeout (seconds) |
+| `VIBECRAFT_CLIENT_HOST` | string | `127.0.0.1` | Yes | Client bridge host |
+| `VIBECRAFT_CLIENT_PORT` | integer | `8766` | Yes | Client bridge port |
+| `VIBECRAFT_CLIENT_PATH` | string | `/vibecraft` | Yes | WebSocket path |
+| `VIBECRAFT_CLIENT_TOKEN` | string | - | No | Client bridge auth token |
+| `VIBECRAFT_CLIENT_TIMEOUT` | integer | `10` | No | Client bridge timeout (seconds) |
+| `VIBECRAFT_CLIENT_USE_SSL` | boolean | `false` | No | Use TLS for the bridge |
+| `VIBECRAFT_WORLDEDIT_MODE` | string | `auto` | No | WorldEdit mode: auto, force, off |
+| `VIBECRAFT_WORLDEDIT_FALLBACK` | string | `warn` | No | When WE unavailable: warn, disable, auto |
 | `VIBECRAFT_ENABLE_SAFETY_CHECKS` | boolean | `true` | No | Enable command validation |
 | `VIBECRAFT_ALLOW_DANGEROUS_COMMANDS` | boolean | `true` | No | Allow potentially destructive commands |
 | `VIBECRAFT_MAX_COMMAND_LENGTH` | integer | `1000` | No | Maximum command length |
@@ -55,37 +132,39 @@ touch .env
 | `VIBECRAFT_ENABLE_VERSION_DETECTION` | boolean | `true` | No | Auto-detect WorldEdit version |
 | `VIBECRAFT_ENABLE_COMMAND_LOGGING` | boolean | `true` | No | Log all executed commands |
 
+> **Note:** RCON-based configuration is deprecated. Some legacy examples below still mention
+> `VIBECRAFT_RCON_*` values for the old server mode.
+
 ---
 
 ## Configuration Categories
 
-### RCON Connection
+### Client Bridge Connection
 
-Configure connection to your Minecraft server's RCON interface.
+Configure the local WebSocket bridge provided by the Fabric client mod.
 
 ```bash
-# RCON Connection
-VIBECRAFT_RCON_HOST=127.0.0.1      # Server IP (use 127.0.0.1 for local)
-VIBECRAFT_RCON_PORT=25575          # RCON port (default: 25575)
-VIBECRAFT_RCON_PASSWORD=your_password_here  # Password from server.properties
-VIBECRAFT_RCON_TIMEOUT=10          # Timeout in seconds
+# Client Bridge
+VIBECRAFT_CLIENT_HOST=127.0.0.1
+VIBECRAFT_CLIENT_PORT=8766
+VIBECRAFT_CLIENT_PATH=/vibecraft
+VIBECRAFT_CLIENT_TOKEN=your_token_here
+VIBECRAFT_CLIENT_TIMEOUT=10
+VIBECRAFT_CLIENT_USE_SSL=false
+VIBECRAFT_WORLDEDIT_MODE=auto
+VIBECRAFT_WORLDEDIT_FALLBACK=warn
 ```
 
 **Setup Checklist**:
-1. ✅ Enable RCON in Minecraft `server.properties`:
-   ```properties
-   enable-rcon=true
-   rcon.port=25575
-   rcon.password=your_secure_password
-   ```
-2. ✅ Restart Minecraft server
-3. ✅ Copy `rcon.password` to VibeCraft `.env`
+1. ✅ Install and launch the VibeCraft Fabric client mod
+2. ✅ Enable "AI Control" in the mod UI
+3. ✅ Copy the bridge token into `.env`
 4. ✅ Test connection: `uv run python -m src.vibecraft.server`
 
 **Common Issues**:
-- **Connection refused** → Check `enable-rcon=true` in server.properties
-- **Authentication failed** → Verify password matches exactly
-- **Timeout** → Increase `VIBECRAFT_RCON_TIMEOUT` or check network
+- **Connection refused** → Client mod not running or wrong port
+- **Authentication failed** → Token mismatch
+- **Timeout** → Increase `VIBECRAFT_CLIENT_TIMEOUT`
 
 ---
 
@@ -218,9 +297,10 @@ Configure VibeCraft in your MCP client (Claude Code, Claude Desktop, Cursor).
       "args": ["run", "python", "-m", "src.vibecraft.server"],
       "cwd": "/absolute/path/to/vibecraft/mcp-server",
       "env": {
-        "VIBECRAFT_RCON_HOST": "127.0.0.1",
-        "VIBECRAFT_RCON_PORT": "25575",
-        "VIBECRAFT_RCON_PASSWORD": "your_password_here"
+        "VIBECRAFT_CLIENT_HOST": "127.0.0.1",
+        "VIBECRAFT_CLIENT_PORT": "8766",
+        "VIBECRAFT_CLIENT_PATH": "/vibecraft",
+        "VIBECRAFT_CLIENT_TOKEN": "your_token_here"
       }
     }
   }
@@ -229,7 +309,7 @@ Configure VibeCraft in your MCP client (Claude Code, Claude Desktop, Cursor).
 
 **Important**:
 - Use **absolute paths** for `cwd`
-- Include RCON credentials in `env` (overrides .env file)
+- Include client bridge settings in `env` (overrides .env file)
 - Restart Claude Code after changes
 
 ### Claude Desktop
@@ -246,9 +326,10 @@ Configure VibeCraft in your MCP client (Claude Code, Claude Desktop, Cursor).
       "args": ["run", "python", "-m", "src.vibecraft.server"],
       "cwd": "/absolute/path/to/vibecraft/mcp-server",
       "env": {
-        "VIBECRAFT_RCON_HOST": "127.0.0.1",
-        "VIBECRAFT_RCON_PORT": "25575",
-        "VIBECRAFT_RCON_PASSWORD": "your_password_here"
+        "VIBECRAFT_CLIENT_HOST": "127.0.0.1",
+        "VIBECRAFT_CLIENT_PORT": "8766",
+        "VIBECRAFT_CLIENT_PATH": "/vibecraft",
+        "VIBECRAFT_CLIENT_TOKEN": "your_token_here"
       }
     }
   }
@@ -269,9 +350,10 @@ Restart Claude Desktop after editing.
       "args": ["run", "python", "-m", "src.vibecraft.server"],
       "cwd": "/absolute/path/to/vibecraft/mcp-server",
       "env": {
-        "VIBECRAFT_RCON_HOST": "127.0.0.1",
-        "VIBECRAFT_RCON_PORT": "25575",
-        "VIBECRAFT_RCON_PASSWORD": "your_password_here"
+        "VIBECRAFT_CLIENT_HOST": "127.0.0.1",
+        "VIBECRAFT_CLIENT_PORT": "8766",
+        "VIBECRAFT_CLIENT_PATH": "/vibecraft",
+        "VIBECRAFT_CLIENT_TOKEN": "your_token_here"
       }
     }
   }
@@ -282,9 +364,9 @@ Restart Claude Desktop after editing.
 
 ## Advanced Configuration
 
-### Multiple Servers
+### Multiple Clients
 
-Connect to different Minecraft servers by creating multiple MCP server entries:
+Connect to multiple Minecraft clients by running the Fabric mod with different ports:
 
 ```json
 {
@@ -294,9 +376,10 @@ Connect to different Minecraft servers by creating multiple MCP server entries:
       "args": ["run", "python", "-m", "src.vibecraft.server"],
       "cwd": "/path/to/vibecraft/mcp-server",
       "env": {
-        "VIBECRAFT_RCON_HOST": "127.0.0.1",
-        "VIBECRAFT_RCON_PORT": "25575",
-        "VIBECRAFT_RCON_PASSWORD": "creative_password"
+        "VIBECRAFT_CLIENT_HOST": "127.0.0.1",
+        "VIBECRAFT_CLIENT_PORT": "8766",
+        "VIBECRAFT_CLIENT_PATH": "/vibecraft",
+        "VIBECRAFT_CLIENT_TOKEN": "creative_token"
       }
     },
     "vibecraft-survival": {
@@ -304,35 +387,25 @@ Connect to different Minecraft servers by creating multiple MCP server entries:
       "args": ["run", "python", "-m", "src.vibecraft.server"],
       "cwd": "/path/to/vibecraft/mcp-server",
       "env": {
-        "VIBECRAFT_RCON_HOST": "192.168.1.100",
-        "VIBECRAFT_RCON_PORT": "25576",
-        "VIBECRAFT_RCON_PASSWORD": "survival_password"
+        "VIBECRAFT_CLIENT_HOST": "127.0.0.1",
+        "VIBECRAFT_CLIENT_PORT": "8767",
+        "VIBECRAFT_CLIENT_PATH": "/vibecraft",
+        "VIBECRAFT_CLIENT_TOKEN": "survival_token"
       }
     }
   }
 }
 ```
 
-### Remote Servers
+### Remote Multiplayer Servers
 
-Connect to remote Minecraft servers:
-
-```bash
-# .env for remote server
-VIBECRAFT_RCON_HOST=mc.example.com    # Domain or IP
-VIBECRAFT_RCON_PORT=25575
-VIBECRAFT_RCON_PASSWORD=remote_password
-VIBECRAFT_RCON_TIMEOUT=30             # Longer timeout for network latency
-```
+Connect to a remote Minecraft server by joining it in the client. No extra MCP configuration
+is required beyond the local client bridge.
 
 **Security Considerations**:
-- Use secure RCON passwords (16+ characters, random)
-- Consider firewall rules (only allow specific IPs)
-- Use SSH tunnel for extra security:
-  ```bash
-  ssh -L 25575:localhost:25575 user@mc.example.com
-  # Then connect to 127.0.0.1:25575 in VibeCraft
-  ```
+- Keep the bridge bound to localhost
+- Use a strong token and keep it private
+- Disable "AI Control" when not in use
 
 ### Custom Python Environment
 
@@ -346,7 +419,7 @@ Use a specific Python version or virtualenv:
       "args": ["-m", "src.vibecraft.server"],
       "cwd": "/path/to/vibecraft/mcp-server",
       "env": {
-        // ... RCON config
+        // ... client bridge config
       }
     }
   }
@@ -410,7 +483,7 @@ telnet 127.0.0.1 25575
 **Solutions**:
 1. Give yourself operator status: `/op YourUsername`
 2. Check WorldEdit permissions in `plugins/WorldEdit/config.yml`
-3. Verify RCON user has admin privileges
+3. Verify the player running the client mod has admin privileges
 
 ---
 
@@ -419,16 +492,16 @@ telnet 127.0.0.1 25575
 ### Security
 
 ✅ **DO**:
-- Use strong RCON passwords (16+ random characters)
+- Use strong bridge tokens (16+ random characters)
 - Keep `.env` out of version control (add to `.gitignore`)
 - Use environment-specific `.env` files (.env.local, .env.production)
-- Rotate RCON passwords periodically
+- Rotate bridge tokens periodically
 - Use build area constraints on public servers
 
 ❌ **DON'T**:
 - Commit `.env` to git
-- Share RCON passwords in screenshots/logs
-- Use default passwords (change from "minecraft")
+- Share tokens in screenshots/logs
+- Use default tokens
 - Disable safety checks on public servers
 
 ### Performance
@@ -439,7 +512,7 @@ telnet 127.0.0.1 25575
 - Enable command logging for debugging
 
 ❌ **DON'T**:
-- Use very short timeouts (< 5 seconds) for remote servers
+- Use very short timeouts (< 5 seconds) for large builds
 - Disable version detection (minimal overhead)
 
 ### Development vs Production
@@ -473,10 +546,10 @@ VIBECRAFT_ENABLE_COMMAND_LOGGING=true
 
 ```bash
 # .env - Single-player creative (local)
-VIBECRAFT_RCON_HOST=127.0.0.1
-VIBECRAFT_RCON_PORT=25575
-VIBECRAFT_RCON_PASSWORD=creative_mode_password
-VIBECRAFT_RCON_TIMEOUT=10
+VIBECRAFT_CLIENT_HOST=127.0.0.1
+VIBECRAFT_CLIENT_PORT=8766
+VIBECRAFT_CLIENT_PATH=/vibecraft
+VIBECRAFT_CLIENT_TOKEN=creative_mode_token
 
 VIBECRAFT_ENABLE_SAFETY_CHECKS=true
 VIBECRAFT_ALLOW_DANGEROUS_COMMANDS=true  # Allow //regen, etc.
@@ -492,10 +565,10 @@ VIBECRAFT_ENABLE_COMMAND_LOGGING=true
 
 ```bash
 # .env - Public server with build plots
-VIBECRAFT_RCON_HOST=127.0.0.1
-VIBECRAFT_RCON_PORT=25575
-VIBECRAFT_RCON_PASSWORD=super_secure_random_password_here
-VIBECRAFT_RCON_TIMEOUT=15
+VIBECRAFT_CLIENT_HOST=127.0.0.1
+VIBECRAFT_CLIENT_PORT=8766
+VIBECRAFT_CLIENT_PATH=/vibecraft
+VIBECRAFT_CLIENT_TOKEN=super_secure_random_token_here
 
 VIBECRAFT_ENABLE_SAFETY_CHECKS=true
 VIBECRAFT_ALLOW_DANGEROUS_COMMANDS=false  # Block //regen, //delchunks
@@ -516,11 +589,11 @@ VIBECRAFT_ENABLE_COMMAND_LOGGING=true
 ### Remote Development Server
 
 ```bash
-# .env - Remote server over internet
-VIBECRAFT_RCON_HOST=mc.example.com
-VIBECRAFT_RCON_PORT=25575
-VIBECRAFT_RCON_PASSWORD=remote_dev_password
-VIBECRAFT_RCON_TIMEOUT=30  # Higher for network latency
+# .env - Remote server joined from local client
+VIBECRAFT_CLIENT_HOST=127.0.0.1
+VIBECRAFT_CLIENT_PORT=8766
+VIBECRAFT_CLIENT_PATH=/vibecraft
+VIBECRAFT_CLIENT_TOKEN=remote_dev_token
 
 VIBECRAFT_ENABLE_SAFETY_CHECKS=true
 VIBECRAFT_ALLOW_DANGEROUS_COMMANDS=true

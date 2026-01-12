@@ -12,7 +12,7 @@ vibecraft/
 │   ├── .claude/skills/       # 7 building skills (worldedit, structures, terrain, etc.)
 │   ├── context/              # AI reference guides (MD files agent reads)
 │   ├── CLAUDE.md             # Agent system prompt
-│   └── SYSTEM_PROMPT.md      # Source for agent prompt
+│   └── AGENTS.md             # Source for agent prompt (copied to CLAUDE.md)
 │
 ├── mcp-server/               # MCP SERVER CODE (Python)
 │   ├── src/vibecraft/
@@ -31,6 +31,32 @@ vibecraft/
 ├── docker-compose.yml        # Minecraft server setup
 └── setup-all.sh              # One-command setup
 ```
+
+## Experimenting with VibeCraft
+
+**The main way to experiment is by modifying the agent prompt and skills.**
+
+Most development work happens in the `agent/` folder:
+
+```bash
+cd agent
+claude  # Start Claude Code as the building agent
+```
+
+Then iterate on:
+- **`agent/CLAUDE.md`** — The agent's system prompt (auto-generated from AGENTS.md)
+- **`agent/.claude/skills/`** — Building skills that teach the agent specific workflows
+- **`agent/context/`** — Reference materials the agent can read
+
+**Workflow:**
+1. Make changes to skills or prompts
+2. Run `claude` in the `agent/` folder
+3. Ask it to build something and observe behavior
+4. Refine the instructions based on results
+
+The MCP server code rarely needs changes unless you're adding new tools or fixing bugs.
+
+---
 
 ## Key Development Areas
 
@@ -57,7 +83,7 @@ Files consumed by the VibeCraft building agent.
 |------|---------|
 | `.claude/skills/` | Building skills with detailed workflows |
 | `context/` | JSON catalogs (items, patterns, templates) |
-| `SYSTEM_PROMPT.md` | Master agent instructions |
+| `AGENTS.md` | Master agent instructions (source for CLAUDE.md) |
 
 ## Development Commands
 

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "vibecraft-client",
+  "version": "${version}",
+  "name": "VibeCraft Client Bridge",
+  "description": "Local WebSocket bridge for VibeCraft MCP client control.",
+  "authors": [
+    "VibeCraft Contributors"
+  ],
+  "contact": {
+    "homepage": "https://github.com/vibecraft/vibecraft",
+    "sources": "https://github.com/vibecraft/vibecraft"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.vibecraft.client.VibeCraftClientMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "1.21.x",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}

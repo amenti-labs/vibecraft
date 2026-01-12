@@ -1,15 +1,16 @@
-"""RCON Connection Manager for Minecraft server communication.
+"""RCON Connection Manager for Minecraft server communication (legacy).
 
 This module provides a robust RCON connection manager with:
 - Persistent connection with automatic reconnection
 - Circuit breaker pattern for fail-fast behavior
 - Thread-safe connection handling
 - Async support via asyncio.to_thread
+
+Deprecated: kept for legacy server mode.
 """
 
 import asyncio
 import logging
-import re
 import threading
 import time
 from dataclasses import dataclass, field
@@ -20,17 +21,9 @@ from mcrcon import MCRcon
 
 from .config import VibeCraftConfig
 from .exceptions import RCONConnectionError, RCONCircuitOpenError, RCONTimeoutError
+from .command_patterns import WORLDEDIT_VERSION_PATTERN
 
 logger = logging.getLogger(__name__)
-
-# Pre-compiled regex patterns for common parsing operations
-WORLDEDIT_VERSION_PATTERN = re.compile(r"WorldEdit.*?(\d+\.\d+\.\d+)")
-PLAYER_POS_PATTERN = re.compile(r"\[([-\d.]+)d?,\s*([-\d.]+)d?,\s*([-\d.]+)d?\]")
-PLAYER_ROT_PATTERN = re.compile(r"\[([-\d.]+)f?,\s*([-\d.]+)f?\]")
-BLOCK_ID_PATTERN = re.compile(r'"minecraft:([^"]+)"')
-BLOCK_STATE_PATTERN = re.compile(r"minecraft:([a-z0-9_/]+)(?:\{([^}]*)\})?")
-DISTR_LINE_PATTERN = re.compile(r"([\d.]+)%\s+([a-z_:]+)\s+\((\d+)", re.IGNORECASE)
-COUNT_BLOCKS_PATTERN = re.compile(r"(\d+)\s+block", re.IGNORECASE)
 
 
 class CircuitState(Enum):
@@ -104,8 +97,7 @@ class RCONManager:
                 else:
                     remaining = self._circuit_config.recovery_timeout - elapsed
                     raise RCONCircuitOpenError(
-                        f"Circuit breaker is OPEN. Server appears down. "
-                        f"Retry in {remaining:.1f}s"
+                        f"Circuit breaker is OPEN. Server appears down. Retry in {remaining:.1f}s"
                     )
 
             if self._circuit.state == CircuitState.HALF_OPEN:
@@ -317,9 +309,10 @@ class RCONManager:
             WorldEdit version string or None if detection fails
         """
         try:
-            response = self.execute_command("version WorldEdit")
+            # Use WorldEdit's own //version command
+            response = self.execute_command("//version")
 
-            if "WorldEdit" in response:
+            if response and "WorldEdit" in response:
                 match = WORLDEDIT_VERSION_PATTERN.search(response)
                 if match:
                     version = match.group(1)

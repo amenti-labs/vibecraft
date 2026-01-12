@@ -8,7 +8,7 @@ Tool Handler Interface:
     Each handler function should have signature:
         async def handle_tool_name(
             arguments: Dict[str, Any],
-            rcon: RCONManager,
+            rcon: Command executor,
             config: VibeCraftConfig,
             logger: logging.Logger
         ) -> List[TextContent]
@@ -49,21 +49,18 @@ from . import patterns
 from . import terrain_tools
 from . import geometry_tools
 from . import worldedit_advanced
-from . import workflow_tools
 from . import helper_utils
 from . import core_tools
 from . import worldedit_wrappers as worldedit_wrappers
 from . import build_tools
+from . import vision_tools
+from . import schematic_tools
 
 # Register spatial tools
 TOOL_REGISTRY["spatial_awareness_scan"] = spatial.handle_spatial_awareness_scan
 
 # Register validation tools
-TOOL_REGISTRY["validate_pattern"] = validation.handle_validate_pattern
 TOOL_REGISTRY["validate_mask"] = validation.handle_validate_mask
-TOOL_REGISTRY["check_symmetry"] = validation.handle_check_symmetry
-TOOL_REGISTRY["analyze_lighting"] = validation.handle_analyze_lighting
-TOOL_REGISTRY["validate_structure"] = validation.handle_validate_structure
 
 # Register furniture tools
 TOOL_REGISTRY["furniture_lookup"] = furniture_tools.handle_furniture_lookup
@@ -81,7 +78,6 @@ TOOL_REGISTRY["smooth_terrain"] = terrain_tools.handle_smooth_terrain
 
 # Register geometry tools
 TOOL_REGISTRY["calculate_shape"] = geometry_tools.handle_calculate_shape
-TOOL_REGISTRY["calculate_window_spacing"] = geometry_tools.handle_calculate_window_spacing
 
 # Register advanced WorldEdit tools
 TOOL_REGISTRY["worldedit_deform"] = worldedit_advanced.handle_worldedit_deform
@@ -89,24 +85,29 @@ TOOL_REGISTRY["worldedit_vegetation"] = worldedit_advanced.handle_worldedit_vege
 TOOL_REGISTRY["worldedit_terrain_advanced"] = worldedit_advanced.handle_worldedit_terrain_advanced
 TOOL_REGISTRY["worldedit_analysis"] = worldedit_advanced.handle_worldedit_analysis
 
-# Register workflow tools
-TOOL_REGISTRY["workflow_status"] = workflow_tools.handle_workflow_status
-TOOL_REGISTRY["workflow_advance"] = workflow_tools.handle_workflow_advance
-TOOL_REGISTRY["workflow_reset"] = workflow_tools.handle_workflow_reset
-
 # Register helper utilities
-TOOL_REGISTRY["calculate_region_size"] = helper_utils.handle_calculate_region_size
 TOOL_REGISTRY["search_minecraft_item"] = helper_utils.handle_search_minecraft_item
 TOOL_REGISTRY["get_player_position"] = helper_utils.handle_get_player_position
 TOOL_REGISTRY["get_surface_level"] = helper_utils.handle_get_surface_level
 
 # Register core tools
-TOOL_REGISTRY["rcon_command"] = core_tools.handle_rcon_command
 TOOL_REGISTRY["get_server_info"] = core_tools.handle_get_server_info
 TOOL_REGISTRY["building_template"] = core_tools.handle_building_template
 
 # Register build tool
 TOOL_REGISTRY["build"] = build_tools.handle_build
+
+# Register vision/client tools
+TOOL_REGISTRY["capture_screenshot"] = vision_tools.handle_capture_screenshot
+TOOL_REGISTRY["get_heightmap"] = vision_tools.handle_get_heightmap
+TOOL_REGISTRY["get_player_context"] = vision_tools.handle_get_player_context
+TOOL_REGISTRY["get_nearby_entities"] = vision_tools.handle_get_nearby_entities
+TOOL_REGISTRY["scan_region"] = vision_tools.handle_scan_region
+TOOL_REGISTRY["analyze_palette"] = vision_tools.handle_analyze_palette
+TOOL_REGISTRY["analyze_palette_region"] = vision_tools.handle_analyze_palette_region
+
+# Register schematic building tool
+TOOL_REGISTRY["build_schematic"] = schematic_tools.handle_build_schematic
 
 # Register generic WorldEdit tools (20 tools via wrapper)
 # Each WorldEdit tool uses the generic handler with its tool_name

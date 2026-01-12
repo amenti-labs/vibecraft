@@ -65,6 +65,9 @@ def sanitize_command(
     if not command:
         return ValidationResult(is_valid=False, error_message="Command cannot be empty")
 
+    if not command.strip("/").strip():
+        return ValidationResult(is_valid=False, error_message="Command cannot be empty")
+
     # Check command length
     if len(command) > max_length:
         return ValidationResult(
@@ -72,10 +75,7 @@ def sanitize_command(
             error_message=f"Command exceeds maximum length of {max_length} characters",
         )
 
-    # Remove leading slash if present (RCON doesn't need it)
     sanitized = command
-    if sanitized.startswith("/"):
-        sanitized = sanitized[1:]
 
     # Check for null bytes or other control characters
     if "\x00" in sanitized or any(ord(c) < 32 and c not in "\t\n\r" for c in sanitized):
@@ -86,7 +86,8 @@ def sanitize_command(
     # Check for command injection attempts (chaining with ; or &&)
     # BUT: WorldEdit expression commands (//generate, //deform) legitimately use &&, ||, <, >
     worldedit_expression_commands = ["generate", "deform", "calc"]
-    is_expression_command = any(sanitized.startswith(cmd) for cmd in worldedit_expression_commands)
+    normalized = sanitized.lstrip("/")
+    is_expression_command = any(normalized.startswith(cmd) for cmd in worldedit_expression_commands)
 
     if not is_expression_command:
         if ";" in sanitized or "&&" in sanitized or "||" in sanitized:
@@ -198,7 +199,7 @@ def check_player_context_warning(command: str) -> Optional[str]:
         if cmd_lower.startswith(player_cmd.lower()):
             return (
                 f"Warning: Command '{player_cmd}' typically requires player context. "
-                f"It may not work from console/RCON. "
+                f"It may not work without direct player input. "
                 f"Consider using teleport or coordinate-based alternatives."
             )
     return None

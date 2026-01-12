@@ -16,53 +16,13 @@ def get_tool_schemas() -> list[Tool]:
         List of Tool objects with name, description, and inputSchema
     """
     schemas = [
-        # TIER 1: Generic RCON Tool
-        Tool(
-            name="rcon_command",
-            description="""Execute any Minecraft or WorldEdit command via RCON.
-
-This is the most flexible tool - it can execute ANY command supported by Minecraft or WorldEdit.
-Use this for commands not covered by specialized tools, or when you need full control.
-
-IMPORTANT - Command Syntax:
-- WorldEdit commands: Use DOUBLE slash `//` (e.g., `//pos1`, `//set`, `//sphere`)
-- Vanilla Minecraft commands: No slash needed (e.g., `list`, `time set day`)
-- Coordinates: Comma-separated for WorldEdit (e.g., `//pos1 100,64,100`)
-- World context: Automatically set for all WorldEdit commands
-
-Examples:
-- "list" - List players
-- "time set day" - Set time to day
-- "//pos1 100,64,100" - Set WorldEdit position 1
-- "//set stone" - Fill selection with stone
-- "//sphere oak_leaves 10" - Create sphere
-- "//copy" - Copy selection to clipboard
-- "//paste" - Paste clipboard
-
-⚠️ Common Mistake:
-- ❌ WRONG: "sphere oak_leaves 6" - Missing //
-- ✅ CORRECT: "//sphere oak_leaves 6" - Has //
-
-Safety: Commands are validated before execution. Dangerous commands are blocked by default.
-""",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "command": {
-                        "type": "string",
-                        "description": "The command to execute (without leading /)",
-                    }
-                },
-                "required": ["command"],
-            },
-        ),
-        # TIER 2: Categorized WorldEdit Tools
+        # TIER 1: Categorized WorldEdit Tools
         Tool(
             name="worldedit_selection",
             description="""WorldEdit Selection Commands - Define and manipulate the selected region.
 
 Before performing operations on a region, you must define it by setting positions.
-World context is automatically set for all WorldEdit commands from RCON.
+World context is provided by the client player.
 
 Key Commands:
 - /pos1 X,Y,Z - Set first corner (comma-separated!)
@@ -178,7 +138,7 @@ Note: //replacenear is more intuitive for quick edits - no selection needed!
 
 ⚠️ CRITICAL: NEVER teleport the player! Always use selection commands instead.
 
-✅ World context is automatically set for all WorldEdit commands.
+✅ World context is provided by the client player.
 
 MANDATORY Workflow (NO teleportation):
 1. Calculate target coordinates where you want to build
@@ -440,7 +400,7 @@ Note: Biome changes affect new chunks and may require relogging to see effects.
             name="worldedit_brush",
             description="""WorldEdit Brush Commands - Create brushes for click-based editing.
 
-⚠️ IMPORTANT: Brushes require player interaction (clicking). Most won't work from console/RCON.
+⚠️ IMPORTANT: Brushes require player interaction (clicking). Most won't work from server console.
 However, you CAN configure brushes from console using the configuration commands below.
 
 BRUSH CONFIGURATION (works from console):
@@ -543,8 +503,7 @@ Commands:
 - /ceil [-fg] [clearance], /thru, /up <distance>
 - /unstuck, /jumpto
 
-Most navigation commands require player context. From console, pair with
-`execute as <player> run <command>` when necessary.
+Most navigation commands require player context and direct player input.
 """,
             inputSchema={
                 "type": "object",
@@ -698,32 +657,6 @@ have the player interact in-game with left/right clicks.
         ),
         # TIER 3: Helper Utilities
         Tool(
-            name="validate_pattern",
-            description="""Validate a WorldEdit pattern before using it in commands.
-
-This tool helps you check if a pattern is valid and provides suggestions.
-
-Pattern types supported:
-- Single: stone, oak_planks
-- Random: 50%stone,30%dirt,20%gravel
-- Block states: oak_stairs[facing=north]
-- Categories: ##wool, ##logs
-- Special: #clipboard, *oak_log
-
-Returns: Validation result and explanation of the pattern.
-""",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "pattern": {
-                        "type": "string",
-                        "description": "The pattern to validate",
-                    }
-                },
-                "required": ["pattern"],
-            },
-        ),
-        Tool(
             name="validate_mask",
             description="""Validate a WorldEdit mask before using it in commands.
 
@@ -762,30 +695,6 @@ Returns:
 Useful for checking server status before executing commands.
 """,
             inputSchema={"type": "object", "properties": {}},
-        ),
-        Tool(
-            name="calculate_region_size",
-            description="""Calculate the size and block count of a region.
-
-Given two corner coordinates, calculates:
-- Dimensions (width, height, depth)
-- Total block count
-- Estimated WorldEdit operation time
-
-Useful for planning large builds and checking if operations will exceed limits.
-""",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "x1": {"type": "integer", "description": "First corner X"},
-                    "y1": {"type": "integer", "description": "First corner Y"},
-                    "z1": {"type": "integer", "description": "First corner Z"},
-                    "x2": {"type": "integer", "description": "Second corner X"},
-                    "y2": {"type": "integer", "description": "Second corner Y"},
-                    "z2": {"type": "integer", "description": "Second corner Z"},
-                },
-                "required": ["x1", "y1", "z1", "x2", "y2", "z2"],
-            },
         ),
         Tool(
             name="search_minecraft_item",
@@ -1237,216 +1146,6 @@ Uses Bresenham's algorithms for pixel-perfect mathematical accuracy. Returns coo
             },
         ),
         Tool(
-            name="calculate_window_spacing",
-            description="""Calculate optimal window and door placement for building facades.
-
-Based on architectural principles and aesthetic guidelines. Returns precise positions with spacing recommendations.
-
-**Spacing Styles**:
-- **even**: Evenly distributed with equal spacing (modern, balanced)
-- **golden_ratio**: Positioned using φ = 1.618 (artistic, organic)
-- **symmetric**: Mirrored around center axis (classical, formal)
-- **clustered**: Grouped in pairs/triplets (contemporary, rhythmic)
-
-**Use Cases**:
-- Facade design (calculate all windows at once)
-- Door placement (centered, offset, left/right)
-- Architectural rhythm and balance
-- Style-specific layouts (medieval, modern, classical)
-
-**Output**: Returns window positions, spacing details, and architectural recommendations.
-
-**Examples**:
-- Castle wall: calculate_window_spacing(wall_length=20, window_width=2, spacing_style="symmetric")
-- Modern facade: calculate_window_spacing(wall_length=30, window_width=3, spacing_style="even", window_count=5)
-- Villa windows: calculate_window_spacing(wall_length=25, window_width=2, spacing_style="golden_ratio")
-""",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "wall_length": {
-                        "type": "integer",
-                        "description": "Total wall length in blocks",
-                        "minimum": 3,
-                        "maximum": 200,
-                    },
-                    "window_width": {
-                        "type": "integer",
-                        "description": "Width of each window in blocks",
-                        "minimum": 1,
-                        "maximum": 10,
-                    },
-                    "spacing_style": {
-                        "type": "string",
-                        "description": "Spacing style: 'even', 'golden_ratio', 'symmetric', or 'clustered'. Default: even",
-                        "enum": ["even", "golden_ratio", "symmetric", "clustered"],
-                        "default": "even",
-                    },
-                    "window_count": {
-                        "type": "integer",
-                        "description": "Number of windows (auto-calculated if not specified)",
-                        "minimum": 1,
-                        "maximum": 50,
-                    },
-                },
-                "required": ["wall_length", "window_width"],
-            },
-        ),
-        Tool(
-            name="check_symmetry",
-            description="""Check structural symmetry across an axis for quality assurance.
-
-Analyzes mirrored block positions to detect asymmetries in builds. Essential for castles, palaces, and formal architecture.
-
-**Axes**:
-- **x**: Mirror across X axis (left/right symmetry)
-- **z**: Mirror across Z axis (front/back symmetry)
-- **y**: Mirror across Y axis (top/bottom symmetry)
-
-**Use Cases**:
-- Castle quality control (check if towers are symmetric)
-- Palace facade verification (ensure balanced design)
-- Formal architecture validation (classical builds require symmetry)
-- Error detection (find builder mistakes instantly)
-
-**Parameters**:
-- `tolerance`: Allow N asymmetric blocks (0 = perfect symmetry required)
-- `resolution`: 1 = check every block, 2 = check every other block (faster)
-
-**Output**: Symmetry score (0-100%), asymmetric block list with fix recommendations.
-
-**Examples**:
-- Check castle: check_symmetry(x1=100, y1=64, z1=100, x2=150, y2=90, z2=150, axis="x")
-- Palace facade: check_symmetry(x1=100, y1=60, z1=100, x2=120, y2=80, z2=140, axis="z", tolerance=5)
-""",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "x1": {"type": "integer", "description": "First corner X"},
-                    "y1": {"type": "integer", "description": "First corner Y"},
-                    "z1": {"type": "integer", "description": "First corner Z"},
-                    "x2": {"type": "integer", "description": "Second corner X"},
-                    "y2": {"type": "integer", "description": "Second corner Y"},
-                    "z2": {"type": "integer", "description": "Second corner Z"},
-                    "axis": {
-                        "type": "string",
-                        "description": "Axis to check: 'x', 'z', or 'y'. Default: x",
-                        "enum": ["x", "z", "y"],
-                        "default": "x",
-                    },
-                    "tolerance": {
-                        "type": "integer",
-                        "description": "Allowed asymmetric blocks (0 = perfect symmetry). Default: 0",
-                        "minimum": 0,
-                        "default": 0,
-                    },
-                    "resolution": {
-                        "type": "integer",
-                        "description": "Sampling resolution (1 = every block, 2 = every other). Default: 1",
-                        "minimum": 1,
-                        "maximum": 5,
-                        "default": 1,
-                    },
-                },
-                "required": ["x1", "y1", "z1", "x2", "y2", "z2"],
-            },
-        ),
-        Tool(
-            name="analyze_lighting",
-            description="""Analyze lighting levels and suggest optimal torch/lantern placement.
-
-Identifies dark spots where mobs can spawn (light level < 8). Prevents surprises and ensures safe, well-lit builds.
-
-**Analysis Provides**:
-- Average light level across region
-- Dark spot detection and count
-- Mob spawn risk assessment (HIGH/MEDIUM/LOW)
-- Light distribution breakdown (well-lit/dim/dark percentages)
-- Optimal light source placement recommendations
-
-**Use Cases**:
-- Interior lighting design (rooms, hallways, chambers)
-- Cave illumination (prevent mob spawns underground)
-- Exterior lighting (pathways, courtyards, walls)
-- Safety verification (check if areas are spawn-proof)
-
-**Output**: Light analysis with dark spot coordinates and recommended torch/lantern positions.
-
-**Examples**:
-- Check interior: analyze_lighting(x1=100, y1=64, z1=100, x2=120, y2=70, z2=120, resolution=2)
-- Cave safety: analyze_lighting(x1=0, y1=10, z1=0, x2=50, y2=30, z2=50)
-""",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "x1": {"type": "integer", "description": "First corner X"},
-                    "y1": {"type": "integer", "description": "First corner Y"},
-                    "z1": {"type": "integer", "description": "First corner Z"},
-                    "x2": {"type": "integer", "description": "Second corner X"},
-                    "y2": {"type": "integer", "description": "Second corner Y"},
-                    "z2": {"type": "integer", "description": "Second corner Z"},
-                    "resolution": {
-                        "type": "integer",
-                        "description": "Sampling resolution (1-5). Default: 2",
-                        "minimum": 1,
-                        "maximum": 5,
-                        "default": 2,
-                    },
-                },
-                "required": ["x1", "y1", "z1", "x2", "y2", "z2"],
-            },
-        ),
-        Tool(
-            name="validate_structure",
-            description="""Validate structural integrity and detect physics violations.
-
-Checks for floating blocks, unsupported gravity-affected blocks (sand, gravel), and physics glitches before they happen.
-
-**Detects**:
-- **Gravity violations**: Sand, gravel, concrete powder without support
-- **Floating blocks**: Blocks with no adjacent solid blocks
-- **Unsupported regions**: Large overhangs with no pillars
-- **Physics glitches**: Blocks that will fall when updated
-
-**Prevents**:
-- Unexpected collapses during gameplay
-- Redstone update cascades
-- Visual glitches and unnatural structures
-- Player-caused accidents (breaking support blocks)
-
-**Use Cases**:
-- Pre-build validation (check before completing)
-- Quality assurance (ensure realistic structure)
-- Bridge verification (check cantilever supports)
-- Terraforming safety (verify modified terrain)
-
-**Output**: Validation report with issue list, severity levels, and fix recommendations.
-
-**Examples**:
-- Check bridge: validate_structure(x1=100, y1=60, z1=100, x2=150, y2=70, z2=110)
-- Verify building: validate_structure(x1=200, y1=64, z1=200, x2=220, y2=80, z2=220, resolution=2)
-""",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "x1": {"type": "integer", "description": "First corner X"},
-                    "y1": {"type": "integer", "description": "First corner Y"},
-                    "z1": {"type": "integer", "description": "First corner Z"},
-                    "x2": {"type": "integer", "description": "Second corner X"},
-                    "y2": {"type": "integer", "description": "Second corner Y"},
-                    "z2": {"type": "integer", "description": "Second corner Z"},
-                    "resolution": {
-                        "type": "integer",
-                        "description": "Sampling resolution (1-3). Default: 1",
-                        "minimum": 1,
-                        "maximum": 3,
-                        "default": 1,
-                    },
-                },
-                "required": ["x1", "y1", "z1", "x2", "y2", "z2"],
-            },
-        ),
-        Tool(
             name="generate_terrain",
             description="""Generate realistic terrain features using WorldEdit noise functions.
 
@@ -1835,14 +1534,6 @@ After retrieving a pattern, use the layer information to build with WorldEdit co
             },
         ),
         Tool(
-            name="workflow_status",
-            description="""Show the current build workflow phase, completed checkpoints, and pending validations.
-
-Use this to understand which specialist phase is active and what validations are still required before advancing.
-""",
-            inputSchema={"type": "object", "properties": {}, "required": []},
-        ),
-        Tool(
             name="building_template",
             description="""Search and use parametric building templates for rapid, high-quality construction.
 
@@ -1921,42 +1612,6 @@ Templates support parameters like:
                     },
                 },
                 "required": ["action"],
-            },
-        ),
-        Tool(
-            name="workflow_advance",
-            description="""Advance to the next build phase once all required validations are complete.
-
-The coordinator will refuse to advance if mandatory validations have not been recorded (e.g., structure_validation, lighting_analysis, symmetry_check).
-""",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "force": {
-                        "type": "boolean",
-                        "description": "Reserved for future use; currently ignored",
-                        "default": False,
-                    }
-                },
-                "required": [],
-            },
-        ),
-        Tool(
-            name="workflow_reset",
-            description="""Reset the build workflow back to the planning phase.
-
-All recorded validations will be cleared. Use with caution (primarily for starting a new project).
-""",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "confirm": {
-                        "type": "boolean",
-                        "description": "Must be true to confirm reset",
-                        "default": False,
-                    }
-                },
-                "required": [],
             },
         ),
         Tool(
@@ -2527,6 +2182,440 @@ WHEN TO USE BUILD VS SPECIALIZED TOOLS
                     },
                 },
                 "required": [],  # Either commands OR code required
+            },
+        ),
+        # ===== CLIENT VISION/CONTEXT TOOLS =====
+        Tool(
+            name="capture_screenshot",
+            description="""Capture a screenshot from the Minecraft client.
+
+Returns the current game view as a base64-encoded PNG image with player context.
+
+**Returns**:
+- width, height: Actual image dimensions
+- original_width, original_height: Screen resolution
+- player_position: {x, y, z} of player when captured
+- player_rotation: {yaw, pitch} of player when captured
+- image: Base64-encoded PNG data (data:image/png;base64,...)
+
+**Use Cases**:
+- Visual verification of builds
+- Understanding current scene context
+- Orientation and direction checking
+- Before/after comparisons
+
+**Parameters**:
+- max_width: Maximum image width (default 1920, scales down if larger)
+- max_height: Maximum image height (default 1080, scales down if larger)
+""",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "max_width": {
+                        "type": "integer",
+                        "description": "Maximum width in pixels (default 1920)",
+                        "default": 1920,
+                    },
+                    "max_height": {
+                        "type": "integer",
+                        "description": "Maximum height in pixels (default 1080)",
+                        "default": 1080,
+                    },
+                },
+                "required": [],
+            },
+        ),
+        Tool(
+            name="get_heightmap",
+            description="""Get a heightmap for a rectangular area.
+
+Returns the Y-level of the highest non-air block for each X,Z coordinate.
+
+**Returns**:
+- origin: [minX, minZ]
+- dimensions: [sizeX, sizeZ]
+- heights: 2D array of Y values [row][column]
+- surface_blocks: 2D array of block IDs at surface
+- stats: {min_height, max_height, height_range}
+
+**Use Cases**:
+- Terrain analysis before building
+- Finding flat areas for construction
+- Understanding elevation changes
+- Smart foundation placement
+
+**Limits**:
+- Max area: 256x256 (65,536 columns)
+""",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "x1": {"type": "integer", "description": "First corner X"},
+                    "z1": {"type": "integer", "description": "First corner Z"},
+                    "x2": {"type": "integer", "description": "Second corner X"},
+                    "z2": {"type": "integer", "description": "Second corner Z"},
+                },
+                "required": ["x1", "z1", "x2", "z2"],
+            },
+        ),
+        Tool(
+            name="get_player_context",
+            description="""Get detailed player context including position, rotation, and raycast target.
+
+Returns comprehensive information about the local player's current state.
+
+**Returns**:
+- position: {x, y, z, block_x, block_y, block_z}
+- rotation: {yaw, pitch, head_yaw, facing}
+- eye_position: {x, y, z} - exact eye location for raycast
+- look_direction: {x, y, z} - normalized look vector
+- target: Raycast result - what player is looking at
+  - type: "block" or "miss"
+  - block: Block ID (if type=block)
+  - position: {x, y, z} of hit block
+  - face: Which face was hit (north/south/east/west/up/down)
+  - adjacent: {x, y, z} where a block would be placed
+  - distance: Distance to target
+- held_item: Currently held item
+- game_mode: creative, survival, etc.
+- is_flying: Boolean
+- on_ground: Boolean
+- dimension: Dimension ID
+
+**Use Cases**:
+- Build where player is looking
+- Understand player orientation
+- Get precise positioning for relative builds
+- Check what player is interacting with
+""",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "reach": {
+                        "type": "number",
+                        "description": "Raycast distance in blocks (default 128)",
+                        "default": 128.0,
+                    },
+                },
+                "required": [],
+            },
+        ),
+        Tool(
+            name="get_nearby_entities",
+            description="""Get entities near the player.
+
+Returns a list of entities within the specified radius.
+
+**Returns**:
+- entities: Array of entity data
+  - type: Entity type ID
+  - id: Entity numeric ID
+  - distance: Distance from player
+  - position: {x, y, z}
+  - name: Custom name if present
+- count: Total entities found
+- radius: Search radius used
+""",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "radius": {
+                        "type": "number",
+                        "description": "Search radius in blocks (default 32)",
+                        "default": 32.0,
+                    },
+                },
+                "required": [],
+            },
+        ),
+        # ============================================================
+        # SCHEMATIC BUILDING TOOL - Declarative JSON-based building
+        # ============================================================
+        Tool(
+            name="build_schematic",
+            description="""Build structures using declarative JSON schematics.
+
+**THIS IS THE PREFERRED METHOD FOR ALL BUILDING!**
+
+## COMPACT FORMAT (Recommended - 70% fewer tokens)
+
+```json
+{
+  "a": [x, y, z],
+  "p": {"S": "stone", "P": "oak_planks", "W": "oak_planks"},
+  "l": [
+    [0, "S*10|S P*8 S~8|S*10"],
+    [1, "W*10|W .*8 W~3|W*10"]
+  ]
+}
+```
+
+**Compact Syntax:**
+- Short keys: `"a"` (anchor), `"p"` (palette), `"l"` (layers), `"f"` (facing), `"s"` (shape)
+- Layers: `[y_offset, "row|row|row"]` - pipe separates rows
+- Run-length: `S*5` = 5 stone blocks
+- Row repeat: `S P*3 S~8` = repeat this row 8 times
+
+**Shape Primitives (even more compact):**
+- 2D in layers: `fill:WxD:S`, `outline:WxD:S`, `frame:WxD:S:I`
+- 3D shapes: `"s": "box:WxHxD:S"` or `"s": "room:WxHxD:W:F"`
+
+**Examples:**
+```json
+{"a": [0,64,0], "p": {"S": "stone"}, "l": [[0, "outline:10x10:S"]]}
+{"a": [0,64,0], "p": {"S": "stone_bricks"}, "s": "box:12x5x12:S"}
+```
+
+## Verbose Format (Backward Compatible)
+
+```json
+{
+  "anchor": [x, y, z],
+  "facing": "north",
+  "mode": "replace",
+  "palette": {"S": "stone_bricks", "Dl": "oak_door[facing=south,half=lower]"},
+  "layers": [{"y": 0, "grid": [["S","S","S"],["S",".","S"]]}]
+}
+```
+
+## Grid Convention
+- `grid[row][col]` = `grid[z][x]`
+- Row 0 = north edge, Col 0 = west edge
+- Rows go North→South, Columns go West→East
+
+## Palette
+- Run-length in compact: `S*5` = 5 S blocks
+- Block states: `"Sn": "oak_stairs[facing=north,half=bottom]"`
+- NBT: `"C": "chest[facing=north]{Items:[...]}"`
+- Air: `.`, `_`, or space (skipped)
+
+## Benefits
+- COMPACT format uses ~70% fewer tokens
+- Validates before execution
+- Automatically optimizes commands (combines into /fill)
+- Handles rotation automatically
+- Full Minecraft block state support
+""",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "schematic": {
+                        "type": "object",
+                        "description": "Schematic object. Supports COMPACT format (recommended) or verbose format.",
+                        "properties": {
+                            # Compact format keys (recommended - uses ~70% fewer tokens)
+                            "a": {
+                                "oneOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {"type": "number"},
+                                        "minItems": 3,
+                                        "maxItems": 3,
+                                    },
+                                    {"type": "string", "enum": ["player"]},
+                                ],
+                                "description": "Anchor position [x, y, z] (compact key for 'anchor')",
+                            },
+                            "p": {
+                                "type": "object",
+                                "additionalProperties": {"type": "string"},
+                                "description": "Palette map (compact key for 'palette')",
+                            },
+                            "l": {
+                                "type": "array",
+                                "description": "Layers in compact format: [[y, 'row|row'], ...] (compact key for 'layers')",
+                            },
+                            "s": {
+                                "type": "string",
+                                "description": "3D shape primitive: 'box:WxHxD:S' or 'room:WxHxD:W:F'",
+                            },
+                            # Verbose format keys (backward compatible)
+                            "anchor": {
+                                "oneOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {"type": "integer"},
+                                        "minItems": 3,
+                                        "maxItems": 3,
+                                    },
+                                    {"type": "string", "enum": ["player"]},
+                                ],
+                                "description": "World position [x, y, z] or 'player' for relative positioning",
+                            },
+                            "facing": {
+                                "type": "string",
+                                "enum": ["north", "south", "east", "west"],
+                                "description": "Build orientation (rotates entire structure)",
+                            },
+                            "mode": {
+                                "type": "string",
+                                "enum": ["replace", "keep", "destroy"],
+                                "description": "Block placement mode",
+                            },
+                            "palette": {
+                                "type": "object",
+                                "additionalProperties": {"type": "string"},
+                                "description": "Map of symbols to block IDs with optional states/NBT",
+                            },
+                            "layers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "y": {
+                                            "type": "integer",
+                                            "description": "Y offset from anchor",
+                                        },
+                                        "grid": {
+                                            "type": "array",
+                                            "items": {"type": "array", "items": {"type": "string"}},
+                                            "description": "2D grid of palette symbols",
+                                        },
+                                    },
+                                },
+                                "description": "Array of layer definitions (verbose format)",
+                            },
+                            "shape": {
+                                "type": "string",
+                                "description": "3D shape primitive (verbose key for 's')",
+                            },
+                        },
+                        # Note: No 'required' - accepts either compact (a,p,l) or verbose (anchor,palette,layers) format
+                    },
+                    "preview_only": {
+                        "type": "boolean",
+                        "description": "If true, show what would be built without executing",
+                        "default": False,
+                    },
+                    "optimize": {
+                        "type": "boolean",
+                        "description": "If true, combine adjacent blocks into /fill commands",
+                        "default": True,
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Human-readable description of what's being built",
+                    },
+                },
+                "required": ["schematic"],
+            },
+        ),
+        # Client Bridge Tools - Efficient client-side data access
+        Tool(
+            name="scan_region",
+            description="""Scan blocks in a rectangular region using the client's chunk cache.
+
+This is an efficient way to read block data - it reads directly from the client's
+loaded chunks rather than making individual server queries.
+
+Returns:
+- Block counts by type
+- Palette of unique blocks found
+- Compressed block data (RLE encoded)
+- Region dimensions and statistics
+
+Use Cases:
+- Analyze existing structures before modification
+- Count materials needed to replicate a build
+- Verify build completion
+- Map terrain composition
+
+Limits:
+- Max 64x64x64 blocks per scan (262,144 blocks)
+- Region must be within client's render distance
+- include_states=true increases data size significantly
+
+Example: Scan a 20x10x20 area
+{
+  "x1": 100, "y1": 64, "z1": 100,
+  "x2": 120, "y2": 74, "z2": 120
+}
+""",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "x1": {"type": "integer", "description": "First corner X coordinate"},
+                    "y1": {"type": "integer", "description": "First corner Y coordinate"},
+                    "z1": {"type": "integer", "description": "First corner Z coordinate"},
+                    "x2": {"type": "integer", "description": "Second corner X coordinate"},
+                    "y2": {"type": "integer", "description": "Second corner Y coordinate"},
+                    "z2": {"type": "integer", "description": "Second corner Z coordinate"},
+                    "include_states": {
+                        "type": "boolean",
+                        "description": "Include block states (facing, waterlogged, etc). Default false.",
+                        "default": False,
+                    },
+                },
+                "required": ["x1", "y1", "z1", "x2", "y2", "z2"],
+            },
+        ),
+        Tool(
+            name="analyze_palette",
+            description="""Analyze block distribution in a spherical area around a point.
+
+Reads from the client's chunk cache for efficient analysis.
+
+Returns:
+- Block counts sorted by frequency
+- Total blocks analyzed
+- Percentage breakdown
+- Suggested complementary blocks
+
+Use Cases:
+- Understand existing build style/palette
+- Find matching materials for additions
+- Analyze terrain composition
+- Plan material requirements
+
+Example: Analyze blocks within 16 blocks of position
+{
+  "x": 100, "y": 64, "z": 100,
+  "radius": 16
+}
+""",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "x": {"type": "integer", "description": "Center X coordinate"},
+                    "y": {"type": "integer", "description": "Center Y coordinate"},
+                    "z": {"type": "integer", "description": "Center Z coordinate"},
+                    "radius": {
+                        "type": "integer",
+                        "description": "Radius in blocks (default 16, max 32)",
+                        "default": 16,
+                    },
+                },
+                "required": ["x", "y", "z"],
+            },
+        ),
+        Tool(
+            name="analyze_palette_region",
+            description="""Analyze block distribution in a rectangular region.
+
+Similar to analyze_palette but uses a box instead of sphere.
+
+Returns:
+- Block counts sorted by frequency
+- Total blocks analyzed
+- Percentage breakdown
+
+Example: Analyze a building's materials
+{
+  "x1": 100, "y1": 64, "z1": 100,
+  "x2": 120, "y2": 80, "z2": 120
+}
+""",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "x1": {"type": "integer", "description": "First corner X coordinate"},
+                    "y1": {"type": "integer", "description": "First corner Y coordinate"},
+                    "z1": {"type": "integer", "description": "First corner Z coordinate"},
+                    "x2": {"type": "integer", "description": "Second corner X coordinate"},
+                    "y2": {"type": "integer", "description": "Second corner Y coordinate"},
+                    "z2": {"type": "integer", "description": "Second corner Z coordinate"},
+                },
+                "required": ["x1", "y1", "z1", "x2", "y2", "z2"],
             },
         ),
     ]

@@ -18,31 +18,52 @@ Thank you for your interest in contributing to VibeCraft! This guide will help y
 
 - Python 3.10 or higher
 - [uv](https://github.com/astral-sh/uv) - Fast Python package manager
-- Docker Desktop (for running Minecraft server)
 - Git
+- Java 21 (for building the client mod, Minecraft 1.21.x)
+- jq (`brew install jq`)
 
 ### Getting Started
 
-1. **Fork the repository**
-   ```bash
-   # Visit https://github.com/amenti-labs/vibecraft and click "Fork"
-   ```
-
-2. **Clone your fork**
+1. **Fork and clone**
    ```bash
    git clone https://github.com/YOUR-USERNAME/vibecraft.git
    cd vibecraft
    ```
 
-3. **Run setup script**
+2. **Install MCP server dependencies**
    ```bash
-   ./setup-all.sh
+   cd mcp-server && uv sync && cd ..
    ```
-   This will:
-   - Install dependencies with uv
-   - Start Minecraft server in Docker
-   - Configure RCON connection
-   - Create MCP configuration files
+
+3. **Choose your development approach:**
+
+#### Option A: Client Mod (Recommended)
+
+Best for testing with any Minecraft server, multiplayer, and WorldEdit features.
+
+```bash
+# Build the client mod
+cd client-mod && ./build.sh 1.21.1 && cd ..
+
+# Install in Prism Launcher (or your launcher):
+# 1. Add Fabric to a 1.21.1 instance
+# 2. Add Fabric API mod
+# 3. Add build/release/vibecraft-client-*.jar
+
+# In Minecraft, run: /vibecraft allow
+
+# Start MCP server
+cd mcp-server && ./start-vibecraft.sh
+```
+
+#### Option B: RCON Mode (Server-Only/Headless)
+
+For CI, headless testing, or server-side automation without a client.
+
+```bash
+# This starts a Minecraft server in Docker with RCON
+./setup-all.sh
+```
 
 4. **Create a feature branch**
    ```bash
@@ -126,7 +147,7 @@ async def handle_example_tool(
 
 1. **Update documentation**
    - Add/update README.md if adding features
-   - Update SYSTEM_PROMPT.md if changing AI instructions
+   - Update AGENTS.md if changing AI instructions
    - Add examples if helpful
 
 2. **Run tests**

@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 from vibecraft import server as vibecraft_server
 from vibecraft.server import app
 from vibecraft.config import load_config
-from vibecraft.rcon_manager import RCONManager
+from vibecraft.client_bridge import ClientBridge
 
 # Try to import SSE transport
 try:
@@ -54,26 +54,27 @@ async def run_http_server(host: str = "127.0.0.1", port: int = 8765):
     config = load_config()
     config.enable_command_logging = True
 
-    # Initialize RCON
-    rcon = RCONManager(config)
+    # Initialize client bridge
+    rcon = ClientBridge(config)
 
     # Set the globals in the vibecraft.server module so call_tool can access them
     vibecraft_server.config = config
     vibecraft_server.rcon = rcon
 
     # Test connection
-    print(f"\n📡 RCON Host: {config.rcon_host}:{config.rcon_port}")
-    print("Testing RCON connection...")
+    print(
+        f"\n📡 Client Bridge: ws://{config.client_host}:{config.client_port}{config.client_path}"
+    )
+    print("Testing client bridge connection...")
 
-    try:
-        result = rcon.execute_command("list")
-        print(f"✅ RCON connected: {result}")
-    except Exception as e:
-        print(f"❌ RCON connection failed: {e}")
+    if rcon.test_connection():
+        print("✅ Client bridge connected")
+    else:
+        print("❌ Client bridge connection failed")
         print("\nMake sure:")
-        print("  1. Minecraft server is running")
-        print("  2. RCON is enabled in server.properties")
-        print("  3. RCON password matches")
+        print("  1. The Fabric client mod is running")
+        print("  2. The client bridge host/port match")
+        print("  3. The bridge token matches (if set)")
         sys.exit(1)
 
     # Check WorldEdit
@@ -164,23 +165,26 @@ async def run_http_server(host: str = "127.0.0.1", port: int = 8765):
             )
             logger.info("✅ app.run() completed")
 
-    async def handle_messages(request):
-        """Handle message endpoint"""
-        logger.info("📨 Handling POST message request")
+    async def handle_messages_asgi(scope, receive, send):
+        """Handle message endpoint as raw ASGI - avoids double response issue"""
+        logger.debug("📨 Handling POST message request")
 
-        # Get the body to log it
-        body = await request.body()
-        logger.debug(f"Request body: {body[:500]}...")  # First 500 chars
+        # Read the body
+        body = b""
+        while True:
+            message = await receive()
+            body += message.get("body", b"")
+            if not message.get("more_body", False):
+                break
 
-        # We need to create a new receive that returns the body we just read
+        logger.debug(f"Request body: {body[:200]}...")
+
+        # Create receive that returns the body we already read
         async def new_receive():
             return {"type": "http.request", "body": body}
 
-        # handle_post_message sends its own response via request._send
-        await sse.handle_post_message(request.scope, new_receive, request._send)
-
-        # Return 202 Accepted to indicate message was received
-        return Response(status_code=202)
+        # handle_post_message sends its own response via send
+        await sse.handle_post_message(scope, new_receive, send)
 
     async def handle_root(request):
         """Root endpoint for discovery"""
@@ -192,11 +196,13 @@ async def run_http_server(host: str = "127.0.0.1", port: int = 8765):
         })
 
     # Create Starlette app
+    # Note: /messages uses raw ASGI to avoid double-response issues
+    from starlette.routing import Mount
     starlette_app = Starlette(
         routes=[
             Route("/", handle_root, methods=["GET"]),
             Route("/sse", handle_sse, methods=["GET"]),
-            Route("/messages", handle_messages, methods=["POST"]),
+            Mount("/messages", app=handle_messages_asgi),
         ]
     )
 

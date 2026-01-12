@@ -16,7 +16,7 @@ from mcp.types import Resource, Tool, TextContent
 import mcp.server.stdio
 
 from .config import load_config, VibeCraftConfig
-from .rcon_manager import RCONManager
+from .client_bridge import ClientBridge
 from .workflow import BuildWorkflowCoordinator
 from .resources import (
     PATTERN_SYNTAX_GUIDE,
@@ -65,9 +65,9 @@ def setup_logging() -> Path:
 # Initialize server
 app = Server("vibecraft")
 
-# Global config and RCON manager (initialized in main)
+# Global config and execution engine (initialized in main)
 config: VibeCraftConfig
-rcon: RCONManager
+rcon: ClientBridge
 
 
 # Cached context loaders ----------------------------------------------------
@@ -204,7 +204,9 @@ def format_terrain_analysis(result: Dict[str, Any]) -> str:
             severity_icon = (
                 "🔴"
                 if hazard.get("severity") == "high"
-                else "🟡" if hazard.get("severity") == "medium" else "🟢"
+                else "🟡"
+                if hazard.get("severity") == "medium"
+                else "🟢"
             )
             output.append(
                 f"{severity_icon} **{hazard['type']}** ({hazard.get('severity', 'unknown')} severity)"
@@ -230,7 +232,9 @@ def format_terrain_analysis(result: Dict[str, Any]) -> str:
             quality_icon = (
                 "⭐⭐⭐"
                 if opp.get("quality") == "excellent"
-                else "⭐⭐" if opp.get("quality") == "good" else "⭐"
+                else "⭐⭐"
+                if opp.get("quality") == "good"
+                else "⭐"
             )
             output.append(
                 f"{quality_icon} **{opp['type']}** ({opp.get('quality', 'fair')} quality)"
@@ -348,19 +352,21 @@ async def main() -> None:
     logger.info("=" * 60)
     logger.info("🎮 VibeCraft MCP Server Starting...")
     logger.info("=" * 60)
-    logger.info(f"RCON Host: {config.rcon_host}:{config.rcon_port}")
+    logger.info(
+        f"Client Bridge: ws://{config.client_host}:{config.client_port}{config.client_path}"
+    )
     logger.info(f"Safety Checks: {'Enabled' if config.enable_safety_checks else 'Disabled'}")
     logger.info(
         f"Dangerous Commands: {'Allowed' if config.allow_dangerous_commands else 'Blocked'}"
     )
 
-    # Initialize RCON manager
-    rcon = RCONManager(config)
+    # Initialize client bridge
+    rcon = ClientBridge(config)
 
     # Test connection
-    logger.info("Testing RCON connection...")
+    logger.info("Testing client bridge connection...")
     if rcon.test_connection():
-        logger.info("✅ RCON connection successful!")
+        logger.info("✅ Client bridge connection successful!")
 
         # Detect WorldEdit version if enabled
         if config.enable_version_detection:
@@ -370,7 +376,7 @@ async def main() -> None:
             else:
                 logger.warning("⚠️ Could not detect WorldEdit version")
     else:
-        logger.warning("⚠️ RCON connection test failed. Server may not be running.")
+        logger.warning("⚠️ Client bridge test failed. Is the Fabric client mod running?")
         logger.warning(
             "   The MCP server will start anyway, but commands will fail until connection is established."
         )

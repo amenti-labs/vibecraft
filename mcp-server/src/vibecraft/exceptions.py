@@ -148,3 +148,32 @@ class ConfigurationError(VibeCraftError):
     """Raised when configuration is invalid or missing."""
 
     pass
+
+
+# =============================================================================
+# Client Bridge Errors
+# =============================================================================
+
+
+class ClientBridgeError(VibeCraftError):
+    """Base exception for client bridge errors."""
+
+    pass
+
+
+class ClientBridgeConnectionError(ClientBridgeError):
+    """Raised when the client bridge connection fails."""
+
+    pass
+
+
+class ClientBridgeTimeoutError(ClientBridgeError):
+    """Raised when the client bridge times out."""
+
+    pass
+
+
+class ClientBridgeProtocolError(ClientBridgeError):
+    """Raised when client bridge responses are invalid or unexpected."""
+
+    pass
